@@ -80,6 +80,7 @@ class ISA:
 
     def load_instructions(self, instructions):
         self.instructions = instructions
+        self.pc = 0
 
     def run(self):
         instructions_length = len(self.instructions)
@@ -169,8 +170,8 @@ class ISA:
             pass
 
     def show_info(self, info=None):
-        mem_range = 10
-        register_range = 8
+        mem_range = 5
+        register_range = 4
 
         if info is not None:
             print(info)
