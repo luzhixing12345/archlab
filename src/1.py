@@ -202,7 +202,7 @@ def main():
 
     isa = ISA()
     isa.memory[0] = 123
-    isa.memory[1] = 456
+    isa.memory[1] = 99
     isa.show_info("before")
 
     isa.load_instructions(instructions)

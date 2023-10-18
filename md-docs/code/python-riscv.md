@@ -60,6 +60,8 @@ sb 3(r1), r3
 
 > 而且流水线写起来太麻烦了, 估计 debug 都要好长时间, 第一次作业没必要搞这么复杂...
 
+本次实验**不需要考虑大端小端**, 因为题中每个 cell 是 8 bits, 且要求是地址 0 + 1 => 3, 因此运行过程不涉及大小端数据存储差异
+
 ### 实验过程
 
 [RISCV 手册](https://github.com/luzhixing12345/archlab/releases/download/v0.0.1/riscv-spec-20191213.pdf)
