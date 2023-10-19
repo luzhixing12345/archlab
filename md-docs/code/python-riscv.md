@@ -11,7 +11,7 @@ python src/1.py
 before
 ####################
 mem[0] = 123
-mem[1] = 456
+mem[1] = 99
 mem[2] = 0
 mem[3] = 0
 mem[4] = 0
@@ -24,7 +24,7 @@ r3 = 0
 after
 ####################
 mem[0] = 123
-mem[1] = 456
+mem[1] = 99
 mem[2] = 0
 mem[3] = 579
 mem[4] = 0
@@ -146,7 +146,7 @@ def main():
 
     isa = ISA()
     isa.memory[0] = 123
-    isa.memory[1] = 456
+    isa.memory[1] = 99
     isa.show_info("before")
 
     isa.load_instructions(instructions)

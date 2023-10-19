@@ -56,6 +56,7 @@ class InstructionInfo:
     funct7: Enum
     imm: int
 
+
 class PipeReg:
     rs1: int
     rs2: int
@@ -74,8 +75,9 @@ class ISA:
         self.pc = 0
         self.registers = [0] * 32
         self.memory = [0] * 512
-        self.instructions = None
-        self.instruction_info = None
+        self.current_instruction = None  # 当前指令
+        self.instructions = None  # 导入的指令集
+        self.instruction_info = None  # 当前指令的信息拆分
         self.pipeline_register = PipeReg()
 
     def load_instructions(self, instructions):
@@ -86,7 +88,6 @@ class ISA:
         instructions_length = len(self.instructions)
         while True:
             self.stage_if()
-            self.pc += 1
             self.stage_id()
             self.stage_exe()
             self.stage_mem()
@@ -95,44 +96,50 @@ class ISA:
                 break
 
     def stage_if(self):
-        instruction = self.instructions[self.pc]
+        '''
+        IF-取指令.根据PC中的地址在指令存储器中取出一条指令
+        '''
+        self.current_instruction = self.instructions[self.pc]
+        self.pc += 1
 
+    def stage_id(self):
+        '''
+        ID-指令译码.由取出的指令生成各种控制信号,明确该指令要进行的行为
+        '''
         instruction_info = InstructionInfo()
-        opcode = instruction[-7:]
+        opcode = self.current_instruction[-7:]
         opcode_type = OpCode(opcode)
         instruction_info.opcode = opcode_type
         if opcode_type == OpCode.R:
             # xor
             # add
-            instruction_info.funct7 = RFunct7(instruction[:7])
-            instruction_info.rs2 = int(instruction[7:12], 2)
-            instruction_info.rs1 = int(instruction[12:17], 2)
-            instruction_info.funct3 = RFunct3(instruction[17:20])
-            instruction_info.rd = int(instruction[20:25], 2)
+            instruction_info.funct7 = RFunct7(self.current_instruction[:7])
+            instruction_info.rs2 = int(self.current_instruction[7:12], 2)
+            instruction_info.rs1 = int(self.current_instruction[12:17], 2)
+            instruction_info.funct3 = RFunct3(self.current_instruction[17:20])
+            instruction_info.rd = int(self.current_instruction[20:25], 2)
             instruction_info.imm = None
         elif opcode_type == OpCode.I:
             # lb
             instruction_info.funct7 = None
             instruction_info.rs2 = None
-            instruction_info.rs1 = int(instruction[12:17], 2)
-            instruction_info.funct3 = IFunct3(instruction[17:20])
-            instruction_info.rd = int(instruction[20:25], 2)
-            instruction_info.imm = int(instruction[:12], 2)
+            instruction_info.rs1 = int(self.current_instruction[12:17], 2)
+            instruction_info.funct3 = IFunct3(self.current_instruction[17:20])
+            instruction_info.rd = int(self.current_instruction[20:25], 2)
+            instruction_info.imm = int(self.current_instruction[:12], 2)
         elif opcode_type == OpCode.S:
             # sb
             instruction_info.funct7 = None
-            instruction_info.rs2 = int(instruction[7:12], 2)
-            instruction_info.rs1 = int(instruction[12:17], 2)
-            instruction_info.funct3 = SFunct3(instruction[17:20])
+            instruction_info.rs2 = int(self.current_instruction[7:12], 2)
+            instruction_info.rs1 = int(self.current_instruction[12:17], 2)
+            instruction_info.funct3 = SFunct3(self.current_instruction[17:20])
             instruction_info.rd = None
-            instruction_info.imm = int(instruction[:7] + instruction[20:25], 2)
+            instruction_info.imm = int(self.current_instruction[:7] + self.current_instruction[20:25], 2)
         else:
             raise ValueError("unsupported opcode type in this homework!")
 
         self.instruction_info = instruction_info
 
-    def stage_id(self):
-        
         if self.instruction_info.rs1 is not None:
             self.pipeline_register.rs1 = self.registers[self.instruction_info.rs1]
 
@@ -140,7 +147,9 @@ class ISA:
             self.pipeline_register.rs2 = self.registers[self.instruction_info.rs2]
 
     def stage_exe(self):
-        
+        '''
+        EX-执行.对指令的各种操作数进行运算
+        '''
         if self.instruction_info.funct3 == RFunct3.XOR:
             self.pipeline_register.value = self.pipeline_register.rs1 ^ self.pipeline_register.rs2
         elif self.instruction_info.funct3 == RFunct3.ADD:
@@ -151,13 +160,18 @@ class ISA:
             pass
 
     def stage_mem(self):
+        '''
+        MEM-存储器访问.将数据写入存储器或从存储器中读出数据
+        '''
         if self.instruction_info.funct3 == IFunct3.LB:
             self.pipeline_register.mem_value = self.memory[self.pipeline_register.value]
         else:
             pass
 
     def stage_wb(self):
-        # print(self.instruction_info.funct3)
+        '''
+        WB-写回.将指令运算结果存入指定的寄存器
+        '''
         if self.instruction_info.funct3 == RFunct3.XOR:
             self.registers[self.instruction_info.rd] = self.pipeline_register.value
         elif self.instruction_info.funct3 == RFunct3.ADD:
