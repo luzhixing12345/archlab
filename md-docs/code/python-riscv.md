@@ -1,11 +1,17 @@
 
 # python-riscv
 
-![image](https://raw.githubusercontent.com/luzhixing12345/archlab/main/src/homework1.png)
+作业要求:
+
+![image](https://raw.githubusercontent.com/luzhixing12345/archlab/main/img/homework1.png)
+
+运行
 
 ```bash
-python src/1.py
+python src/homework1.py
 ```
+
+结果
 
 ```bash
 before
@@ -176,3 +182,7 @@ class ISA:
 ```
 
 具体的每个阶段对应的函数写的应该比较清楚了, 完成对应功能即可, 调用全局 register 和 memory 完成读取/写回
+
+## 参考
+
+- [sunnychen riscvbasic](https://www.sunnychen.top/archives/riscvbasic)

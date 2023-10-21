@@ -27,6 +27,15 @@ class SFunct3(Enum):
     SW = "010"
 
 
+# B 型指令
+class BFunct3(Enum):
+    BEQ = "000"
+    BNE = "001"
+    BLT = "100"
+    BGE = "101"
+    BLTU = "110"
+    BGEU = "111"
+
 # 部分 R 型指令
 class RFunct3(Enum):
     ADD = "000"  # 本次需要
@@ -64,6 +73,65 @@ class PipeReg:
     mem_value: int
 
 
+class Intrustion:
+    
+    def __init__(self, isa: "ISA", instruction_str: str) -> None:
+        self.isa = isa
+        self.instruction = instruction_str
+        self.instruction_info = InstructionInfo()
+
+    def stage_if(self):
+        '''
+        do nothing
+        '''
+
+    def stage_id(self):
+        '''
+        ID-指令译码.由取出的指令生成各种控制信号,明确该指令要进行的行为
+        '''        
+        opcode = self.instruction[-7:]
+        opcode_type = OpCode(opcode)
+        self.instruction_info.opcode = opcode_type
+        if opcode_type == OpCode.R:
+            # xor
+            # add
+            self.instruction_info.funct7 = RFunct7(self.instruction[:7])
+            self.instruction_info.rs2 = int(self.instruction[7:12], 2)
+            self.instruction_info.rs1 = int(self.instruction[12:17], 2)
+            self.instruction_info.funct3 = RFunct3(self.instruction[17:20])
+            self.instruction_info.rd = int(self.instruction[20:25], 2)
+            self.instruction_info.imm = None
+        elif opcode_type == OpCode.I:
+            # lb
+            self.instruction_info.funct7 = None
+            self.instruction_info.rs2 = None
+            self.instruction_info.rs1 = int(self.instruction[12:17], 2)
+            self.instruction_info.funct3 = IFunct3(self.instruction[17:20])
+            self.instruction_info.rd = int(self.instruction[20:25], 2)
+            self.instruction_info.imm = int(self.instruction[:12], 2)
+        elif opcode_type == OpCode.S:
+            # sb
+            self.instruction_info.funct7 = None
+            self.instruction_info.rs2 = int(self.instruction[7:12], 2)
+            self.instruction_info.rs1 = int(self.instruction[12:17], 2)
+            self.instruction_info.funct3 = SFunct3(self.instruction[17:20])
+            self.instruction_info.rd = None
+            self.instruction_info.imm = int(self.instruction[:7] + self.instruction[20:25], 2)
+        elif opcode_type == OpCode.B:
+            self.instruction_info.funct7 = None
+            self.instruction_info.rs2 = int(self.instruction[7:12], 2)
+            self.instruction_info.rs1 = int(self.instruction[12:17], 2)
+            self.instruction_info.funct3 = SFunct3(self.instruction[17:20])
+        else:
+            raise ValueError("unsupported opcode type in this homework!")
+
+        if self.instruction_info.rs1 is not None:
+            self.isa.pipeline_register.rs1 = self.isa.registers[self.instruction_info.rs1]
+
+        if self.instruction_info.rs2 is not None:
+            self.isa.pipeline_register.rs2 = self.isa.registers[self.instruction_info.rs2]
+
+
 class ISA:
     """
     RISCV 32I 单周期流水线
@@ -75,7 +143,7 @@ class ISA:
         self.pc = 0
         self.registers = [0] * 32
         self.memory = [0] * 512
-        self.current_instruction = None  # 当前指令
+        self.instruction = None  # 当前指令
         self.instructions = None  # 导入的指令集
         self.instruction_info = None  # 当前指令的信息拆分
         self.pipeline_register = PipeReg()
@@ -99,46 +167,44 @@ class ISA:
         '''
         IF-取指令.根据PC中的地址在指令存储器中取出一条指令
         '''
-        self.current_instruction = self.instructions[self.pc]
+        self.instruction = self.instructions[self.pc]
         self.pc += 1
 
     def stage_id(self):
-        '''
-        ID-指令译码.由取出的指令生成各种控制信号,明确该指令要进行的行为
-        '''
-        instruction_info = InstructionInfo()
-        opcode = self.current_instruction[-7:]
+        
+        self.instruction_info = InstructionInfo()
+        opcode = self.instruction[-7:]
         opcode_type = OpCode(opcode)
-        instruction_info.opcode = opcode_type
+        self.instruction_info.opcode = opcode_type
         if opcode_type == OpCode.R:
             # xor
             # add
-            instruction_info.funct7 = RFunct7(self.current_instruction[:7])
-            instruction_info.rs2 = int(self.current_instruction[7:12], 2)
-            instruction_info.rs1 = int(self.current_instruction[12:17], 2)
-            instruction_info.funct3 = RFunct3(self.current_instruction[17:20])
-            instruction_info.rd = int(self.current_instruction[20:25], 2)
-            instruction_info.imm = None
+            self.instruction_info.funct7 = RFunct7(self.instruction[:7])
+            self.instruction_info.rs2 = int(self.instruction[7:12], 2)
+            self.instruction_info.rs1 = int(self.instruction[12:17], 2)
+            self.instruction_info.funct3 = RFunct3(self.instruction[17:20])
+            self.instruction_info.rd = int(self.instruction[20:25], 2)
+            self.instruction_info.imm = None
         elif opcode_type == OpCode.I:
             # lb
-            instruction_info.funct7 = None
-            instruction_info.rs2 = None
-            instruction_info.rs1 = int(self.current_instruction[12:17], 2)
-            instruction_info.funct3 = IFunct3(self.current_instruction[17:20])
-            instruction_info.rd = int(self.current_instruction[20:25], 2)
-            instruction_info.imm = int(self.current_instruction[:12], 2)
+            self.instruction_info.funct7 = None
+            self.instruction_info.rs2 = None
+            self.instruction_info.rs1 = int(self.instruction[12:17], 2)
+            self.instruction_info.funct3 = IFunct3(self.instruction[17:20])
+            self.instruction_info.rd = int(self.instruction[20:25], 2)
+            self.instruction_info.imm = int(self.instruction[:12], 2)
         elif opcode_type == OpCode.S:
             # sb
-            instruction_info.funct7 = None
-            instruction_info.rs2 = int(self.current_instruction[7:12], 2)
-            instruction_info.rs1 = int(self.current_instruction[12:17], 2)
-            instruction_info.funct3 = SFunct3(self.current_instruction[17:20])
-            instruction_info.rd = None
-            instruction_info.imm = int(self.current_instruction[:7] + self.current_instruction[20:25], 2)
+            self.instruction_info.funct7 = None
+            self.instruction_info.rs2 = int(self.instruction[7:12], 2)
+            self.instruction_info.rs1 = int(self.instruction[12:17], 2)
+            self.instruction_info.funct3 = SFunct3(self.instruction[17:20])
+            self.instruction_info.rd = None
+            self.instruction_info.imm = int(self.instruction[:7] + self.instruction[20:25], 2)
         else:
             raise ValueError("unsupported opcode type in this homework!")
 
-        self.instruction_info = instruction_info
+        self.instruction_info = self.instruction_info
 
         if self.instruction_info.rs1 is not None:
             self.pipeline_register.rs1 = self.registers[self.instruction_info.rs1]
