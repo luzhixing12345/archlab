@@ -2,31 +2,16 @@ from instructions import *
 from isa import *
 
 
-class RISCV(ISA):
+class RISCV32(ISA):
     """
     RISCV 32I 单周期五阶段
     """
-
-    def __init__(self) -> None:
-        self.pc = 0
-        self.registers = [0] * 32
-        self.memory = [0] * 512
-        self.instruction = None  # 当前指令
-        self.instructions = None  # 导入的指令集
-        self.instruction_info = InstructionInfo()  # 当前指令的信息拆分
-        self.pipeline_register = PipeReg()
-
-    def load_instructions(self, instructions):
-        self.instructions = instructions
-        self.pc = 0
 
     def stage_id(self):
         opcode = self.instruction[-7:]
         opcode_type = OpCode(opcode)
         self.instruction_info.opcode = opcode_type
         if opcode_type == OpCode.R:
-            # xor
-            # add
             self.instruction_info.funct7 = RFunct7(self.instruction[:7])
             self.instruction_info.rs2 = int(self.instruction[7:12], 2)
             self.instruction_info.rs1 = int(self.instruction[12:17], 2)
@@ -34,55 +19,52 @@ class RISCV(ISA):
             self.instruction_info.rd = int(self.instruction[20:25], 2)
             self.instruction_info.imm = None
         elif opcode_type in (OpCode.I_LOAD, OpCode.I_CALC, OpCode.I_JALR):
-            # lb
             self.instruction_info.funct7 = None
             self.instruction_info.rs2 = None
             self.instruction_info.rs1 = int(self.instruction[12:17], 2)
             self.instruction_info.funct3 = IFunct3(self.instruction[17:20])
             self.instruction_info.rd = int(self.instruction[20:25], 2)
-            self.instruction_info.imm = int(self.instruction[:12], 2)
+            self.instruction_info.imm = self.binary_str(self.instruction[:12])
         elif opcode_type == OpCode.S:
-            # sb
             self.instruction_info.funct7 = None
             self.instruction_info.rs2 = int(self.instruction[7:12], 2)
             self.instruction_info.rs1 = int(self.instruction[12:17], 2)
             self.instruction_info.funct3 = SFunct3(self.instruction[17:20])
             self.instruction_info.rd = None
-            self.instruction_info.imm = int(self.instruction[:7] + self.instruction[20:25], 2)
+            self.instruction_info.imm = self.binary_str(self.instruction[:7] + self.instruction[20:25])
         elif opcode_type == OpCode.B:
             self.instruction_info.funct7 = None
             self.instruction_info.rs2 = int(self.instruction[7:12], 2)
             self.instruction_info.rs1 = int(self.instruction[12:17], 2)
             self.instruction_info.funct3 = BFunct3(self.instruction[17:20])
             self.instruction_info.rd = None
-            self.instruction_info.imm = int(
+            self.instruction_info.imm = self.binary_str(
                 self.instruction[0]
                 + self.instruction[24]
                 + self.instruction[1:6]
                 + self.instruction[20:24]
-                + "0",
-                2,
+                + "0"
             )
+
         elif opcode_type in (OpCode.U_AUIPC, OpCode.U_LUI):
             self.instruction_info.funct7 = None
             self.instruction_info.rs2 = None
             self.instruction_info.rs1 = None
             self.instruction_info.funct3 = None
             self.instruction_info.rd = int(self.instruction[20:25], 2)
-            self.instruction_info.imm = int(self.instruction[:20] + "0" * 12, 2)
+            self.instruction_info.imm = self.binary_str(self.instruction[:20] + "0" * 12)
         elif opcode_type == OpCode.J:
             self.instruction_info.funct7 = None
             self.instruction_info.rs2 = None
             self.instruction_info.rs1 = None
             self.instruction_info.funct3 = None
             self.instruction_info.rd = int(self.instruction[20:25], 2)
-            self.instruction_info.imm = int(
+            self.instruction_info.imm = self.binary_str(
                 self.instruction[0]
                 + self.instruction[11:18]
                 + self.instruction[10]
                 + self.instruction[1:11]
-                + "0",
-                2,
+                + "0"
             )
         else:
             raise ValueError("unknown opcode type")
@@ -164,25 +146,37 @@ class RISCV(ISA):
                 self.instruction_info.funct3
             ](self)
 
+
 def main():
-    # xor r1, r1, r1
-    # lb 0(r1), r2
-    # lb 1(r1), r3
-    # add r2, r3, r3
-    # sb 3(r1), r3
+    # 汇编代码见 example.S
+
+    # xor a0, a0, a0
+    # lb a1, 0(a0)
+    # lb a2, 1(a0)
+    # addi a2, 100(a2)
+    # add a2, a2, a1
+    # sb a2, 3(a0)
+    # 1111111 011000101100111001  1100011
+
+    # 编译为 32 位 RISCV ABI 目标文件
+
+    # riscv64-linux-gnu-gcc -march=rv32i -mabi=ilp32 -c example.S -o example.o
+    # riscv64-linux-gnu-objdump example.o -d
 
     instructions = [
-        # 31 ---------------------------0
-        "00000000000100001100000010110011",
-        "00000000000000001000000100000011",
-        "00000000000100001000000110000011",
-        "00000000001100010000000110110011",
-        "00000000001100001000000110100011",
+        0x00A54533,
+        0x00050583,
+        0x00150603,
+        0x00360613,
+        0x00158593,
+        0xFEC59CE3,
+        0x0040076F,
+        0x00C501A3,
     ]
 
-    isa = RISCV()
-    isa.memory[0] = 123
-    isa.memory[1] = 99
+    isa = RISCV32()
+    isa.memory[0] = 20
+    isa.memory[1] = 0
     isa.show_info("before")
 
     isa.load_instructions(instructions)

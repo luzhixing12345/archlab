@@ -91,6 +91,8 @@ class PipeReg:
 class Instruction:
     def __init__(self, isa: "ISA") -> None:
         self.isa = isa
+        self.skip_pc = False
+        print(self.__class__.__name__)
 
     def stage_ex(self):
         """
@@ -114,6 +116,8 @@ class Instruction:
 
         单指令可以继承 Instruction 类并重写此方法
         """
+        if not self.skip_pc:
+            self.isa.pc += 4
 
 
 class ISA:
@@ -122,42 +126,59 @@ class ISA:
     """
 
     def __init__(self) -> None:
+        # 基础配置信息
+        register_number = 32
+        memory_range = 0x200
+
         self.pc = 0
-        self.registers = [0] * 32
-        self.memory = [0] * 512
+        self.registers = [0] * register_number  # 寄存器组
+        self.memory = [0] * memory_range  # 内存
         self.instruction: Instruction = None  # 当前指令
-        self.instructions: List[str] = None  # 导入的指令集
         self.instruction_info = InstructionInfo()  # 当前指令的信息拆分
         self.pipeline_register = PipeReg()
 
-    def load_instructions(self, instructions):
-        self.instructions = instructions
-        self.pc = 0
+    def load_instructions(self, instructions, pc=0x100):
+        self.pc = pc
+        # 小端存储
+        for inst in instructions:
+            instruction_str = format(inst, "032b")
+            self.memory[pc + 3] = int(instruction_str[:8], 2)
+            self.memory[pc + 2] = int(instruction_str[8:16], 2)
+            self.memory[pc + 1] = int(instruction_str[16:24], 2)
+            self.memory[pc] = int(instruction_str[24:], 2)
+            pc += 4
 
     def run(self):
-        instructions_length = len(self.instructions)
         while True:
             self.stage_if()
+            if self.pc == -1:
+                break
             self.stage_id()
-            self.stage_exe()
+            self.stage_ex()
             self.stage_mem()
             self.stage_wb()
-            if self.pc >= instructions_length:
-                break
 
     def stage_if(self):
         """
         IF-取指令.根据PC中的地址在指令存储器中取出一条指令
         """
-        self.instruction = self.instructions[self.pc]
-        self.pc += 1
+        # 小端取数
+        self.instruction = ""
+        self.instruction += format(self.memory[self.pc + 3], "08b")
+        self.instruction += format(self.memory[self.pc + 2], "08b")
+        self.instruction += format(self.memory[self.pc + 1], "08b")
+        self.instruction += format(self.memory[self.pc], "08b")
+
+        # 全 0 默认运行完所有指令, 退出
+        if int(self.instruction) == 0:
+            self.pc = -1
 
     def stage_id(self):
         """
         ID-译码 解析指令并读取寄存器的值"""
-        # raise NotImplementedError("should implement stage ID")
+        raise NotImplementedError("should implement stage ID")
 
-    def stage_exe(self):
+    def stage_ex(self):
         """
         EX-执行.对指令的各种操作数进行运算
         """
@@ -177,7 +198,7 @@ class ISA:
 
     def show_info(self, info=None):
         mem_range = 5
-        register_range = 4
+        register_range = 15
 
         if info is not None:
             print(info)
@@ -188,3 +209,11 @@ class ISA:
         for i in range(register_range):
             print(f"r{i} = {self.registers[i]}")
         print("#" * 20)
+
+    def binary_str(self, imm:str):
+        if imm[0] == '1':
+            inverted_str = ''.join('1' if bit == '0' else '0' for bit in imm)
+            abs_value = int(inverted_str, 2) + 1
+            return -abs_value
+        else:
+            return int(imm, 2)

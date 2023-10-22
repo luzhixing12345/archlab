@@ -69,6 +69,24 @@ RV32I的指令编码非常规整,分为六种类型,其中四种类型为基础�
 
 ![20231022112146](https://raw.githubusercontent.com/learner-lu/picbed/master/20231022112146.png)
 
+### RISCV-32I 汇编指令格式
+
+了解所有的 37 条指令之后就需要手动编写汇编指令, 然后利用 GNU 的工具编译为机器代码以及查看反汇编二进制形式
+
+```bash
+sudo apt-get install gcc-riscv64-linux-gnu binutils-riscv64-linux-gnu
+```
+
+寄存器出现顺序是 rd > rs2 > rs1, 例如 `Inst rd, rs2, rs1`, 立即数括号括起来, 如 `Inst a0, 100(a1)`
+
+![20231022220910](https://raw.githubusercontent.com/learner-lu/picbed/master/20231022220910.png)
+
+> 寄存器表, 我们这里只用 a0-a7 应该就够了
+
+```bash
+riscv64-linux-gnu-gcc example.S -o 
+```
+
 ## 参考
 
 - [sunnychen riscvbasic](https://www.sunnychen.top/archives/riscvbasic)
