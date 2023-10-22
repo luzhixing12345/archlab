@@ -8,7 +8,7 @@
 运行
 
 ```bash
-python src/homework1.py
+python src/homework1/main.py
 ```
 
 结果
