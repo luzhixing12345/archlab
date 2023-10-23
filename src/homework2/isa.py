@@ -1,6 +1,4 @@
 from enum import Enum
-from typing import List
-
 
 # RISCV-32I 6 种类型
 class OpCode(Enum):
@@ -91,8 +89,8 @@ class PipeReg:
 class Instruction:
     def __init__(self, isa: "ISA") -> None:
         self.isa = isa
-        self.skip_pc = False
-        print(self.__class__.__name__)
+        self.pc_inc = True
+        # print(self.__class__.__name__)
 
     def stage_ex(self):
         """
@@ -116,7 +114,7 @@ class Instruction:
 
         单指令可以继承 Instruction 类并重写此方法
         """
-        if not self.skip_pc:
+        if self.pc_inc:
             self.isa.pc += 4
 
 
@@ -210,9 +208,9 @@ class ISA:
             print(f"r{i} = {self.registers[i]}")
         print("#" * 20)
 
-    def binary_str(self, imm:str):
-        if imm[0] == '1':
-            inverted_str = ''.join('1' if bit == '0' else '0' for bit in imm)
+    def binary_str(self, imm: str):
+        if imm[0] == "1":
+            inverted_str = "".join("1" if bit == "0" else "0" for bit in imm)
             abs_value = int(inverted_str, 2) + 1
             return -abs_value
         else:

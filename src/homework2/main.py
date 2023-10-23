@@ -150,15 +150,18 @@ class RISCV32(ISA):
 def main():
     # 汇编代码见 example.S
 
-    # xor a0, a0, a0
-    # lb a1, 0(a0)
-    # lb a2, 1(a0)
-    # addi a2, 100(a2)
-    # add a2, a2, a1
-    # sb a2, 3(a0)
-    # 1111111 011000101100111001  1100011
+    #     xor a0, a0, a0
+    #     lb a1, 0(a0)
+    #     lb a2, 1(a0)
+    # L1:
+    #     addi a1, a1, 1
+    #     addi a2, a2, 3
+    #     bne a1, a2, L1
+    #     jal a4, L2
+    # L2:
+    #     sb a2, 3(a0)
 
-    # 编译为 32 位 RISCV ABI 目标文件
+    # 编译为 32 位 RISCV 目标文件
 
     # riscv64-linux-gnu-gcc -march=rv32i -mabi=ilp32 -c example.S -o example.o
     # riscv64-linux-gnu-objdump example.o -d

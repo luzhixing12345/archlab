@@ -12,7 +12,6 @@ class R_ADD(Instruction):
     def stage_wb(self):
         self.isa.registers[self.isa.instruction_info.rd] = self.isa.pipeline_register.value
         return super().stage_wb()
-        
 
 
 class R_SUB(Instruction):
@@ -59,9 +58,10 @@ class R_AND(Instruction):
 
 
 class I_ADDI(Instruction):
-    
     def stage_ex(self):
-        self.isa.pipeline_register.value = self.isa.pipeline_register.rs1 + self.isa.instruction_info.imm
+        self.isa.pipeline_register.value = (
+            self.isa.pipeline_register.rs1 + self.isa.instruction_info.imm
+        )
 
     def stage_wb(self):
         self.isa.registers[self.isa.instruction_info.rd] = self.isa.pipeline_register.value
@@ -158,11 +158,11 @@ class B_BEQ(Instruction):
 
 
 class B_BNE(Instruction):
-    
     def stage_ex(self):
         if self.isa.pipeline_register.rs1 != self.isa.pipeline_register.rs2:
             self.isa.pc = self.isa.pc + self.isa.instruction_info.imm
-            self.skip_pc = True
+            self.pc_inc = False
+
 
 class B_BLT(Instruction):
     ...
@@ -189,8 +189,6 @@ class U_AUIPC(Instruction):
 
 
 class J_JAL(Instruction):
-    
     def stage_ex(self):
         self.isa.pc += self.isa.instruction_info.imm
-        self.skip_pc = True
-
+        self.pc_inc = False
