@@ -22,7 +22,12 @@ class RISCV32(ISA):
             self.instruction_info.funct7 = None
             self.instruction_info.rs2 = None
             self.instruction_info.rs1 = int(self.instruction[12:17], 2)
-            self.instruction_info.funct3 = IFunct3(self.instruction[17:20])
+            funct3 = {
+                OpCode.I_LOAD: I_LOADFunct3,
+                OpCode.I_CALC: I_CALCFunct3,
+                OpCode.I_JALR: I_JALRFunct3
+            }
+            self.instruction_info.funct3 = funct3[opcode_type](self.instruction[17:20])
             self.instruction_info.rd = int(self.instruction[20:25], 2)
             self.instruction_info.imm = self.binary_str(self.instruction[:12])
         elif opcode_type == OpCode.S:
@@ -31,7 +36,9 @@ class RISCV32(ISA):
             self.instruction_info.rs1 = int(self.instruction[12:17], 2)
             self.instruction_info.funct3 = SFunct3(self.instruction[17:20])
             self.instruction_info.rd = None
-            self.instruction_info.imm = self.binary_str(self.instruction[:7] + self.instruction[20:25])
+            self.instruction_info.imm = self.binary_str(
+                self.instruction[:7] + self.instruction[20:25]
+            )
         elif opcode_type == OpCode.B:
             self.instruction_info.funct7 = None
             self.instruction_info.rs2 = int(self.instruction[7:12], 2)
@@ -96,23 +103,23 @@ class RISCV32(ISA):
                 RFunct3.AND: R_AND,
             },
             OpCode.I_CALC: {
-                IFunct3.ADDI: I_ADDI,
-                IFunct3.SLTI: I_SLTI,
-                IFunct3.SLTIU: I_SLTIU,
-                IFunct3.XORI: I_XORI,
-                IFunct3.ORI: I_ORI,
-                IFunct3.ANDI: I_ANDI,
-                IFunct3.SLLI: I_SLLI,
-                IFunct3.SRLI: I_SRLI,
-                IFunct3.SRAI: I_SRAI,
+                I_CALCFunct3.ADDI: I_ADDI,
+                I_CALCFunct3.SLTI: I_SLTI,
+                I_CALCFunct3.SLTIU: I_SLTIU,
+                I_CALCFunct3.XORI: I_XORI,
+                I_CALCFunct3.ORI: I_ORI,
+                I_CALCFunct3.ANDI: I_ANDI,
+                I_CALCFunct3.SLLI: I_SLLI,
+                I_CALCFunct3.SRLI: I_SRLI,
+                I_CALCFunct3.SRAI: I_SRAI,
             },
-            OpCode.I_JALR: {IFunct3.JALR: I_JALR},
+            OpCode.I_JALR: {I_JALRFunct3.JALR: I_JALR},
             OpCode.I_LOAD: {
-                IFunct3.LB: I_LB,
-                IFunct3.LH: I_LH,
-                IFunct3.LW: I_LW,
-                IFunct3.LBU: I_LBU,
-                IFunct3.LHU: I_LHU,
+                I_LOADFunct3.LB: I_LB,
+                I_LOADFunct3.LH: I_LH,
+                I_LOADFunct3.LW: I_LW,
+                I_LOADFunct3.LBU: I_LBU,
+                I_LOADFunct3.LHU: I_LHU,
             },
             OpCode.S: {SFunct3.SB: S_SB, SFunct3.SH: S_SH, SFunct3.SW: S_SW},
             OpCode.B: {

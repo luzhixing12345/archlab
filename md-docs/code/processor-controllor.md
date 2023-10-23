@@ -150,7 +150,7 @@ sudo apt-get install gcc-riscv64-linux-gnu binutils-riscv64-linux-gnu
 
 ![20231022220910](https://raw.githubusercontent.com/learner-lu/picbed/master/20231022220910.png)
 
-> 寄存器表, 我们这里只用 a0-a7 应该就够了
+> 寄存器表, RISCV 对于寄存器(register)和寄存器名(name)做了一组映射, 编写汇编的时候使用的应该是 name 的部分, 这里使用 a0-a7 就可以了
 
 题目中要求完成所有基础指令, 这里笔者构建了如下的一段汇编代码
 
@@ -178,7 +178,7 @@ riscv64-linux-gnu-objdump example.o -d
 
 编译反汇编得到如下所示的结果
 
-```bash
+```riscvasm
 Disassembly of section .text:
 
 00000000 <L1-0xc>:
@@ -365,7 +365,8 @@ def stage_if(self):
 
 def stage_id(self):
     """
-    ID-译码 解析指令并读取寄存器的值"""
+    ID-译码 解析指令并读取寄存器的值
+    """
     raise NotImplementedError("should implement stage ID")
 ```
 
@@ -375,7 +376,7 @@ ID 阶段除了需要切分判断不同格式, 还需要具体定位到是哪一
 
 这里定义了一个字典, 用于对应所有指令的类名
 
-![20231023163013](https://raw.githubusercontent.com/learner-lu/picbed/master/20231023163013.png)
+![20231023181839](https://raw.githubusercontent.com/learner-lu/picbed/master/20231023181839.png)
 
 对于一些特殊情况单独做判断, 其余的在列表中索引找到, 并将类实例化为对象保存在 instruction 当中
 
@@ -443,7 +444,7 @@ class R_XOR(Instruction):
 
 > 这一点和 X86 不同, X86 取指阶段后直接 pc 变化了, RISCV 最后阶段才更新 PC
 
-```bash
+```riscvasm
 0000000c <L1>:
    c:   00158593                addi    a1,a1,1
   10:   00360613                addi    a2,a2,3

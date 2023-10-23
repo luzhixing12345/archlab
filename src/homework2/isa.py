@@ -1,5 +1,6 @@
 from enum import Enum
 
+
 # RISCV-32I 6 种类型
 class OpCode(Enum):
     R = "0110011"
@@ -14,7 +15,7 @@ class OpCode(Enum):
 
 
 # 部分 I 型指令
-class IFunct3(Enum):
+class I_CALCFunct3(Enum):
     ADDI = "000"
     SLTI = "010"
     SLTIU = "011"
@@ -24,7 +25,13 @@ class IFunct3(Enum):
     SLLI = "001"
     SRLI = "101"
     SRAI = "101"
+
+
+class I_JALRFunct3(Enum):
     JALR = "000"
+
+
+class I_LOADFunct3(Enum):
     LB = "000"
     LH = "001"
     LW = "010"
