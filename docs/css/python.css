@@ -1,0 +1,66 @@
+pre[class*="language-python"] {
+    background: #1f1f1f;
+}
+
+pre[class*="language-python"] .Token {
+    color: #C1CCCC;
+}
+
+pre[class*="language-python"] .Token.ID {
+    color: #88D6FE;
+}
+
+pre[class*="language-python"] .Token.BraceDepth-0 {
+    color: #FFD700;
+}
+
+pre[class*="language-python"] .Token.BraceDepth-1 {
+    color: #DA70D6;
+}
+
+pre[class*="language-python"] .Token.BraceDepth-2 {
+    color: #1A9DFF;
+}
+
+pre[class*="language-python"] .Token.COMMA,
+pre[class*="language-python"] .Token.COLON {
+    color: #C1CCCC;
+}
+
+pre[class*="language-python"] .Token.UnaryOp,
+pre[class*="language-python"] .Token.NUMBER {
+    color: #A2CEA8;
+}
+
+pre[class*="language-python"] .Token.STR {
+    color: #CE9178;
+}
+
+pre[class*="language-python"] .Token.COMMENT {
+    color: #6A9955;
+}
+
+
+pre[class*="language-python"] .Token.IF,
+pre[class*="language-python"] .Token.ELSE,
+pre[class*="language-python"] .Token.FOR,
+pre[class*="language-python"] .Token.WHILE,
+pre[class*="language-python"] .Token.ELIF,
+pre[class*="language-python"] .Token.RETURN,
+pre[class*="language-python"] .Token.BREAK, pre[class*="language-python"] .Token.IN {
+    color: #C586C0;
+}
+
+pre[class*="language-python"] .Token.NONE,
+pre[class*="language-python"] .Token.TRUE,
+pre[class*="language-python"] .Token.FALSE,
+pre[class*="language-python"] .Token.RAISE,
+pre[class*="language-python"] .Token.AND,
+pre[class*="language-python"] .Token.OR {
+    color: #569cd6;
+}
+
+pre[class*="language-python"] .Token.CLASS,
+pre[class*="language-python"] .Token.DEF {
+    color: #569cd6;
+}
