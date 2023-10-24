@@ -47,7 +47,7 @@ pre[class*="language-python"] .Token.FOR,
 pre[class*="language-python"] .Token.WHILE,
 pre[class*="language-python"] .Token.ELIF,
 pre[class*="language-python"] .Token.RETURN,
-pre[class*="language-python"] .Token.BREAK, pre[class*="language-python"] .Token.IN {
+pre[class*="language-python"] .Token.BREAK, pre[class*="language-python"] .Token.IN, pre[class*="language-python"] .Token.FROM, pre[class*="language-python"] .Token.IMPORT {
     color: #C586C0;
 }
 
@@ -63,4 +63,16 @@ pre[class*="language-python"] .Token.OR {
 pre[class*="language-python"] .Token.CLASS,
 pre[class*="language-python"] .Token.DEF {
     color: #569cd6;
+}
+
+pre[class*="language-python"] .Token.ClassName, pre[class*="language-python"] .Token.ClassInstantiation {
+    color: #4EC9B0;
+}
+
+pre[class*="language-python"] .Token.FunctionName, pre[class*="language-python"] .Token.FunctionCall {
+    color: #DCDCAA;
+}
+
+pre[class*="language-python"] .Token.INT, pre[class*="language-python"] .Token.BOOL, pre[class*="language-python"] .Token.SUPER {
+    color: #4EC9B0;
 }
