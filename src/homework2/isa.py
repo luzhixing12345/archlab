@@ -140,7 +140,7 @@ class ISA:
         self.memory = [0] * memory_range  # 内存
         self.instruction: Instruction = None  # 当前指令
         self.instruction_info = InstructionInfo()  # 当前指令的信息拆分
-        self.pipeline_register = PipeReg()
+        self.IR = PipeReg()
 
     def load_instructions(self, instructions, pc=0x100):
         self.pc = pc

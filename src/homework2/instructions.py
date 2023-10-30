@@ -5,12 +5,10 @@ from isa import Instruction
 
 class R_ADD(Instruction):
     def stage_ex(self):
-        self.isa.pipeline_register.value = (
-            self.isa.pipeline_register.rs1 + self.isa.pipeline_register.rs2
-        )
+        self.isa.IR.value = self.isa.IR.rs1 + self.isa.IR.rs2
 
     def stage_wb(self):
-        self.isa.registers[self.isa.instruction_info.rd] = self.isa.pipeline_register.value
+        self.isa.registers[self.isa.instruction_info.rd] = self.isa.IR.value
         return super().stage_wb()
 
 
@@ -32,12 +30,10 @@ class R_SLTU(Instruction):
 
 class R_XOR(Instruction):
     def stage_ex(self):
-        self.isa.pipeline_register.value = (
-            self.isa.pipeline_register.rs1 ^ self.isa.pipeline_register.rs2
-        )
+        self.isa.IR.value = self.isa.IR.rs1 ^ self.isa.IR.rs2
 
     def stage_wb(self):
-        self.isa.registers[self.isa.instruction_info.rd] = self.isa.pipeline_register.value
+        self.isa.registers[self.isa.instruction_info.rd] = self.isa.IR.value
         return super().stage_wb()
 
 
@@ -59,12 +55,10 @@ class R_AND(Instruction):
 
 class I_ADDI(Instruction):
     def stage_ex(self):
-        self.isa.pipeline_register.value = (
-            self.isa.pipeline_register.rs1 + self.isa.instruction_info.imm
-        )
+        self.isa.IR.value = self.isa.IR.rs1 + self.isa.instruction_info.imm
 
     def stage_wb(self):
-        self.isa.registers[self.isa.instruction_info.rd] = self.isa.pipeline_register.value
+        self.isa.registers[self.isa.instruction_info.rd] = self.isa.IR.value
         return super().stage_wb()
 
 
@@ -106,15 +100,13 @@ class I_JALR(Instruction):
 
 class I_LB(Instruction):
     def stage_ex(self):
-        self.isa.pipeline_register.value = (
-            self.isa.pipeline_register.rs1 + self.isa.instruction_info.imm
-        )
+        self.isa.IR.value = self.isa.IR.rs1 + self.isa.instruction_info.imm
 
     def stage_mem(self):
-        self.isa.pipeline_register.mem_value = self.isa.memory[self.isa.pipeline_register.value]
+        self.isa.IR.mem_value = self.isa.memory[self.isa.IR.value]
 
     def stage_wb(self):
-        self.isa.registers[self.isa.instruction_info.rd] = self.isa.pipeline_register.mem_value
+        self.isa.registers[self.isa.instruction_info.rd] = self.isa.IR.mem_value
         return super().stage_wb()
 
 
@@ -136,12 +128,10 @@ class I_LHU(Instruction):
 
 class S_SB(Instruction):
     def stage_ex(self):
-        self.isa.pipeline_register.value = (
-            self.isa.pipeline_register.rs1 + self.isa.instruction_info.imm
-        )
+        self.isa.IR.value = self.isa.IR.rs1 + self.isa.instruction_info.imm
 
     def stage_wb(self):
-        self.isa.memory[self.isa.pipeline_register.value] = self.isa.pipeline_register.rs2 & 0xFF
+        self.isa.memory[self.isa.IR.value] = self.isa.IR.rs2 & 0xFF
         return super().stage_wb()
 
 
@@ -159,7 +149,7 @@ class B_BEQ(Instruction):
 
 class B_BNE(Instruction):
     def stage_ex(self):
-        if self.isa.pipeline_register.rs1 != self.isa.pipeline_register.rs2:
+        if self.isa.IR.rs1 != self.isa.IR.rs2:
             self.isa.pc = self.isa.pc + self.isa.instruction_info.imm
             self.pc_inc = False
 

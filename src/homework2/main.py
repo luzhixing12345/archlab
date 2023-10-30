@@ -25,7 +25,7 @@ class RISCV32(ISA):
             funct3 = {
                 OpCode.I_LOAD: I_LOADFunct3,
                 OpCode.I_CALC: I_CALCFunct3,
-                OpCode.I_JALR: I_JALRFunct3
+                OpCode.I_JALR: I_JALRFunct3,
             }
             self.instruction_info.funct3 = funct3[opcode_type](self.instruction[17:20])
             self.instruction_info.rd = int(self.instruction[20:25], 2)
@@ -78,10 +78,10 @@ class RISCV32(ISA):
 
         # 如果指令中包含 rs1 rs2, 则读取对应寄存器的值
         if self.instruction_info.rs1 is not None:
-            self.pipeline_register.rs1 = self.registers[self.instruction_info.rs1]
+            self.IR.rs1 = self.registers[self.instruction_info.rs1]
 
         if self.instruction_info.rs2 is not None:
-            self.pipeline_register.rs2 = self.registers[self.instruction_info.rs2]
+            self.IR.rs2 = self.registers[self.instruction_info.rs2]
 
         self.match_instruction()
 

@@ -108,11 +108,15 @@ RV32I的指令编码非常规整,分为六种类型,其中四种类型为基础�
 
 ![20231022092118](https://raw.githubusercontent.com/learner-lu/picbed/master/20231022092118.png)
 
+> 需要额外注意的是大部分指令可以通过 funct3 直接区分确定, 但 add/sub, srl/sra 的 funct3 相同, 需要依靠 funct7 来确定. 这种设计很巧妙,因为 funct3 只有三位, 总共8种, 但需要表示10种指令; 与此同时 add/sub srl/sra 的功能十分接近, 例如 sub 只需要取反加一, sra 只需要转换移位方向. 所以只需要在 funct7[1] 的那一位引脚接一个取反装置即可, 设计的比较优雅.
+
 #### I 型指令(15)
 
 立即数操作指令,含一个源寄存器和一个目的寄存器和一个12bit立即数操作数
 
 ![20231022105039](https://raw.githubusercontent.com/learner-lu/picbed/master/20231022105039.png)
+
+> I 型指令的 OpCode 有三类, 分别是计算类的 `I_CALC(0010011)`, 跳转 `I_JALR(1100111)` 和访存 `I_LOAD(0000011)`
 
 #### S 型指令(3)
 
@@ -177,6 +181,22 @@ sudo apt-get install gcc-riscv64-linux-gnu binutils-riscv64-linux-gnu
 riscv64-linux-gnu-gcc -march=rv32i -mabi=ilp32 -c example.S -o example.o
 riscv64-linux-gnu-objdump example.o -d
 ```
+
+> 扩展的小知识: riscv-gcc 编译选项
+>
+> - -march=rv32i:生成针对32位基本整数指令集(RV32I)的代码.
+> - -march=rv32im:生成针对32位整数乘法扩展(M)的代码.
+> - -march=rv32imac:生成针对32位整数乘法和原子扩展(IMAC)的代码.
+> - -march=rv32gc:生成针对32位整数乘法/原子和压缩指令扩展(GC)的代码.
+> - -march=rv64i:生成针对64位基本整数指令集(RV64I)的代码.
+> - -march=rv64im:生成针对64位整数乘法扩展(M)的代码.
+> - -march=rv64imac:生成针对64位整数乘法和原子扩展(IMAC)的代码.
+> - -march=rv64gc:生成针对64位整数乘法/原子和压缩指令扩展(GC)的代码.
+> - -march=rv32i 和 -march=rv64i 用于生成纯整数指令集的代码,而 -march=rv32g 和 -march=rv64g 用于生成全能指令集的代码
+> - -mabi=ilp32:生成针对32位整数类型的ILP32 ABI的代码.这是默认的ABI.
+> - -mabi=ilp32d:生成针对32位整数类型的ILP32 ABI,但使用双精度浮点寄存器.
+> - -mabi=lp64:生成针对64位整数类型的LP64 ABI的代码.
+> - -mabi=lp64d:生成针对64位整数类型的LP64 ABI,但使用双精度浮点寄存器.
 
 编译 & 反汇编得到如下所示的结果
 
@@ -247,7 +267,7 @@ class ISA:
         self.memory = [0] * memory_range  # 内存
         self.instruction: Instruction = None  # 当前指令
         self.instruction_info = InstructionInfo()  # 当前指令的信息拆分
-        self.pipeline_register = PipeReg()
+        self.IR = PipeReg()
 
 class Instruction:
     def __init__(self, isa: "ISA") -> None:
@@ -286,10 +306,10 @@ instructions.py 中的所有 RISCV-32I 的指令都需要继承 Instruction 类,
 class I_ADDI(Instruction):
     
     def stage_ex(self):
-        self.isa.pipeline_register.value = self.isa.pipeline_register.rs1 + self.isa.instruction_info.imm
+        self.isa.IR.value = self.isa.IR.rs1 + self.isa.instruction_info.imm
 
     def stage_wb(self):
-        self.isa.registers[self.isa.instruction_info.rd] = self.isa.pipeline_register.value
+        self.isa.registers[self.isa.instruction_info.rd] = self.isa.IR.value
         return super().stage_wb()
 ```
 
@@ -433,12 +453,12 @@ class ISA:
 ```python
 class R_XOR(Instruction):
     def stage_ex(self):
-        self.isa.pipeline_register.value = (
-            self.isa.pipeline_register.rs1 ^ self.isa.pipeline_register.rs2
+        self.isa.IR.value = (
+            self.isa.IR.rs1 ^ self.isa.IR.rs2
         )
 
     def stage_wb(self):
-        self.isa.registers[self.isa.instruction_info.rd] = self.isa.pipeline_register.value
+        self.isa.registers[self.isa.instruction_info.rd] = self.isa.IR.value
         return super().stage_wb()
 ```
 

@@ -81,7 +81,7 @@ class ISA:
         self.current_instruction = None  # 当前指令
         self.instructions = None  # 导入的指令集
         self.instruction_info = None  # 当前指令的信息拆分
-        self.pipeline_register = PipeReg()
+        self.IR = PipeReg()
 
     def load_instructions(self, instructions):
         self.instructions = instructions
@@ -99,16 +99,16 @@ class ISA:
                 break
 
     def stage_if(self):
-        '''
+        """
         IF-取指令.根据PC中的地址在指令存储器中取出一条指令
-        '''
+        """
         self.current_instruction = self.instructions[self.pc]
         self.pc += 1
 
     def stage_id(self):
-        '''
+        """
         ID-指令译码.由取出的指令生成各种控制信号,明确该指令要进行的行为
-        '''
+        """
         instruction_info = InstructionInfo()
         opcode = self.current_instruction[-7:]
         opcode_type = OpCode(opcode)
@@ -137,52 +137,54 @@ class ISA:
             instruction_info.rs1 = int(self.current_instruction[12:17], 2)
             instruction_info.funct3 = SFunct3(self.current_instruction[17:20])
             instruction_info.rd = None
-            instruction_info.imm = int(self.current_instruction[:7] + self.current_instruction[20:25], 2)
+            instruction_info.imm = int(
+                self.current_instruction[:7] + self.current_instruction[20:25], 2
+            )
         else:
             raise ValueError("unsupported opcode type in this homework!")
 
         self.instruction_info = instruction_info
 
         if self.instruction_info.rs1 is not None:
-            self.pipeline_register.rs1 = self.registers[self.instruction_info.rs1]
+            self.IR.rs1 = self.registers[self.instruction_info.rs1]
 
         if self.instruction_info.rs2 is not None:
-            self.pipeline_register.rs2 = self.registers[self.instruction_info.rs2]
+            self.IR.rs2 = self.registers[self.instruction_info.rs2]
 
     def stage_exe(self):
-        '''
+        """
         EX-执行.对指令的各种操作数进行运算
-        '''
+        """
         if self.instruction_info.funct3 == RFunct3.XOR:
-            self.pipeline_register.value = self.pipeline_register.rs1 ^ self.pipeline_register.rs2
+            self.IR.value = self.IR.rs1 ^ self.IR.rs2
         elif self.instruction_info.funct3 == RFunct3.ADD:
-            self.pipeline_register.value = self.pipeline_register.rs1 + self.pipeline_register.rs2
+            self.IR.value = self.IR.rs1 + self.IR.rs2
         elif self.instruction_info.funct3 in (IFunct3.LB, SFunct3.SB):
-            self.pipeline_register.value = self.pipeline_register.rs1 + self.instruction_info.imm
+            self.IR.value = self.IR.rs1 + self.instruction_info.imm
         else:
             pass
 
     def stage_mem(self):
-        '''
+        """
         MEM-存储器访问.将数据写入存储器或从存储器中读出数据
-        '''
+        """
         if self.instruction_info.funct3 == IFunct3.LB:
-            self.pipeline_register.mem_value = self.memory[self.pipeline_register.value]
+            self.IR.mem_value = self.memory[self.IR.value]
         else:
             pass
 
     def stage_wb(self):
-        '''
+        """
         WB-写回.将指令运算结果存入指定的寄存器
-        '''
+        """
         if self.instruction_info.funct3 == RFunct3.XOR:
-            self.registers[self.instruction_info.rd] = self.pipeline_register.value
+            self.registers[self.instruction_info.rd] = self.IR.value
         elif self.instruction_info.funct3 == RFunct3.ADD:
-            self.registers[self.instruction_info.rd] = self.pipeline_register.value
+            self.registers[self.instruction_info.rd] = self.IR.value
         elif self.instruction_info.funct3 == SFunct3.SB:
-            self.memory[self.pipeline_register.value] = self.pipeline_register.rs2
+            self.memory[self.IR.value] = self.IR.rs2
         elif self.instruction_info.funct3 == IFunct3.LB:
-            self.registers[self.instruction_info.rd] = self.pipeline_register.mem_value
+            self.registers[self.instruction_info.rd] = self.IR.mem_value
         else:
             pass
 
