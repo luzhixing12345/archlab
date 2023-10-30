@@ -2,7 +2,7 @@ from instructions import *
 from isa import *
 
 
-class RISCV32(ISA):
+class Riscv32(ISA):
     """
     RISCV 32I 单周期五阶段
     """
@@ -68,8 +68,8 @@ class RISCV32(ISA):
             self.instruction_info.rd = int(self.instruction[20:25], 2)
             self.instruction_info.imm = self.binary_str(
                 self.instruction[0]
-                + self.instruction[11:18]
-                + self.instruction[10]
+                + self.instruction[12:20]
+                + self.instruction[11]
                 + self.instruction[1:11]
                 + "0"
             )
@@ -165,6 +165,9 @@ def main():
     #     addi a2, a2, 3
     #     bne a1, a2, L1
     #     jal a4, L2
+    #     lb a5, 1(a0)
+    #     lb a6, 1(a0)
+    #     lb a7, 1(a0)
     # L2:
     #     sb a2, 3(a0)
 
@@ -177,14 +180,17 @@ def main():
         0x00A54533,
         0x00050583,
         0x00150603,
-        0x00360613,
         0x00158593,
+        0x00360613,
         0xFEC59CE3,
-        0x0040076F,
-        0x00C501A3,
+        0x0100076f,
+        0x00150783,
+        0x00150803,
+        0x00150883,
+        0x00c501a3,
     ]
 
-    isa = RISCV32()
+    isa = Riscv32()
     isa.memory[0] = 20
     isa.memory[1] = 0
     isa.show_info("before")

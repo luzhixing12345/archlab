@@ -6,5 +6,8 @@ L1:
     addi a2, a2, 3
     bne a1, a2, L1
     jal a4, L2
+    lb a5, 1(a0)
+    lb a6, 1(a0)
+    lb a7, 1(a0)
 L2:
     sb a2, 3(a0)
