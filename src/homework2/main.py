@@ -48,7 +48,7 @@ class RISCV32(ISA):
             self.instruction_info.imm = self.binary_str(
                 self.instruction[0]
                 + self.instruction[24]
-                + self.instruction[1:6]
+                + self.instruction[1:7]
                 + self.instruction[20:24]
                 + "0"
             )
