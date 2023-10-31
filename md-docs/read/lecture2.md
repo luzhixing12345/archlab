@@ -38,7 +38,7 @@
 
 在许多情况下,精确中断是必要的
 
-1. **IO中断 & 定时器时钟到达**,需要精确控制操作系统中的进程状态
+1. 对于 IO中断 & 定时器时钟 这样一些中断, 由于我们假设中断信号之后的指令不会执行, 因此中断处理结束后只需要从中断处继续执行指令即可, 对于恢复程序来说很方便
 2. 调试任务中需要依靠异常中断来**精确分割指令和控制流程**
 3. **算术异常**,算术异常有很多种,比如除零,溢出,下溢,不合法操作,数据类型不匹配等等.除了需要各个处理器设计遵循 IEEE 标准(目前来说应该是 IEEE754 浮点规范),更多的应该是在软件层面处理,具体来说是编程语言和应用程序逻辑,比如异常检查,条件检查,类型检查,数据范围检查等等
 4. 当虚拟内存的地址映射出现**页错误**的时候需要由操作系统重新查找页表然后把对应的页面置换进内存,然后继续进程执行
@@ -90,7 +90,15 @@
 
 6 行是一个浮点数加法,需要11个时钟周期计算. 7 行是一个整数加法,需要2个时钟周期进行计算. 因此虽然 7 行指令会在 6 行之后发出,但是会在 6 之前执行完毕,因此如果 6 行浮点数加法存在溢出的异常中断,那么此时 R0 的值就是一个不正确的结果
 
-要么, 限制处理器只能顺序执行, 每条指令完整执行结束确保处于进程状态稳定后在发射下一条指令
+对于不同类型的计算会交由不同的处理单元, 但是整数加法, 和浮点数除法, 它们的处理所需时间相差了很多个时钟周期
+
+![20231031173529](https://raw.githubusercontent.com/learner-lu/picbed/master/20231031173529.png)
+
+因此如下图所示, 2/3/4/6/7 后续的指令的 W 写回时刻要前于前面的指令, 在第一条指令更新寄存器之前后续的指令以无序的方式提前更新了架构状态, **这与冯诺依曼体系中指令执行的顺序语义相违背**
+
+![20231031174013](https://raw.githubusercontent.com/learner-lu/picbed/master/20231031174013.png)
+
+要么暂停流水线, 限制处理器只能顺序执行, 每条指令完整执行结束确保处于进程状态稳定后在发射下一条指令
 
 但我们考虑的是流水线式的处理器模式, 所以需要改进该处理器架构, 添加一些功能部件已实现精确中断, 下面介绍 4 种解决方案
 
@@ -116,13 +124,15 @@
 
 ### 方案二: Reorder Buffer
 
-RSR 与 in-order 相同. 增加了一个 reorder buffer(下文简称RD/重排缓冲区)
+ROB 增加了一个 reorder buffer(下文简称RD/重排缓冲区)
 
-![20231031113614](https://raw.githubusercontent.com/learner-lu/picbed/master/20231031113614.png)
+![20231031182530](https://raw.githubusercontent.com/learner-lu/picbed/master/20231031182530.png)
 
 ![20231031113628](https://raw.githubusercontent.com/learner-lu/picbed/master/20231031113628.png)
 
 论文里解释的复杂了. 就是添加了一个重排缓冲区,HEAD-TAIL之间是缓冲区,HEAD记录正在执行的最后一条指令,TAIL记录下一条应该发射的指令
+
+> 使用循环队列是因为硬件实现上的需要
 
 当执行 float add(6) 时 HEAD = 6, TAIL = 7, 然后执行 integer add(7) ,此时 HEAD = 6, TAIL = 8,之后两个周期 7 执行结束,对于寄存器修改的执行结果由 RSR 发送到 RB, 但由于 7 位于缓冲区内, 需要等待 6 执行结束后, HEAD 指针后移, 才可以把对应的结果写入
 
@@ -206,3 +216,4 @@ RSR 与 in-order 相同. 增加了一个 reorder buffer(下文简称RD/重排缓
 ## 参考
 
 - [Digital Design and Computer Architecture](https://safari.ethz.ch/digitaltechnik/spring2021/doku.php?id=schedule)
+- [Onur Mutlu - Dig. Design & Comp Arch. - Lec.15: Precise Exceptions & Out-of-Order Execution (Spr'21)](https://www.youtube.com/watch?v=-_JCpTWnEqc)
