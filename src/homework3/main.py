@@ -2,9 +2,9 @@ from instructions import *
 from isa import *
 
 
-class Riscv32(ISA):
+class Riscv32(PipelineISA):
     """
-    RISCV 32I 单周期五阶段
+    RISCV 32I 五级流水线
     """
 
     def stage_id(self):
@@ -191,10 +191,6 @@ def main():
     ]
 
     isa = Riscv32()
-    isa.memory[0] = 20
-    isa.memory[1] = 0
-    isa.show_info("before")
-
     isa.load_instructions(instructions)
     isa.run()
     isa.show_info("after")

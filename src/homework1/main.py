@@ -60,7 +60,7 @@ class InstructionInfo:
     imm: int
 
 
-class PipeReg:
+class IntermediateReg:
     rs1: int
     rs2: int
     value: int
@@ -81,7 +81,7 @@ class ISA:
         self.current_instruction = None  # 当前指令
         self.instructions = None  # 导入的指令集
         self.instruction_info = None  # 当前指令的信息拆分
-        self.IR = PipeReg()
+        self.IR = IntermediateReg()
 
     def load_instructions(self, instructions):
         self.instructions = instructions
@@ -189,17 +189,25 @@ class ISA:
             pass
 
     def show_info(self, info=None):
-        mem_range = 5
-        register_range = 4
+        mem_range = 20
+        mem_align = 4
+        register_range = 32
+        register_align = 8
 
         if info is not None:
             print(info)
         print("#" * 20)
-        for i in range(mem_range):
-            print(f"mem[{i}] = {self.memory[i]}")
+        for i in range(mem_range // mem_align):
+            for j in range(mem_align):
+                index = i * mem_align + j
+                print(f"mem[{index:2}] = [{self.memory[index]:3}]", end=" ")
+            print("")
         print("#" * 20)
-        for i in range(register_range):
-            print(f"r{i} = {self.registers[i]}")
+        for i in range(register_range // register_align):
+            for j in range(register_align):
+                index = i * register_align + j
+                print(f"r{index:<2} = [{self.registers[index]:3}]", end=" ")
+            print("")
         print("#" * 20)
 
 

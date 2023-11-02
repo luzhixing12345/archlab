@@ -41,7 +41,7 @@ class I_LOADFunct3(Enum):
 
 # 部分 S 型指令
 class SFunct3(Enum):
-    SB = "000"  # 本次需要
+    SB = "000"
     SH = "001"
     SW = "010"
 
@@ -58,7 +58,7 @@ class BFunct3(Enum):
 
 # 部分 R 型指令
 class RFunct3(Enum):
-    ADD = "000"  # 本次需要
+    ADD = "000"
     SUB = "000"
     SLL = "001"
     SLT = "010"
@@ -94,7 +94,7 @@ class IntermediateReg:
 
 
 class Instruction:
-    def __init__(self, isa: "ISA") -> None:
+    def __init__(self, isa: "PipelineISA") -> None:
         self.isa = isa
         self.pc_inc = True
         # print(self.__class__.__name__)
@@ -125,19 +125,50 @@ class Instruction:
             self.isa.pc += 4
 
 
-class ISA:
+class RegisterGroup:
+    def __init__(self, number=32) -> None:
+        pass
+
+
+class Memory:
+    def __init__(self, addr_range=0x200) -> None:
+        pass
+
+
+class ControlSignal:
     """
-    基础处理器架构
+    控制信号, 决策对应 MUX 应该选择使用哪一个作为输入
+    """
+    ALUop: int  # ALU 如何进行计算
+    RegWrite: int  # 是否写寄存器
+    ALUsrc: int  # ALU 的第二个输入选择哪一个
+    MemWrite: int  # 是否写内存
+    MeIRead: int  # 是否读内存
+    MemtoReg: int  # 选择写回寄存器的值
+    PCsrc: int  # 选择更新 PC 的方式
+
+
+class PipelineISA:
+    """
+    流水线处理器架构
+
+    正常来说 5 阶段流水线是同步执行的, 通用寄存器组和存储器在时钟上升沿写入,IR和中间寄存器在时钟下降沿写入
+    考虑到 Python 没有办法做到电路级模拟, 理论上来说如果想要实现时序级模拟, 需要使用 5 个线程和 5 把锁,
+    以保证当前阶段写入IR和中间寄存器之前该寄存器的值已经被下一个阶段读取
+
+    但实际上我们可以利用 IR 作为中间变量, 将 写更新 和 读 + 执行区分开, 采用串行的方式模拟流水线
+
+    具体见 run() 方法实现
     """
 
     def __init__(self) -> None:
         # 基础配置信息
         register_number = 32
-        memory_range = 0x200
+        addr_range = 0x200
 
         self.pc = 0
-        self.registers = [0] * register_number  # 寄存器组
-        self.memory = [0] * memory_range  # 内存
+        self.registers = RegisterGroup(register_number)  # 寄存器组
+        self.memory = Memory(addr_range)  # 内存
         self.instruction: Instruction = None  # 当前指令
         self.instruction_info = InstructionInfo()  # 当前指令的信息拆分
         self.IR = IntermediateReg()
@@ -155,6 +186,7 @@ class ISA:
 
     def run(self):
         while True:
+            self.update_IR()
             self.stage_if()
             if self.pc == -1:
                 break
@@ -162,6 +194,12 @@ class ISA:
             self.stage_ex()
             self.stage_mem()
             self.stage_wb()
+
+    def update_IR(self):
+        """
+        stage_if -> stage_wb 阶段的写入IR并不是真正的写入, 此时的才是真正的更新 IR 的值
+        """
+
 
     def stage_if(self):
         """
@@ -224,9 +262,9 @@ class ISA:
         print("#" * 20)
 
     def binary_str(self, imm: str):
-        '''
+        """
         取补码计算, 如果首位为 0 则直接计算值, 如果为 1 则 01 取反加一
-        '''
+        """
         if imm[0] == "1":
             inverted_str = "".join("1" if bit == "0" else "0" for bit in imm)
             abs_value = int(inverted_str, 2) + 1
