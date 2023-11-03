@@ -61,9 +61,10 @@ class InstructionInfo:
 
 
 class IR:
-    '''
+    """
     intermediate register
-    '''
+    """
+
     rs1: int
     rs2: int
     value: int
@@ -203,13 +204,13 @@ class ISA:
         for i in range(mem_range // mem_align):
             for j in range(mem_align):
                 index = i * mem_align + j
-                print(f"mem[{index:2}] = [{self.memory[index]:3}]", end=" ")
+                print(f"mem[{index:2}] = {self.memory[index]:3}", end=" |")
             print("")
         print("#" * 20)
         for i in range(register_range // register_align):
             for j in range(register_align):
                 index = i * register_align + j
-                print(f"r{index:<2} = [{self.registers[index]:3}]", end=" ")
+                print(f"r{index:<2} = {self.registers[index]:3}", end=" |")
             print("")
         print("#" * 20)
 

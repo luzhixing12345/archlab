@@ -130,9 +130,8 @@ class S_SB(Instruction):
     def stage_ex(self):
         self.isa.IR.value = self.isa.IR.rs1 + self.isa.instruction_info.imm
 
-    def stage_wb(self):
+    def stage_mem(self):
         self.isa.memory[self.isa.IR.value] = self.isa.IR.rs2 & 0xFF
-        return super().stage_wb()
 
 
 class S_SH(Instruction):
