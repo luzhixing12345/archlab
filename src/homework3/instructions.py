@@ -1,7 +1,11 @@
-# RISCV 32I 指令集介绍可以参考
-# https://www.sunnychen.top/archives/riscvbasic
-from isa import Instruction
+from base import ControlSignal
 
+class Instruction:
+    def __init__(self) -> None:
+        print(f'{self.__class__.__name__}')
+
+    def get_control_signal(self) -> ControlSignal:
+        raise NotImplementedError("each instruction should overwrite it to generate control signal")
 
 class R_ADD(Instruction):
     def stage_ex(self):

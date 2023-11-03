@@ -1,150 +1,5 @@
-from enum import Enum
-
-
-# RISCV-32I 6 种类型
-class OpCode(Enum):
-    R = "0110011"
-    I_JALR = "1100111"
-    I_CALC = "0010011"
-    I_LOAD = "0000011"
-    S = "0100011"
-    B = "1100011"
-    U_LUI = "0110111"
-    U_AUIPC = "0010111"
-    J = "1101111"
-
-
-# 部分 I 型指令
-class I_CALCFunct3(Enum):
-    ADDI = "000"
-    SLTI = "010"
-    SLTIU = "011"
-    XORI = "100"
-    ORI = "110"
-    ANDI = "111"
-    SLLI = "001"
-    SRLI = "101"
-    SRAI = "101"
-
-
-class I_JALRFunct3(Enum):
-    JALR = "000"
-
-
-class I_LOADFunct3(Enum):
-    LB = "000"
-    LH = "001"
-    LW = "010"
-    LBU = "100"
-    LHU = "101"
-
-
-# 部分 S 型指令
-class SFunct3(Enum):
-    SB = "000"
-    SH = "001"
-    SW = "010"
-
-
-# B 型指令
-class BFunct3(Enum):
-    BEQ = "000"
-    BNE = "001"
-    BLT = "100"
-    BGE = "101"
-    BLTU = "110"
-    BGEU = "111"
-
-
-# 部分 R 型指令
-class RFunct3(Enum):
-    ADD = "000"
-    SUB = "000"
-    SLL = "001"
-    SLT = "010"
-    SLTU = "011"
-    XOR = "100"
-    SRL = "101"
-    SRA = "101"
-    OR = "110"
-    AND = "111"
-
-
-class RFunct7(Enum):
-    ADD = "0000000"
-    SUB = "0100000"
-    SRA = "0100000"
-
-
-class InstructionInfo:
-    opcode: OpCode
-    rs1: int
-    rs2: int
-    rd: int
-    funct3: Enum
-    funct7: Enum
-    imm: int
-
-
-class Component:
-    """
-    元件基类, 所有其他处理器设计元件都需要继承此类
-
-    用于性能记录
-    """
-
-    def __init__(self) -> None:
-        self.is_locked = False
-        self.class_name = self.__class__.__name__
-
-    def lock(self):
-        if self.is_locked:
-            print(f"{self.class_name} is locked")
-            exit(1)
-        self.is_locked = True
-
-    def unlock(self):
-        if not self.is_locked:
-            print(f"try to unlock a not locked lock in {self.class_name}")
-            exit(1)
-        self.is_locked = False
-
-
-class ControlSignal:
-    """
-    控制信号, 决策对应 MUX 应该选择使用哪一个作为输入
-    """
-    ALUop: int  # ALU 如何进行计算
-    RegWrite: bool  # 是否写寄存器
-    ALUsrc: int  # ALU 的第二个输入选择哪一个
-    MemWrite: int  # 是否写内存
-    MemRead: int  # 是否读内存
-    MemtoReg: int  # 选择写回寄存器的值
-    PCsrc: int  # 选择更新 PC 的方式
-
-
-class IF_ID:
-    instruction: str
-
-
-class ID_EX:
-    rs1: int
-    rs2: int
-    ra: int
-    rb: int
-    rd: int
-    imm: int
-    ctl_sig: ControlSignal
-
-
-class EX_MEM:
-    result: int
-    data: int
-    ctl_sig: ControlSignal
-
-
-class MEM_WB:
-    ...
+from base import *
+from instructions import *
 
 
 class IR(Component):
@@ -154,10 +9,10 @@ class IR(Component):
 
     def __init__(self) -> None:
         super().__init__()
-        self.IF_ID = IF_ID()
-        self.ID_EX = ID_EX()
-        self.EX_MEM = EX_MEM()
-        self.MEM_WB = MEM_WB()
+        self.IF_ID: IF_ID
+        self.ID_EX: ID_EX
+        self.EX_MEM: EX_MEM
+        self.MEM_WB: MEM_WB
 
         self.pre_IF_ID = IF_ID()
         self.pre_ID_EX = ID_EX()
@@ -172,37 +27,6 @@ class IR(Component):
 
     def is_empty(self):
         ...
-
-class Instruction:
-    def __init__(self, isa: "PipelineISA") -> None:
-        self.isa = isa
-        self.pc_inc = True
-        # print(self.__class__.__name__)
-
-    def stage_ex(self):
-        """
-        EX-执行.对指令的各种操作数进行运算
-
-        IF ID 阶段操作相对固定, EX MEM WB 阶段需要根据具体指令在做调整
-
-        单指令可以继承 Instruction 类并重写此方法
-        """
-
-    def stage_mem(self):
-        """
-        MEM-存储器访问.将数据写入存储器或从存储器中读出数据
-
-        单指令可以继承 Instruction 类并重写此方法
-        """
-
-    def stage_wb(self):
-        """
-        WB-写回.将指令运算结果存入指定的寄存器
-
-        单指令可以继承 Instruction 类并重写此方法
-        """
-        if self.pc_inc:
-            self.isa.pc += 4
 
 
 class RegisterGroup(Component):
@@ -224,13 +48,13 @@ class RegisterGroup(Component):
         self.unlock()
         return ra, rb
 
-    def write(self, rd: int, value: int, RegWrite: ControlSignal.RegWrite):
+    def write(self, rd: int, write_data: int, RegWrite: bool):
         """
         只有当 RegWrite 信号为 1 才可以写入寄存器
         """
         if RegWrite is True:
             self.lock()
-            self.registers[rd] = value
+            self.registers[rd] = write_data
             self.unlock()
 
 
@@ -253,6 +77,33 @@ class Memory(Component):
             self.unlock()
 
 
+class ALU(Component):
+    def __init__(self) -> None:
+        super().__init__()
+
+    def calc(self, input_a: int, input_b: int, op: Enum) -> int:
+        if op == ALUop.ADD:
+            return input_a + input_b
+        elif op == ALUop.SUB:
+            return input_a - input_b
+        elif op in (ALUop.LSHIFT, ALUop.LSHIFT_):
+            return input_a << input_b
+        elif op in (ALUop.B, ALUop.B_):
+            return input_b
+        elif op in (ALUop.XOR, ALUop.XOR_):
+            return input_a ^ input_b
+        elif op == ALUop.LRSHIFT:
+            return (input_a & 0xFFFFFFFF) >> input_b
+        elif op == ALUop.ARSHIFT:
+            return input_a >> input_b
+        elif op in (ALUop.OR, ALUop.OR_):
+            return input_a | input_b
+        elif op in (ALUop.AND, ALUop.AND_):
+            return input_a & input_b
+        else:
+            raise ValueError(f"unknown ALU operator value {op}")
+
+
 class PipelineISA:
     """
     流水线处理器架构
@@ -272,6 +123,7 @@ class PipelineISA:
         self.pc = 0
         self.registers = RegisterGroup(register_number)  # 寄存器组
         self.memory = Memory(addr_range)  # 内存
+        self.ALU = ALU()
         self.IR = IR()
 
     def load_instructions(self, instructions, pc=0x100):
@@ -315,25 +167,172 @@ class PipelineISA:
         """
         ID-译码 解析指令并读取寄存器的值
         """
-        raise NotImplementedError("should implement stage ID")
+        instruction = self.IR.IF_ID.instruction
+        instruction_info = InstructionInfo()
+
+        opcode_type = OpCode(instruction[-7:])
+        instruction_info.opcode = opcode_type
+        if opcode_type == OpCode.R:
+            instruction_info.funct7 = RFunct7(instruction[:7])
+            instruction_info.rs2 = int(instruction[7:12], 2)
+            instruction_info.rs1 = int(instruction[12:17], 2)
+            instruction_info.funct3 = RFunct3(instruction[17:20])
+            instruction_info.rd = int(instruction[20:25], 2)
+            instruction_info.imm = None
+        elif opcode_type in (OpCode.I_LOAD, OpCode.I_CALC, OpCode.I_JALR):
+            instruction_info.funct7 = None
+            instruction_info.rs2 = None
+            instruction_info.rs1 = int(instruction[12:17], 2)
+            funct3 = {
+                OpCode.I_LOAD: I_LOADFunct3,
+                OpCode.I_CALC: I_CALCFunct3,
+                OpCode.I_JALR: I_JALRFunct3,
+            }
+            instruction_info.funct3 = funct3[opcode_type](instruction[17:20])
+            instruction_info.rd = int(instruction[20:25], 2)
+            instruction_info.imm = self.binary_str(instruction[:12])
+        elif opcode_type == OpCode.S:
+            instruction_info.funct7 = None
+            instruction_info.rs2 = int(instruction[7:12], 2)
+            instruction_info.rs1 = int(instruction[12:17], 2)
+            instruction_info.funct3 = SFunct3(instruction[17:20])
+            instruction_info.rd = None
+            instruction_info.imm = self.binary_str(instruction[:7] + instruction[20:25])
+        elif opcode_type == OpCode.B:
+            instruction_info.funct7 = None
+            instruction_info.rs2 = int(instruction[7:12], 2)
+            instruction_info.rs1 = int(instruction[12:17], 2)
+            instruction_info.funct3 = BFunct3(instruction[17:20])
+            instruction_info.rd = None
+            instruction_info.imm = self.binary_str(
+                instruction[0] + instruction[24] + instruction[1:7] + instruction[20:24] + "0"
+            )
+
+        elif opcode_type in (OpCode.U_AUIPC, OpCode.U_LUI):
+            instruction_info.funct7 = None
+            instruction_info.rs2 = None
+            instruction_info.rs1 = None
+            instruction_info.funct3 = None
+            instruction_info.rd = int(instruction[20:25], 2)
+            instruction_info.imm = self.binary_str(instruction[:20] + "0" * 12)
+        elif opcode_type == OpCode.J:
+            instruction_info.funct7 = None
+            instruction_info.rs2 = None
+            instruction_info.rs1 = None
+            instruction_info.funct3 = None
+            instruction_info.rd = int(instruction[20:25], 2)
+            instruction_info.imm = self.binary_str(
+                instruction[0] + instruction[12:20] + instruction[11] + instruction[1:11] + "0"
+            )
+        else:
+            raise ValueError("unknown opcode type")
+
+        self.IR.pre_ID_EX.rs1 = instruction_info.rs1
+        self.IR.pre_ID_EX.rs2 = instruction_info.rs2
+        self.IR.pre_ID_EX.ra, self.IR.pre_ID_EX.rb = self.registers.read(
+            instruction_info.rs1, instruction_info.rs2
+        )
+        self.IR.pre_ID_EX.rd = instruction_info.rd
+        self.IR.pre_ID_EX.imm = instruction_info.imm
+        self.IR.pre_ID_EX.ctl_sig = self.get_control_signal(instruction_info)
+
+    def get_control_signal(self, instruction_info: InstructionInfo) -> ControlSignal:
+        """
+        通过 ISA 在 ID 阶段解析指令得到的信息, 定位找到具体的指令
+        """
+        RISCV_32I_instructions = {
+            OpCode.R: {
+                RFunct3.ADD: R_ADD,
+                # RFunct3.SUB: R_SUB,
+                RFunct3.SLL: R_SLL,
+                RFunct3.SLT: R_SLT,
+                RFunct3.SLTU: R_SLTU,
+                RFunct3.XOR: R_XOR,
+                RFunct3.SRL: R_SRL,
+                RFunct3.SRA: R_SRA,
+                RFunct3.OR: R_OR,
+                RFunct3.AND: R_AND,
+            },
+            OpCode.I_CALC: {
+                I_CALCFunct3.ADDI: I_ADDI,
+                I_CALCFunct3.SLTI: I_SLTI,
+                I_CALCFunct3.SLTIU: I_SLTIU,
+                I_CALCFunct3.XORI: I_XORI,
+                I_CALCFunct3.ORI: I_ORI,
+                I_CALCFunct3.ANDI: I_ANDI,
+                I_CALCFunct3.SLLI: I_SLLI,
+                I_CALCFunct3.SRLI: I_SRLI,
+                I_CALCFunct3.SRAI: I_SRAI,
+            },
+            OpCode.I_JALR: {I_JALRFunct3.JALR: I_JALR},
+            OpCode.I_LOAD: {
+                I_LOADFunct3.LB: I_LB,
+                I_LOADFunct3.LH: I_LH,
+                I_LOADFunct3.LW: I_LW,
+                I_LOADFunct3.LBU: I_LBU,
+                I_LOADFunct3.LHU: I_LHU,
+            },
+            OpCode.S: {SFunct3.SB: S_SB, SFunct3.SH: S_SH, SFunct3.SW: S_SW},
+            OpCode.B: {
+                BFunct3.BEQ: B_BEQ,
+                BFunct3.BNE: B_BNE,
+                BFunct3.BLT: B_BLT,
+                BFunct3.BGE: B_BGE,
+                BFunct3.BLTU: B_BLTU,
+                BFunct3.BGEU: B_BGEU,
+            },
+        }
+
+        if instruction_info.funct3 == RFunct3.SUB and instruction_info.funct7 == RFunct7.SUB:
+            instruction = R_SUB(self)
+        elif instruction_info.funct3 == RFunct3.SRA and instruction_info.funct7 == RFunct7.SRA:
+            instruction = R_SRA(self)
+        elif instruction_info.opcode == OpCode.U_AUIPC:
+            instruction = U_AUIPC(self)
+        elif instruction_info.opcode == OpCode.U_LUI:
+            instruction = U_LUI(self)
+        elif instruction_info.opcode == OpCode.J:
+            instruction = J_JAL(self)
+        else:
+            instruction = RISCV_32I_instructions[instruction_info.opcode][
+                instruction_info.funct3
+            ](self)
+        
+        return instruction.get_control_signal()
 
     def stage_ex(self):
         """
         EX-执行.对指令的各种操作数进行运算
         """
-        self.instruction.stage_ex()
+        self.IR.pre_EX_MEM.rb = self.IR.ID_EX.imm
+
+        input_a = self.IR.ID_EX.ra
+        mux_alu_inputs = {0: self.IR.ID_EX.rb, 1: self.IR.ID_EX.imm}
+        input_b = mux_alu_inputs[self.IR.ID_EX.ctl_sig.ALUsrc]
+        self.IR.pre_EX_MEM.alu_result = self.ALU.calc(
+            input_a=input_a, input_b=input_b, op=self.IR.ID_EX.ctl_sig.ALUop
+        )
 
     def stage_mem(self):
         """
         MEM-存储器访问.将数据写入存储器或从存储器中读出数据
+
         """
-        self.instruction.stage_mem()
+        addr = self.IR.EX_MEM.alu_result
+        # 先写后读
+        self.memory.write(addr=addr, value=self.IR.EX_MEM.rb, MemWrite=self.IR.EX_MEM.MemWrite)
+        self.IR.pre_MEM_WB.read_data = self.memory.read(addr=addr, MemRead=self.IR.EX_MEM.MemRead)
+        self.IR.pre_MEM_WB.alu_result = self.IR.EX_MEM.alu_result
 
     def stage_wb(self):
         """
         WB-写回.将指令运算结果存入指定的寄存器
         """
-        self.instruction.stage_wb()
+        mux_mem_inputs = {0: self.IR.MEM_WB.read_data, 1: self.IR.MEM_WB.alu_result}
+        write_data = mux_mem_inputs[self.IR.MEM_WB.MemtoReg]
+        self.registers.write(
+            rd=self.IR.MEM_WB.rd, write_data=write_data, RegWrite=self.IR.MEM_WB.RegWrite
+        )
 
     def show_info(self, info=None):
         mem_range = 20
@@ -347,13 +346,13 @@ class PipelineISA:
         for i in range(mem_range // mem_align):
             for j in range(mem_align):
                 index = i * mem_align + j
-                print(f"mem[{index:2}] = [{self.memory[index]:3}]", end=" ")
+                print(f"mem[{index:2}] = {self.memory[index]:3}", end=" |")
             print("")
         print("#" * 20)
         for i in range(register_range // register_align):
             for j in range(register_align):
                 index = i * register_align + j
-                print(f"r{index:<2} = [{self.registers[index]:3}]", end=" ")
+                print(f"r{index:<2} = {self.registers[index]:3}", end=" |")
             print("")
         print("#" * 20)
 
