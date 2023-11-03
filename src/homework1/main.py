@@ -60,7 +60,10 @@ class InstructionInfo:
     imm: int
 
 
-class IntermediateReg:
+class IR:
+    '''
+    intermediate register
+    '''
     rs1: int
     rs2: int
     value: int
@@ -81,7 +84,7 @@ class ISA:
         self.current_instruction = None  # 当前指令
         self.instructions = None  # 导入的指令集
         self.instruction_info = None  # 当前指令的信息拆分
-        self.IR = IntermediateReg()
+        self.IR = IR()
 
     def load_instructions(self, instructions):
         self.instructions = instructions

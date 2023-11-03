@@ -7,7 +7,7 @@
 
 ![image](https://raw.githubusercontent.com/luzhixing12345/archlab/main/img/homework2.jpg)
 
-运行
+## 运行结果
 
 ```bash
 python src/homework2/main.py
@@ -258,7 +258,7 @@ class ISA:
         self.memory = [0] * memory_range  # 内存
         self.instruction: Instruction = None  # 当前指令
         self.instruction_info = InstructionInfo()  # 当前指令的信息拆分
-        self.IR = IntermediateReg()
+        self.IR = IR()
 
 class Instruction:
     def __init__(self, isa: "ISA") -> None:

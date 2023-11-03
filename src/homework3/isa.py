@@ -86,12 +86,92 @@ class InstructionInfo:
     imm: int
 
 
-class IntermediateReg:
+class Component:
+    """
+    元件基类, 所有其他处理器设计元件都需要继承此类
+
+    用于性能记录
+    """
+
+    def __init__(self) -> None:
+        self.is_locked = False
+        self.class_name = self.__class__.__name__
+
+    def lock(self):
+        if self.is_locked:
+            print(f"{self.class_name} is locked")
+            exit(1)
+        self.is_locked = True
+
+    def unlock(self):
+        if not self.is_locked:
+            print(f"try to unlock a not locked lock in {self.class_name}")
+            exit(1)
+        self.is_locked = False
+
+
+class ControlSignal:
+    """
+    控制信号, 决策对应 MUX 应该选择使用哪一个作为输入
+    """
+    ALUop: int  # ALU 如何进行计算
+    RegWrite: bool  # 是否写寄存器
+    ALUsrc: int  # ALU 的第二个输入选择哪一个
+    MemWrite: int  # 是否写内存
+    MemRead: int  # 是否读内存
+    MemtoReg: int  # 选择写回寄存器的值
+    PCsrc: int  # 选择更新 PC 的方式
+
+
+class IF_ID:
+    instruction: str
+
+
+class ID_EX:
     rs1: int
     rs2: int
-    value: int
-    mem_value: int
+    ra: int
+    rb: int
+    rd: int
+    imm: int
+    ctl_sig: ControlSignal
 
+
+class EX_MEM:
+    result: int
+    data: int
+    ctl_sig: ControlSignal
+
+
+class MEM_WB:
+    ...
+
+
+class IR(Component):
+    """
+    中间寄存器, 用于存储流水线 5 阶段的 4 个中间阶段的执行结果
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.IF_ID = IF_ID()
+        self.ID_EX = ID_EX()
+        self.EX_MEM = EX_MEM()
+        self.MEM_WB = MEM_WB()
+
+        self.pre_IF_ID = IF_ID()
+        self.pre_ID_EX = ID_EX()
+        self.pre_EX_MEM = EX_MEM()
+        self.pre_MEM_WB = MEM_WB()
+
+    def update(self):
+        self.IF_ID = self.pre_IF_ID
+        self.ID_EX = self.pre_ID_EX
+        self.EX_MEM = self.pre_EX_MEM
+        self.MEM_WB = self.pre_MEM_WB
+
+    def is_empty(self):
+        ...
 
 class Instruction:
     def __init__(self, isa: "PipelineISA") -> None:
@@ -125,27 +205,52 @@ class Instruction:
             self.isa.pc += 4
 
 
-class RegisterGroup:
+class RegisterGroup(Component):
     def __init__(self, number=32) -> None:
-        pass
+        super().__init__()
+        self.registers = [0] * number
+
+    def read(self, rs1: int, rs2: int) -> (int, int):
+        """
+        读取对应寄存器的值
+        """
+        self.lock()
+        ra = None
+        rb = None
+        if rs1 is not None:
+            ra = self.registers[rs1]
+        if rs2 is not None:
+            rb = self.registers[rs2]
+        self.unlock()
+        return ra, rb
+
+    def write(self, rd: int, value: int, RegWrite: ControlSignal.RegWrite):
+        """
+        只有当 RegWrite 信号为 1 才可以写入寄存器
+        """
+        if RegWrite is True:
+            self.lock()
+            self.registers[rd] = value
+            self.unlock()
 
 
-class Memory:
+class Memory(Component):
     def __init__(self, addr_range=0x200) -> None:
-        pass
+        super().__init__()
+        self.memory = [0] * addr_range
 
+    def read(self, addr: int, MemRead: ControlSignal.MemRead):
+        if MemRead is True:
+            self.lock()
+            value = self.memory[addr]
+            self.unlock()
+            return value
 
-class ControlSignal:
-    """
-    控制信号, 决策对应 MUX 应该选择使用哪一个作为输入
-    """
-    ALUop: int  # ALU 如何进行计算
-    RegWrite: int  # 是否写寄存器
-    ALUsrc: int  # ALU 的第二个输入选择哪一个
-    MemWrite: int  # 是否写内存
-    MeIRead: int  # 是否读内存
-    MemtoReg: int  # 选择写回寄存器的值
-    PCsrc: int  # 选择更新 PC 的方式
+    def write(self, addr: int, value: int, MemWrite: ControlSignal.MemWrite):
+        if MemWrite is True:
+            self.lock()
+            self.memory[addr] = value
+            self.unlock()
 
 
 class PipelineISA:
@@ -156,9 +261,7 @@ class PipelineISA:
     考虑到 Python 没有办法做到电路级模拟, 理论上来说如果想要实现时序级模拟, 需要使用 5 个线程和 5 把锁,
     以保证当前阶段写入IR和中间寄存器之前该寄存器的值已经被下一个阶段读取
 
-    但实际上我们可以利用 IR 作为中间变量, 将 写更新 和 读 + 执行区分开, 采用串行的方式模拟流水线
-
-    具体见 run() 方法实现
+    但实际上可以利用 IR 作为中间变量, 将 **写更新** 和 **读 + 执行** 区分开, 采用串行的方式模拟流水线
     """
 
     def __init__(self) -> None:
@@ -169,9 +272,7 @@ class PipelineISA:
         self.pc = 0
         self.registers = RegisterGroup(register_number)  # 寄存器组
         self.memory = Memory(addr_range)  # 内存
-        self.instruction: Instruction = None  # 当前指令
-        self.instruction_info = InstructionInfo()  # 当前指令的信息拆分
-        self.IR = IntermediateReg()
+        self.IR = IR()
 
     def load_instructions(self, instructions, pc=0x100):
         self.pc = pc
@@ -186,39 +287,34 @@ class PipelineISA:
 
     def run(self):
         while True:
-            self.update_IR()
+            # stage_if ~ stage_wb 阶段的写入IR并不是真正的写入
+            # 此时的才是真正的更新流水线阶段需要使用的 IR 的值
+            self.IR.update()
+
             self.stage_if()
-            if self.pc == -1:
+            # 当取指之后, 流水线 IR 全空且指令也为 0, 则说明已经流水线全部结束且没有新指令了
+            if self.IR.is_empty():
                 break
             self.stage_id()
             self.stage_ex()
             self.stage_mem()
             self.stage_wb()
 
-    def update_IR(self):
-        """
-        stage_if -> stage_wb 阶段的写入IR并不是真正的写入, 此时的才是真正的更新 IR 的值
-        """
-
-
     def stage_if(self):
         """
         IF-取指令.根据PC中的地址在指令存储器中取出一条指令
         """
         # 小端取数
-        self.instruction = ""
-        self.instruction += format(self.memory[self.pc + 3], "08b")
-        self.instruction += format(self.memory[self.pc + 2], "08b")
-        self.instruction += format(self.memory[self.pc + 1], "08b")
-        self.instruction += format(self.memory[self.pc], "08b")
-
-        # 全 0 默认运行完所有指令, 退出
-        if int(self.instruction) == 0:
-            self.pc = -1
+        self.IR.pre_IF_ID.instruction = ""
+        self.IR.pre_IF_ID.instruction += format(self.memory[self.pc + 3], "08b")
+        self.IR.pre_IF_ID.instruction += format(self.memory[self.pc + 2], "08b")
+        self.IR.pre_IF_ID.instruction += format(self.memory[self.pc + 1], "08b")
+        self.IR.pre_IF_ID.instruction += format(self.memory[self.pc], "08b")
 
     def stage_id(self):
         """
-        ID-译码 解析指令并读取寄存器的值"""
+        ID-译码 解析指令并读取寄存器的值
+        """
         raise NotImplementedError("should implement stage ID")
 
     def stage_ex(self):

@@ -5,15 +5,13 @@
 
 ![image](https://raw.githubusercontent.com/luzhixing12345/archlab/main/img/homework1.png)
 
-运行
+## 运行结果
 
 ```bash
 python src/homework1/main.py
 ```
 
 > jupyter 提交版见 [archlab main.ipynb](https://github.com/luzhixing12345/archlab/blob/main/src/homework1/main.ipynb)
-
-结果
 
 ```bash
 before

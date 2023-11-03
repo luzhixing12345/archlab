@@ -8,150 +8,78 @@ class Riscv32(PipelineISA):
     """
 
     def stage_id(self):
-        opcode = self.instruction[-7:]
-        opcode_type = OpCode(opcode)
-        self.instruction_info.opcode = opcode_type
+        instruction = self.IR.IF_ID.instruction
+        instruction_info = InstructionInfo()
+
+        opcode_type = OpCode(instruction[-7:])
+        instruction_info.opcode = opcode_type
         if opcode_type == OpCode.R:
-            self.instruction_info.funct7 = RFunct7(self.instruction[:7])
-            self.instruction_info.rs2 = int(self.instruction[7:12], 2)
-            self.instruction_info.rs1 = int(self.instruction[12:17], 2)
-            self.instruction_info.funct3 = RFunct3(self.instruction[17:20])
-            self.instruction_info.rd = int(self.instruction[20:25], 2)
-            self.instruction_info.imm = None
+            instruction_info.funct7 = RFunct7(instruction[:7])
+            instruction_info.rs2 = int(instruction[7:12], 2)
+            instruction_info.rs1 = int(instruction[12:17], 2)
+            instruction_info.funct3 = RFunct3(instruction[17:20])
+            instruction_info.rd = int(instruction[20:25], 2)
+            instruction_info.imm = None
         elif opcode_type in (OpCode.I_LOAD, OpCode.I_CALC, OpCode.I_JALR):
-            self.instruction_info.funct7 = None
-            self.instruction_info.rs2 = None
-            self.instruction_info.rs1 = int(self.instruction[12:17], 2)
+            instruction_info.funct7 = None
+            instruction_info.rs2 = None
+            instruction_info.rs1 = int(instruction[12:17], 2)
             funct3 = {
                 OpCode.I_LOAD: I_LOADFunct3,
                 OpCode.I_CALC: I_CALCFunct3,
                 OpCode.I_JALR: I_JALRFunct3,
             }
-            self.instruction_info.funct3 = funct3[opcode_type](self.instruction[17:20])
-            self.instruction_info.rd = int(self.instruction[20:25], 2)
-            self.instruction_info.imm = self.binary_str(self.instruction[:12])
+            instruction_info.funct3 = funct3[opcode_type](instruction[17:20])
+            instruction_info.rd = int(instruction[20:25], 2)
+            instruction_info.imm = self.binary_str(instruction[:12])
         elif opcode_type == OpCode.S:
-            self.instruction_info.funct7 = None
-            self.instruction_info.rs2 = int(self.instruction[7:12], 2)
-            self.instruction_info.rs1 = int(self.instruction[12:17], 2)
-            self.instruction_info.funct3 = SFunct3(self.instruction[17:20])
-            self.instruction_info.rd = None
-            self.instruction_info.imm = self.binary_str(
-                self.instruction[:7] + self.instruction[20:25]
-            )
+            instruction_info.funct7 = None
+            instruction_info.rs2 = int(instruction[7:12], 2)
+            instruction_info.rs1 = int(instruction[12:17], 2)
+            instruction_info.funct3 = SFunct3(instruction[17:20])
+            instruction_info.rd = None
+            instruction_info.imm = self.binary_str(instruction[:7] + instruction[20:25])
         elif opcode_type == OpCode.B:
-            self.instruction_info.funct7 = None
-            self.instruction_info.rs2 = int(self.instruction[7:12], 2)
-            self.instruction_info.rs1 = int(self.instruction[12:17], 2)
-            self.instruction_info.funct3 = BFunct3(self.instruction[17:20])
-            self.instruction_info.rd = None
-            self.instruction_info.imm = self.binary_str(
-                self.instruction[0]
-                + self.instruction[24]
-                + self.instruction[1:7]
-                + self.instruction[20:24]
-                + "0"
+            instruction_info.funct7 = None
+            instruction_info.rs2 = int(instruction[7:12], 2)
+            instruction_info.rs1 = int(instruction[12:17], 2)
+            instruction_info.funct3 = BFunct3(instruction[17:20])
+            instruction_info.rd = None
+            instruction_info.imm = self.binary_str(
+                instruction[0] + instruction[24] + instruction[1:7] + instruction[20:24] + "0"
             )
 
         elif opcode_type in (OpCode.U_AUIPC, OpCode.U_LUI):
-            self.instruction_info.funct7 = None
-            self.instruction_info.rs2 = None
-            self.instruction_info.rs1 = None
-            self.instruction_info.funct3 = None
-            self.instruction_info.rd = int(self.instruction[20:25], 2)
-            self.instruction_info.imm = self.binary_str(self.instruction[:20] + "0" * 12)
+            instruction_info.funct7 = None
+            instruction_info.rs2 = None
+            instruction_info.rs1 = None
+            instruction_info.funct3 = None
+            instruction_info.rd = int(instruction[20:25], 2)
+            instruction_info.imm = self.binary_str(instruction[:20] + "0" * 12)
         elif opcode_type == OpCode.J:
-            self.instruction_info.funct7 = None
-            self.instruction_info.rs2 = None
-            self.instruction_info.rs1 = None
-            self.instruction_info.funct3 = None
-            self.instruction_info.rd = int(self.instruction[20:25], 2)
-            self.instruction_info.imm = self.binary_str(
-                self.instruction[0]
-                + self.instruction[12:20]
-                + self.instruction[11]
-                + self.instruction[1:11]
-                + "0"
+            instruction_info.funct7 = None
+            instruction_info.rs2 = None
+            instruction_info.rs1 = None
+            instruction_info.funct3 = None
+            instruction_info.rd = int(instruction[20:25], 2)
+            instruction_info.imm = self.binary_str(
+                instruction[0] + instruction[12:20] + instruction[11] + instruction[1:11] + "0"
             )
         else:
             raise ValueError("unknown opcode type")
 
-        # 如果指令中包含 rs1 rs2, 则读取对应寄存器的值
-        if self.instruction_info.rs1 is not None:
-            self.IR.rs1 = self.registers[self.instruction_info.rs1]
+        self.IR.pre_ID_EX.rs1 = instruction_info.rs1
+        self.IR.pre_ID_EX.rs2 = instruction_info.rs2
+        self.IR.pre_ID_EX.ra, self.IR.pre_ID_EX.rb = self.registers.read(
+            instruction_info.rs1, instruction_info.rs2
+        )
+        self.IR.pre_ID_EX.rd = instruction_info.rd
+        self.IR.pre_ID_EX.imm = instruction_info.imm
+        self.IR.pre_ID_EX.ctl_sig = self.get_control_signal(instruction_info)
 
-        if self.instruction_info.rs2 is not None:
-            self.IR.rs2 = self.registers[self.instruction_info.rs2]
-
-        self.match_instruction()
-
-    def match_instruction(self):
-        """
-        通过 ISA 在 ID 阶段解析指令得到的信息, 定位找到具体的指令
-        """
-        RISCV_32I_instructions = {
-            OpCode.R: {
-                RFunct3.ADD: R_ADD,
-                # RFunct3.SUB: R_SUB,
-                RFunct3.SLL: R_SLL,
-                RFunct3.SLT: R_SLT,
-                RFunct3.SLTU: R_SLTU,
-                RFunct3.XOR: R_XOR,
-                RFunct3.SRL: R_SRL,
-                RFunct3.SRA: R_SRA,
-                RFunct3.OR: R_OR,
-                RFunct3.AND: R_AND,
-            },
-            OpCode.I_CALC: {
-                I_CALCFunct3.ADDI: I_ADDI,
-                I_CALCFunct3.SLTI: I_SLTI,
-                I_CALCFunct3.SLTIU: I_SLTIU,
-                I_CALCFunct3.XORI: I_XORI,
-                I_CALCFunct3.ORI: I_ORI,
-                I_CALCFunct3.ANDI: I_ANDI,
-                I_CALCFunct3.SLLI: I_SLLI,
-                I_CALCFunct3.SRLI: I_SRLI,
-                I_CALCFunct3.SRAI: I_SRAI,
-            },
-            OpCode.I_JALR: {I_JALRFunct3.JALR: I_JALR},
-            OpCode.I_LOAD: {
-                I_LOADFunct3.LB: I_LB,
-                I_LOADFunct3.LH: I_LH,
-                I_LOADFunct3.LW: I_LW,
-                I_LOADFunct3.LBU: I_LBU,
-                I_LOADFunct3.LHU: I_LHU,
-            },
-            OpCode.S: {SFunct3.SB: S_SB, SFunct3.SH: S_SH, SFunct3.SW: S_SW},
-            OpCode.B: {
-                BFunct3.BEQ: B_BEQ,
-                BFunct3.BNE: B_BNE,
-                BFunct3.BLT: B_BLT,
-                BFunct3.BGE: B_BGE,
-                BFunct3.BLTU: B_BLTU,
-                BFunct3.BGEU: B_BGEU,
-            },
-        }
-
-        if (
-            self.instruction_info.funct3 == RFunct3.SUB
-            and self.instruction_info.funct7 == RFunct7.SUB
-        ):
-            self.instruction = R_SUB(self)
-        elif (
-            self.instruction_info.funct3 == RFunct3.SRA
-            and self.instruction_info.funct7 == RFunct7.SRA
-        ):
-            self.instruction = R_SRA(self)
-        elif self.instruction_info.opcode == OpCode.U_AUIPC:
-            self.instruction = U_AUIPC(self)
-        elif self.instruction_info.opcode == OpCode.U_LUI:
-            self.instruction = U_LUI(self)
-        elif self.instruction_info.opcode == OpCode.J:
-            self.instruction = J_JAL(self)
-        else:
-            self.instruction = RISCV_32I_instructions[self.instruction_info.opcode][
-                self.instruction_info.funct3
-            ](self)
+    def get_control_signal(self, instruction_info: InstructionInfo) -> ControlSignal:
+        """ """
+        
 
 
 def main():

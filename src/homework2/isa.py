@@ -86,7 +86,10 @@ class InstructionInfo:
     imm: int
 
 
-class IntermediateReg:
+class IR:
+    '''
+    intermediate register
+    '''
     rs1: int
     rs2: int
     value: int
@@ -140,7 +143,7 @@ class ISA:
         self.memory = [0] * memory_range  # 内存
         self.instruction: Instruction = None  # 当前指令
         self.instruction_info = InstructionInfo()  # 当前指令的信息拆分
-        self.IR = IntermediateReg()
+        self.IR = IR()
 
     def load_instructions(self, instructions, pc=0x100):
         self.pc = pc
@@ -224,9 +227,9 @@ class ISA:
         print("#" * 20)
 
     def binary_str(self, imm: str):
-        '''
+        """
         取补码计算, 如果首位为 0 则直接计算值, 如果为 1 则 01 取反加一
-        '''
+        """
         if imm[0] == "1":
             inverted_str = "".join("1" if bit == "0" else "0" for bit in imm)
             abs_value = int(inverted_str, 2) + 1
