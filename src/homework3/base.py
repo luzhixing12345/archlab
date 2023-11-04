@@ -1,4 +1,5 @@
 from enum import Enum
+from typing import TypedDict
 
 
 # RISCV-32I 6 种类型
@@ -94,8 +95,10 @@ class Component:
     """
 
     def __init__(self) -> None:
-        self.is_locked = False
         self.class_name = self.__class__.__name__
+
+        self.is_locked = False
+        self.is_empty = True
 
     def lock(self):
         if self.is_locked:
@@ -110,27 +113,55 @@ class Component:
         self.is_locked = False
 
 
+class ALUop(Enum):
+    ADD = 0b0000
+    SUB = 0b1000
+    LSHIFT = 0b0001
+    # LSHIFT_ = 0b1001
+    B = 0b0011
+    # B_ = 0b1011
+    XOR = 0b0100
+    # XOR_ = 0b1100
+    LRSHIFT = 0b0101
+    ARSHIFT = 0b1101
+    OR = 0b0110
+    # OR_ = 0b1110
+    AND = 0b0111
+    # AND_ = 0b1111
+
+
+class ALUsrc(Enum):
+    RB = 0
+    IMM = 1
+
+
+class PCsrc(Enum):
+    PC = 0
+    IMM = 1
+
+
+class MemtoReg(Enum):
+    READ_DATA = 0
+    ALU_RESULT = 1
+
 class ControlSignal:
     """
     控制信号, 决策对应 MUX 应该选择使用哪一个作为输入
     """
-
-    ALUop: int  # ALU 如何进行计算
+    ALUsrc: ALUsrc  # ALU 的第二个输入选择哪一个
+    ALUop: ALUop  # ALU 如何进行计算
     RegWrite: bool  # 是否写寄存器
-    ALUsrc: int  # ALU 的第二个输入选择哪一个
-    MemWrite: int  # 是否写内存
-    MemRead: int  # 是否读内存
-    MemtoReg: int  # 选择写回寄存器的值
-    PCsrc: int  # 选择更新 PC 的方式
+    MemRead: bool  # 是否读内存
+    MemWrite: bool  # 是否写内存
+    MemtoReg: MemtoReg  # 选择写回寄存器的值
+    PCsrc: PCsrc  # 选择更新 PC 的方式
 
 
-class IF_ID:
+class IF_ID(Component):
     instruction: str
 
 
-class ID_EX:
-    rs1: int
-    rs2: int
+class ID_EX(Component):
     ra: int
     rb: int
     rd: int
@@ -138,33 +169,19 @@ class ID_EX:
     ctl_sig: ControlSignal
 
 
-class EX_MEM:
+class EX_MEM(Component):
     alu_result: int
     rb: int
+    rd: int
     MemRead: bool
     MemWrite: bool
+    MemtoReg: MemtoReg
+    RegWrite: bool
 
 
-class MEM_WB:
+class MEM_WB(Component):
     rd: int
     read_data: int
     alu_result: int
-    MemtoReg: Enum
+    MemtoReg: MemtoReg
     RegWrite: bool
-
-class ALUop(Enum):
-
-    ADD = 0b0000
-    SUB = 0b1000
-    LSHIFT = 0b0001
-    LSHIFT_ = 0b1001
-    B = 0b0011
-    B_ = 0b1011
-    XOR = 0b0100
-    XOR_ = 0b1100
-    LRSHIFT = 0b0101
-    ARSHIFT = 0b1101
-    OR = 0b0110
-    OR_ = 0b1110
-    AND = 0b0111
-    AND_ = 0b1111

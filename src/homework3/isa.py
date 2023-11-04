@@ -1,5 +1,6 @@
 from base import *
 from instructions import *
+import copy
 
 
 class IR(Component):
@@ -20,13 +21,19 @@ class IR(Component):
         self.pre_MEM_WB = MEM_WB()
 
     def update(self):
-        self.IF_ID = self.pre_IF_ID
-        self.ID_EX = self.pre_ID_EX
-        self.EX_MEM = self.pre_EX_MEM
-        self.MEM_WB = self.pre_MEM_WB
+        self.IF_ID = copy.deepcopy(self.pre_IF_ID)
+        self.ID_EX = copy.deepcopy(self.pre_ID_EX)
+        self.EX_MEM = copy.deepcopy(self.pre_EX_MEM)
+        self.MEM_WB = copy.deepcopy(self.pre_MEM_WB)
 
-    def is_empty(self):
-        ...
+    def is_flushed(self):
+        return (
+            self.IF_ID.is_empty
+            and self.pre_IF_ID.is_empty
+            and self.ID_EX.is_empty
+            and self.EX_MEM.is_empty
+            and self.MEM_WB.is_empty
+        )
 
 
 class RegisterGroup(Component):
@@ -57,24 +64,36 @@ class RegisterGroup(Component):
             self.registers[rd] = write_data
             self.unlock()
 
+    def __setitem__(self, index, value):
+        self.registers[index] = value
+
+    def __getitem__(self, index):
+        return self.registers[index]
+
 
 class Memory(Component):
     def __init__(self, addr_range=0x200) -> None:
         super().__init__()
         self.memory = [0] * addr_range
 
-    def read(self, addr: int, MemRead: ControlSignal.MemRead):
+    def read(self, addr: int, MemRead: bool):
         if MemRead is True:
             self.lock()
             value = self.memory[addr]
             self.unlock()
             return value
 
-    def write(self, addr: int, value: int, MemWrite: ControlSignal.MemWrite):
+    def write(self, addr: int, value: int, MemWrite: bool):
         if MemWrite is True:
             self.lock()
             self.memory[addr] = value
             self.unlock()
+
+    def __setitem__(self, index, value):
+        self.memory[index] = value
+
+    def __getitem__(self, index):
+        return self.memory[index]
 
 
 class ALU(Component):
@@ -86,19 +105,19 @@ class ALU(Component):
             return input_a + input_b
         elif op == ALUop.SUB:
             return input_a - input_b
-        elif op in (ALUop.LSHIFT, ALUop.LSHIFT_):
+        elif op == ALUop.LSHIFT:
             return input_a << input_b
-        elif op in (ALUop.B, ALUop.B_):
+        elif op == ALUop.B:
             return input_b
-        elif op in (ALUop.XOR, ALUop.XOR_):
+        elif op == ALUop.XOR:
             return input_a ^ input_b
         elif op == ALUop.LRSHIFT:
             return (input_a & 0xFFFFFFFF) >> input_b
         elif op == ALUop.ARSHIFT:
             return input_a >> input_b
-        elif op in (ALUop.OR, ALUop.OR_):
+        elif op == ALUop.OR:
             return input_a | input_b
-        elif op in (ALUop.AND, ALUop.AND_):
+        elif op == ALUop.AND:
             return input_a & input_b
         else:
             raise ValueError(f"unknown ALU operator value {op}")
@@ -145,7 +164,7 @@ class PipelineISA:
 
             self.stage_if()
             # 当取指之后, 流水线 IR 全空且指令也为 0, 则说明已经流水线全部结束且没有新指令了
-            if self.IR.is_empty():
+            if self.IR.is_flushed():
                 break
             self.stage_id()
             self.stage_ex()
@@ -163,10 +182,23 @@ class PipelineISA:
         self.IR.pre_IF_ID.instruction += format(self.memory[self.pc + 1], "08b")
         self.IR.pre_IF_ID.instruction += format(self.memory[self.pc], "08b")
 
+        self.pc += 4
+
+        if int(self.IR.pre_IF_ID.instruction) == 0:
+            self.IR.pre_IF_ID.is_empty = True
+        else:
+            self.IR.pre_IF_ID.is_empty = False
+
     def stage_id(self):
         """
         ID-译码 解析指令并读取寄存器的值
         """
+        if self.IR.IF_ID.is_empty:
+            self.IR.pre_ID_EX.is_empty = True
+            return
+        else:
+            self.IR.pre_ID_EX.is_empty = False
+
         instruction = self.IR.IF_ID.instruction
         instruction_info = InstructionInfo()
 
@@ -227,19 +259,15 @@ class PipelineISA:
         else:
             raise ValueError("unknown opcode type")
 
-        self.IR.pre_ID_EX.rs1 = instruction_info.rs1
-        self.IR.pre_ID_EX.rs2 = instruction_info.rs2
         self.IR.pre_ID_EX.ra, self.IR.pre_ID_EX.rb = self.registers.read(
             instruction_info.rs1, instruction_info.rs2
         )
+
         self.IR.pre_ID_EX.rd = instruction_info.rd
         self.IR.pre_ID_EX.imm = instruction_info.imm
         self.IR.pre_ID_EX.ctl_sig = self.get_control_signal(instruction_info)
 
     def get_control_signal(self, instruction_info: InstructionInfo) -> ControlSignal:
-        """
-        通过 ISA 在 ID 阶段解析指令得到的信息, 定位找到具体的指令
-        """
         RISCV_32I_instructions = {
             OpCode.R: {
                 RFunct3.ADD: R_ADD,
@@ -284,51 +312,74 @@ class PipelineISA:
         }
 
         if instruction_info.funct3 == RFunct3.SUB and instruction_info.funct7 == RFunct7.SUB:
-            instruction = R_SUB(self)
+            instruction = R_SUB()
         elif instruction_info.funct3 == RFunct3.SRA and instruction_info.funct7 == RFunct7.SRA:
-            instruction = R_SRA(self)
+            instruction = R_SRA()
         elif instruction_info.opcode == OpCode.U_AUIPC:
-            instruction = U_AUIPC(self)
+            instruction = U_AUIPC()
         elif instruction_info.opcode == OpCode.U_LUI:
-            instruction = U_LUI(self)
+            instruction = U_LUI()
         elif instruction_info.opcode == OpCode.J:
-            instruction = J_JAL(self)
+            instruction = J_JAL()
         else:
-            instruction = RISCV_32I_instructions[instruction_info.opcode][
-                instruction_info.funct3
-            ](self)
-        
+            instruction = RISCV_32I_instructions[instruction_info.opcode][instruction_info.funct3]()
+
         return instruction.get_control_signal()
 
     def stage_ex(self):
         """
         EX-执行.对指令的各种操作数进行运算
         """
+        if self.IR.ID_EX.is_empty:
+            self.IR.pre_EX_MEM.is_empty = True
+            return
+        else:
+            self.IR.pre_EX_MEM.is_empty = False
         self.IR.pre_EX_MEM.rb = self.IR.ID_EX.imm
 
         input_a = self.IR.ID_EX.ra
-        mux_alu_inputs = {0: self.IR.ID_EX.rb, 1: self.IR.ID_EX.imm}
+
+        mux_alu_inputs = {ALUsrc.RB: self.IR.ID_EX.rb, ALUsrc.IMM: self.IR.ID_EX.imm}
         input_b = mux_alu_inputs[self.IR.ID_EX.ctl_sig.ALUsrc]
+        # print(input_a, input_b, self.IR.ID_EX.ctl_sig.ALUsrc)
         self.IR.pre_EX_MEM.alu_result = self.ALU.calc(
             input_a=input_a, input_b=input_b, op=self.IR.ID_EX.ctl_sig.ALUop
         )
+        self.IR.pre_EX_MEM.rd = self.IR.ID_EX.rd
+        self.IR.pre_EX_MEM.MemRead = self.IR.ID_EX.ctl_sig.MemRead
+        self.IR.pre_EX_MEM.MemWrite = self.IR.ID_EX.ctl_sig.MemWrite
+        self.IR.pre_EX_MEM.MemtoReg = self.IR.ID_EX.ctl_sig.MemtoReg
+        self.IR.pre_EX_MEM.RegWrite = self.IR.ID_EX.ctl_sig.RegWrite
 
     def stage_mem(self):
         """
         MEM-存储器访问.将数据写入存储器或从存储器中读出数据
 
         """
+        if self.IR.EX_MEM.is_empty:
+            self.IR.pre_MEM_WB.is_empty = True
+            return
+        else:
+            self.IR.pre_MEM_WB.is_empty = False
         addr = self.IR.EX_MEM.alu_result
         # 先写后读
         self.memory.write(addr=addr, value=self.IR.EX_MEM.rb, MemWrite=self.IR.EX_MEM.MemWrite)
         self.IR.pre_MEM_WB.read_data = self.memory.read(addr=addr, MemRead=self.IR.EX_MEM.MemRead)
         self.IR.pre_MEM_WB.alu_result = self.IR.EX_MEM.alu_result
+        self.IR.pre_MEM_WB.rd = self.IR.EX_MEM.rd
+        self.IR.pre_MEM_WB.MemtoReg = self.IR.EX_MEM.MemtoReg
+        self.IR.pre_MEM_WB.RegWrite = self.IR.EX_MEM.RegWrite
 
     def stage_wb(self):
         """
         WB-写回.将指令运算结果存入指定的寄存器
         """
-        mux_mem_inputs = {0: self.IR.MEM_WB.read_data, 1: self.IR.MEM_WB.alu_result}
+        if self.IR.MEM_WB.is_empty:
+            return
+        mux_mem_inputs = {
+            MemtoReg.READ_DATA: self.IR.MEM_WB.read_data,
+            MemtoReg.ALU_RESULT: self.IR.MEM_WB.alu_result,
+        }
         write_data = mux_mem_inputs[self.IR.MEM_WB.MemtoReg]
         self.registers.write(
             rd=self.IR.MEM_WB.rd, write_data=write_data, RegWrite=self.IR.MEM_WB.RegWrite

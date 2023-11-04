@@ -1,20 +1,15 @@
-from base import ControlSignal
+from base import *
 
 class Instruction:
     def __init__(self) -> None:
         print(f'{self.__class__.__name__}')
+        self.control_signal = ControlSignal()
 
     def get_control_signal(self) -> ControlSignal:
         raise NotImplementedError("each instruction should overwrite it to generate control signal")
 
 class R_ADD(Instruction):
-    def stage_ex(self):
-        self.isa.IR.value = self.isa.IR.rs1 + self.isa.IR.rs2
-
-    def stage_wb(self):
-        self.isa.registers[self.isa.instruction_info.rd] = self.isa.IR.value
-        return super().stage_wb()
-
+    ...
 
 class R_SUB(Instruction):
     ...
@@ -33,12 +28,17 @@ class R_SLTU(Instruction):
 
 
 class R_XOR(Instruction):
-    def stage_ex(self):
-        self.isa.IR.value = self.isa.IR.rs1 ^ self.isa.IR.rs2
-
-    def stage_wb(self):
-        self.isa.registers[self.isa.instruction_info.rd] = self.isa.IR.value
-        return super().stage_wb()
+    
+    def get_control_signal(self) -> ControlSignal:
+        
+        self.control_signal.ALUsrc = ALUsrc.RB
+        self.control_signal.ALUop = ALUop.XOR
+        self.control_signal.RegWrite = True
+        self.control_signal.MemRead = False
+        self.control_signal.MemWrite = False
+        self.control_signal.MemtoReg = MemtoReg.ALU_RESULT
+        self.control_signal.PCsrc = PCsrc.PC
+        return self.control_signal
 
 
 class R_SRL(Instruction):
@@ -58,12 +58,7 @@ class R_AND(Instruction):
 
 
 class I_ADDI(Instruction):
-    def stage_ex(self):
-        self.isa.IR.value = self.isa.IR.rs1 + self.isa.instruction_info.imm
-
-    def stage_wb(self):
-        self.isa.registers[self.isa.instruction_info.rd] = self.isa.IR.value
-        return super().stage_wb()
+    ...
 
 
 class I_SLTI(Instruction):
@@ -103,15 +98,15 @@ class I_JALR(Instruction):
 
 
 class I_LB(Instruction):
-    def stage_ex(self):
-        self.isa.IR.value = self.isa.IR.rs1 + self.isa.instruction_info.imm
-
-    def stage_mem(self):
-        self.isa.IR.mem_value = self.isa.memory[self.isa.IR.value]
-
-    def stage_wb(self):
-        self.isa.registers[self.isa.instruction_info.rd] = self.isa.IR.mem_value
-        return super().stage_wb()
+    def get_control_signal(self) -> ControlSignal:
+        self.control_signal.ALUsrc = ALUsrc.IMM
+        self.control_signal.ALUop = ALUop.ADD
+        self.control_signal.RegWrite = True
+        self.control_signal.MemRead = True
+        self.control_signal.MemWrite = False
+        self.control_signal.MemtoReg = MemtoReg.READ_DATA
+        self.control_signal.PCsrc = PCsrc.PC
+        return self.control_signal
 
 
 class I_LH(Instruction):
@@ -131,12 +126,7 @@ class I_LHU(Instruction):
 
 
 class S_SB(Instruction):
-    def stage_ex(self):
-        self.isa.IR.value = self.isa.IR.rs1 + self.isa.instruction_info.imm
-
-    def stage_wb(self):
-        self.isa.memory[self.isa.IR.value] = self.isa.IR.rs2 & 0xFF
-        return super().stage_wb()
+    ...
 
 
 class S_SH(Instruction):
@@ -152,10 +142,7 @@ class B_BEQ(Instruction):
 
 
 class B_BNE(Instruction):
-    def stage_ex(self):
-        if self.isa.IR.rs1 != self.isa.IR.rs2:
-            self.isa.pc = self.isa.pc + self.isa.instruction_info.imm
-            self.pc_inc = False
+    ...
 
 
 class B_BLT(Instruction):
@@ -183,6 +170,4 @@ class U_AUIPC(Instruction):
 
 
 class J_JAL(Instruction):
-    def stage_ex(self):
-        self.isa.pc += self.isa.instruction_info.imm
-        self.pc_inc = False
+    ...
