@@ -350,6 +350,7 @@ class PipelineISA:
         mux_alu_inputs = {ALUsrc.RB: self.IR.ID_EX.rb, ALUsrc.IMM: self.IR.ID_EX.imm}
         input_b = mux_alu_inputs[self.IR.ID_EX.ctl_sig.ALUsrc]
 
+        self.IR.pre_EX_MEM.rb = self.IR.ID_EX.rb
         # 数据冒险: 见 asmcode/data_hazard.S
         if not self.IR.EX_MEM.is_empty and self.IR.EX_MEM.RegWrite:
             if self.IR.EX_MEM.MemRead and self.IR.EX_MEM.rd in (
@@ -366,11 +367,10 @@ class PipelineISA:
                 # 直接 bypass 过去
                 if self.IR.ID_EX.rs1 == self.IR.EX_MEM.rd:
                     input_a = self.IR.EX_MEM.alu_result
-                if (
-                    self.IR.ID_EX.rs2 == self.IR.EX_MEM.rd
-                    and self.IR.ID_EX.ctl_sig.ALUsrc == ALUsrc.RB
-                ):
-                    input_b = self.IR.EX_MEM.alu_result
+                if self.IR.ID_EX.rs2 == self.IR.EX_MEM.rd:
+                    self.IR.pre_EX_MEM.rb = self.IR.EX_MEM.alu_result
+                    if self.IR.ID_EX.ctl_sig.ALUsrc == ALUsrc.RB:
+                        input_b = self.IR.EX_MEM.alu_result
 
         if not self.IR.MEM_WB.is_empty and self.IR.MEM_WB.RegWrite is True:
             # 如果有 MemtoReg 则使用 read_data
@@ -389,7 +389,6 @@ class PipelineISA:
             input_a=input_a, input_b=input_b, op=self.IR.ID_EX.ctl_sig.ALUop
         )
 
-        self.IR.pre_EX_MEM.rb = self.IR.ID_EX.rb
         self.IR.pre_EX_MEM.rd = self.IR.ID_EX.rd
         self.IR.pre_EX_MEM.MemRead = self.IR.ID_EX.ctl_sig.MemRead
         self.IR.pre_EX_MEM.MemWrite = self.IR.ID_EX.ctl_sig.MemWrite
