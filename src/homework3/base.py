@@ -144,10 +144,12 @@ class MemtoReg(Enum):
     READ_DATA = 0
     ALU_RESULT = 1
 
+
 class ControlSignal:
     """
     控制信号, 决策对应 MUX 应该选择使用哪一个作为输入
     """
+
     ALUsrc: ALUsrc  # ALU 的第二个输入选择哪一个
     ALUop: ALUop  # ALU 如何进行计算
     RegWrite: bool  # 是否写寄存器
@@ -167,6 +169,10 @@ class ID_EX(Component):
     rd: int
     imm: int
     ctl_sig: ControlSignal
+
+    # 存 rs1 和 rs2 是为了在 EX 阶段检测数据冒险
+    rs1: int
+    rs2: int
 
 
 class EX_MEM(Component):

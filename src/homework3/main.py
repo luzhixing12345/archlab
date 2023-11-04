@@ -25,12 +25,21 @@ def main():
     # riscv64-linux-gnu-objdump example.o -d
 
     instructions = [
-        0x00a54533,
-        0x00050583
+        0x00000103,
+        0x003100B3,
+        0x40308233,
+        0x0070F333,
+        0x0090E433,
+        0x00B0C533,
     ]
 
     isa = PipelineISA()
-    isa.memory[0] = 100
+    # isa.registers[2] = 1
+    isa.memory[0] = 1
+    isa.registers[3] = 2
+    isa.registers[7] = 10
+    isa.registers[9] = 4
+    isa.registers[11] = 3
     isa.load_instructions(instructions)
     isa.run()
     isa.show_info("after")

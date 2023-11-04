@@ -10,17 +10,24 @@ class IR(Component):
 
     def __init__(self) -> None:
         super().__init__()
-        self.IF_ID: IF_ID
-        self.ID_EX: ID_EX
-        self.EX_MEM: EX_MEM
-        self.MEM_WB: MEM_WB
+        self.IF_ID = IF_ID()
+        self.ID_EX = ID_EX()
+        self.EX_MEM = EX_MEM()
+        self.MEM_WB = MEM_WB()
 
         self.pre_IF_ID = IF_ID()
         self.pre_ID_EX = ID_EX()
         self.pre_EX_MEM = EX_MEM()
         self.pre_MEM_WB = MEM_WB()
 
+        self.bubble = False
+
     def update(self):
+        if self.bubble:
+            self.EX_MEM.is_empty = True
+            self.MEM_WB = copy.deepcopy(self.pre_MEM_WB)
+            self.bubble = False
+            return
         self.IF_ID = copy.deepcopy(self.pre_IF_ID)
         self.ID_EX = copy.deepcopy(self.pre_ID_EX)
         self.EX_MEM = copy.deepcopy(self.pre_EX_MEM)
@@ -83,10 +90,10 @@ class Memory(Component):
             self.unlock()
             return value
 
-    def write(self, addr: int, value: int, MemWrite: bool):
+    def write(self, addr: int, write_data: int, MemWrite: bool):
         if MemWrite is True:
             self.lock()
-            self.memory[addr] = value
+            self.memory[addr] = write_data
             self.unlock()
 
     def __setitem__(self, index, value):
@@ -162,6 +169,8 @@ class PipelineISA:
             # 此时的才是真正的更新流水线阶段需要使用的 IR 的值
             self.IR.update()
 
+            # 优先写回
+            self.stage_wb()
             self.stage_if()
             # 当取指之后, 流水线 IR 全空且指令也为 0, 则说明已经流水线全部结束且没有新指令了
             if self.IR.is_flushed():
@@ -169,7 +178,8 @@ class PipelineISA:
             self.stage_id()
             self.stage_ex()
             self.stage_mem()
-            self.stage_wb()
+            self.update_pc()
+            # self.show_info()
 
     def stage_if(self):
         """
@@ -181,8 +191,6 @@ class PipelineISA:
         self.IR.pre_IF_ID.instruction += format(self.memory[self.pc + 2], "08b")
         self.IR.pre_IF_ID.instruction += format(self.memory[self.pc + 1], "08b")
         self.IR.pre_IF_ID.instruction += format(self.memory[self.pc], "08b")
-
-        self.pc += 4
 
         if int(self.IR.pre_IF_ID.instruction) == 0:
             self.IR.pre_IF_ID.is_empty = True
@@ -262,10 +270,12 @@ class PipelineISA:
         self.IR.pre_ID_EX.ra, self.IR.pre_ID_EX.rb = self.registers.read(
             instruction_info.rs1, instruction_info.rs2
         )
-
         self.IR.pre_ID_EX.rd = instruction_info.rd
         self.IR.pre_ID_EX.imm = instruction_info.imm
         self.IR.pre_ID_EX.ctl_sig = self.get_control_signal(instruction_info)
+
+        self.IR.pre_ID_EX.rs1 = instruction_info.rs1
+        self.IR.pre_ID_EX.rs2 = instruction_info.rs2
 
     def get_control_signal(self, instruction_info: InstructionInfo) -> ControlSignal:
         RISCV_32I_instructions = {
@@ -335,16 +345,51 @@ class PipelineISA:
             return
         else:
             self.IR.pre_EX_MEM.is_empty = False
-        self.IR.pre_EX_MEM.rb = self.IR.ID_EX.imm
 
         input_a = self.IR.ID_EX.ra
-
         mux_alu_inputs = {ALUsrc.RB: self.IR.ID_EX.rb, ALUsrc.IMM: self.IR.ID_EX.imm}
         input_b = mux_alu_inputs[self.IR.ID_EX.ctl_sig.ALUsrc]
-        # print(input_a, input_b, self.IR.ID_EX.ctl_sig.ALUsrc)
+
+        # 数据冒险: 见 asmcode/data_hazard.S
+        if not self.IR.EX_MEM.is_empty and self.IR.EX_MEM.RegWrite:
+            if self.IR.EX_MEM.MemRead and self.IR.EX_MEM.rd in (
+                self.IR.ID_EX.rs1,
+                self.IR.ID_EX.rs2,
+            ):
+                # 要读内存到寄存器的 I_LOAD 指令 lb lw
+                # 必须空一个周期
+                self.IR.bubble = True
+                self.pc -= 4
+                return
+            else:
+                # 一些要写寄存器的 R 和 I 型指令
+                # 直接 bypass 过去
+                if self.IR.ID_EX.rs1 == self.IR.EX_MEM.rd:
+                    input_a = self.IR.EX_MEM.alu_result
+                if (
+                    self.IR.ID_EX.rs2 == self.IR.EX_MEM.rd
+                    and self.IR.ID_EX.ctl_sig.ALUsrc == ALUsrc.RB
+                ):
+                    input_b = self.IR.EX_MEM.alu_result
+
+        if not self.IR.MEM_WB.is_empty and self.IR.MEM_WB.RegWrite is True:
+            # 如果有 MemtoReg 则使用 read_data
+            # 否则使用 alu_result
+            bypass_data = (
+                self.IR.MEM_WB.read_data
+                if self.IR.MEM_WB.MemtoReg is MemtoReg.READ_DATA
+                else self.IR.MEM_WB.alu_result
+            )
+            if self.IR.ID_EX.rs1 == self.IR.MEM_WB.rd:
+                input_a = bypass_data
+            if self.IR.ID_EX.rs2 == self.IR.MEM_WB.rd:
+                input_b = bypass_data
+
         self.IR.pre_EX_MEM.alu_result = self.ALU.calc(
             input_a=input_a, input_b=input_b, op=self.IR.ID_EX.ctl_sig.ALUop
         )
+
+        self.IR.pre_EX_MEM.rb = self.IR.ID_EX.rb
         self.IR.pre_EX_MEM.rd = self.IR.ID_EX.rd
         self.IR.pre_EX_MEM.MemRead = self.IR.ID_EX.ctl_sig.MemRead
         self.IR.pre_EX_MEM.MemWrite = self.IR.ID_EX.ctl_sig.MemWrite
@@ -363,7 +408,7 @@ class PipelineISA:
             self.IR.pre_MEM_WB.is_empty = False
         addr = self.IR.EX_MEM.alu_result
         # 先写后读
-        self.memory.write(addr=addr, value=self.IR.EX_MEM.rb, MemWrite=self.IR.EX_MEM.MemWrite)
+        self.memory.write(addr=addr, write_data=self.IR.EX_MEM.rb, MemWrite=self.IR.EX_MEM.MemWrite)
         self.IR.pre_MEM_WB.read_data = self.memory.read(addr=addr, MemRead=self.IR.EX_MEM.MemRead)
         self.IR.pre_MEM_WB.alu_result = self.IR.EX_MEM.alu_result
         self.IR.pre_MEM_WB.rd = self.IR.EX_MEM.rd
@@ -385,6 +430,9 @@ class PipelineISA:
             rd=self.IR.MEM_WB.rd, write_data=write_data, RegWrite=self.IR.MEM_WB.RegWrite
         )
 
+    def update_pc(self):
+        self.pc += 4
+
     def show_info(self, info=None):
         mem_range = 20
         mem_align = 4
@@ -393,19 +441,19 @@ class PipelineISA:
 
         if info is not None:
             print(info)
-        print("#" * 20)
+        print("-" * 20)
         for i in range(mem_range // mem_align):
             for j in range(mem_align):
                 index = i * mem_align + j
                 print(f"mem[{index:2}] = {self.memory[index]:3}", end=" |")
             print("")
-        print("#" * 20)
+        print("-" * 20)
         for i in range(register_range // register_align):
             for j in range(register_align):
                 index = i * register_align + j
                 print(f"r{index:<2} = {self.registers[index]:3}", end=" |")
             print("")
-        print("#" * 20)
+        print("-" * 20)
 
     def binary_str(self, imm: str):
         """
