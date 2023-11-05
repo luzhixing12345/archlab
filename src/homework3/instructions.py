@@ -1,16 +1,17 @@
 from base import *
 
+
 class Instruction:
     def __init__(self) -> None:
         self.name = self.__class__.__name__
-        print(f'{self.name}')
+        print(f"{self.name}")
         self.control_signal = ControlSignal()
 
     def get_control_signal(self):
         raise NotImplementedError(f"{self.name} should overwrite get_control_signal")
 
+
 class R_ADD(Instruction):
-    
     def get_control_signal(self):
         self.control_signal.ALUsrc = ALUsrc.RB
         self.control_signal.ALUop = ALUop.ADD
@@ -20,10 +21,9 @@ class R_ADD(Instruction):
         self.control_signal.MemtoReg = MemtoReg.ALU_RESULT
         self.control_signal.PCsrc = PCsrc.PC
         return self.control_signal
-        
+
 
 class R_SUB(Instruction):
-    
     def get_control_signal(self):
         self.control_signal.ALUsrc = ALUsrc.RB
         self.control_signal.ALUop = ALUop.SUB
@@ -48,9 +48,7 @@ class R_SLTU(Instruction):
 
 
 class R_XOR(Instruction):
-    
     def get_control_signal(self) -> ControlSignal:
-        
         self.control_signal.ALUsrc = ALUsrc.RB
         self.control_signal.ALUop = ALUop.XOR
         self.control_signal.RegWrite = True
@@ -70,7 +68,6 @@ class R_SRA(Instruction):
 
 
 class R_OR(Instruction):
-    
     def get_control_signal(self):
         self.control_signal.ALUsrc = ALUsrc.RB
         self.control_signal.ALUop = ALUop.OR
@@ -83,7 +80,6 @@ class R_OR(Instruction):
 
 
 class R_AND(Instruction):
-    
     def get_control_signal(self):
         self.control_signal.ALUsrc = ALUsrc.RB
         self.control_signal.ALUop = ALUop.AND
@@ -96,9 +92,7 @@ class R_AND(Instruction):
 
 
 class I_ADDI(Instruction):
-    
     def get_control_signal(self) -> ControlSignal:
-        
         self.control_signal.ALUsrc = ALUsrc.IMM
         self.control_signal.ALUop = ALUop.ADD
         self.control_signal.RegWrite = True
@@ -198,7 +192,17 @@ class B_BEQ(Instruction):
 
 
 class B_BNE(Instruction):
-    ...
+    def get_control_signal(self):
+        # 这里的 ALUsrc 是 RB 而不是 IMM 是因为优化了流水线结构
+        # 在 ID 阶段之后添加了 branch_ALU 用于比较计算
+        self.control_signal.ALUsrc = ALUsrc.RB
+        self.control_signal.ALUop = ALUop.SUB
+        self.control_signal.RegWrite = False
+        self.control_signal.MemRead = False
+        self.control_signal.MemWrite = False
+        self.control_signal.MemtoReg = MemtoReg.READ_DATA
+        self.control_signal.PCsrc = PCsrc.IMM
+        return self.control_signal
 
 
 class B_BLT(Instruction):
@@ -226,4 +230,12 @@ class U_AUIPC(Instruction):
 
 
 class J_JAL(Instruction):
-    ...
+    def get_control_signal(self):
+        self.control_signal.ALUsrc = ALUsrc.IMM
+        self.control_signal.ALUop = ALUop.OUTPUT_B
+        self.control_signal.RegWrite = True
+        self.control_signal.MemRead = False
+        self.control_signal.MemWrite = False
+        self.control_signal.MemtoReg = MemtoReg.ALU_RESULT
+        self.control_signal.PCsrc = PCsrc.IMM
+        return self.control_signal

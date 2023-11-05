@@ -28,16 +28,19 @@ def main():
         0x00A54533,
         0x00050583,
         0x00150603,
-        0x00160613,
+        0x00158593,
+        0x00360613,
+        0xFEC59CE3,
+        0x0100076F,
+        0x00150783,
+        0x00150803,
+        0x00150883,
         0x00C501A3,
-        0x00158693,
-        0x00D60733,
-        0x00E502A3,
     ]
 
     isa = PipelineISA()
-    isa.memory[0] = 100
-    isa.memory[1] = 200
+    isa.memory[0] = 20
+    isa.memory[1] = 0
     isa.load_instructions(instructions)
     isa.run()
     isa.show_info("after")

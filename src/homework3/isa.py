@@ -42,6 +42,19 @@ class IR(Component):
             and self.MEM_WB.is_empty
         )
 
+    def reset(self):
+        self.IF_ID = IF_ID()
+        self.ID_EX = ID_EX()
+        self.EX_MEM = EX_MEM()
+        self.MEM_WB = MEM_WB()
+
+        self.pre_IF_ID = IF_ID()
+        self.pre_ID_EX = ID_EX()
+        self.pre_EX_MEM = EX_MEM()
+        self.pre_MEM_WB = MEM_WB()
+
+        self.bubble = False
+
 
 class RegisterGroup(Component):
     def __init__(self, number=32) -> None:
@@ -71,6 +84,13 @@ class RegisterGroup(Component):
             self.registers[rd] = write_data
             self.unlock()
 
+    def reset(self):
+        """
+        重置寄存器状态, 归零
+        """
+        for i in range(len(self.registers)):
+            self.registers[i] = 0
+
     def __setitem__(self, index, value):
         self.registers[index] = value
 
@@ -96,6 +116,13 @@ class Memory(Component):
             self.memory[addr] = write_data
             self.unlock()
 
+    def reset(self):
+        """
+        重置内存状态, 归零
+        """
+        for i in range(len(self.memory)):
+            self.memory[i] = 0
+
     def __setitem__(self, index, value):
         self.memory[index] = value
 
@@ -104,17 +131,22 @@ class Memory(Component):
 
 
 class ALU(Component):
-    def __init__(self) -> None:
+    def __init__(self, op: Enum = None) -> None:
         super().__init__()
+        # 设置 op 表示某一类特定的功能
+        # 比如 ID_adder 只做加法, ID_subtractor 只做减法
+        self.op = op
 
-    def calc(self, input_a: int, input_b: int, op: Enum) -> int:
+    def calc(self, input_a: int, input_b: int, op: Enum = None) -> int:
+        if op is None:
+            op = self.op
         if op == ALUop.ADD:
             return input_a + input_b
         elif op == ALUop.SUB:
             return input_a - input_b
         elif op == ALUop.LSHIFT:
             return input_a << input_b
-        elif op == ALUop.B:
+        elif op == ALUop.OUTPUT_B:
             return input_b
         elif op == ALUop.XOR:
             return input_a ^ input_b
@@ -152,6 +184,9 @@ class PipelineISA:
         self.ALU = ALU()
         self.IR = IR()
 
+        self.ID_adder = ALU(ALUop.ADD)  # 加法器, 用于计算 ID 阶段的 PC + IMM
+        self.ID_subtractor = ALU(ALUop.SUB)  # 减法器, 用于计算比较
+
     def load_instructions(self, instructions, pc=0x100):
         self.pc = pc
         # 小端存储
@@ -162,6 +197,15 @@ class PipelineISA:
             self.memory[pc + 1] = int(instruction_str[16:24], 2)
             self.memory[pc] = int(instruction_str[24:], 2)
             pc += 4
+
+    def reset(self):
+        """
+        重置处理器状态, 用于多次运行
+        """
+        self.pc = 0
+        self.registers.reset()
+        self.memory.reset()
+        self.IR.reset()
 
     def run(self):
         while True:
@@ -249,6 +293,9 @@ class PipelineISA:
             instruction_info.imm = self.binary_str(
                 instruction[0] + instruction[24] + instruction[1:7] + instruction[20:24] + "0"
             )
+
+            # B 类型单独设置 Branch 标记位用于 update_pc 阶段计算
+            self.IR.pre_ID_EX.Branch = instruction_info.funct3
 
         elif opcode_type in (OpCode.U_AUIPC, OpCode.U_LUI):
             instruction_info.funct7 = None
@@ -432,18 +479,79 @@ class PipelineISA:
         )
 
     def update_pc(self):
-        if self.IR.ID_EX.is_empty:
-            # 流水线初期
+        if self.IR.ID_EX.is_empty or self.IR.pre_ID_EX.is_empty:
+            # 流水线初期或 ID 阶段被跳过
             self.pc += 4
         else:
+            # 对于 ID 阶段解析为 B/J 型指令, 直接判断跳转条件和地址
+            # 节省一个周期
             if self.IR.pre_ID_EX.ctl_sig.PCsrc == PCsrc.PC:
                 new_pc = self.pc + 4
             elif self.IR.pre_ID_EX.ctl_sig.PCsrc == PCsrc.IMM:
-                new_pc = self.IR.IF_ID.pc + self.IR.pre_ID_EX.imm,
+                if self.IR.pre_ID_EX.ctl_sig.RegWrite:
+                    # JAL/JALR
+                    new_pc = self.ID_adder.calc(self.IR.IF_ID.pc, self.IR.pre_ID_EX.imm)
+                    # 清空 IF-ID 的 IR
+                    self.IR.pre_IF_ID.is_empty = True
+                else:
+                    # B 型指令
+                    a = self.IR.pre_ID_EX.ra
+                    b = self.IR.pre_ID_EX.rb
+
+                    # EX -> ID 以及 MEM -> ID 的 bypass
+                    # 还没有 upadte_IR, 所以值从 pre 里取
+                    if not self.IR.pre_EX_MEM.is_empty and self.IR.pre_EX_MEM.RegWrite:
+                        if self.IR.pre_EX_MEM.rd == self.IR.pre_ID_EX.rs1:
+                            a = self.IR.pre_EX_MEM.alu_result
+                        if self.IR.pre_EX_MEM.rd == self.IR.pre_ID_EX.rs2:
+                            b = self.IR.pre_EX_MEM.alu_result
+
+                    if not self.IR.pre_MEM_WB.is_empty and self.IR.pre_MEM_WB.RegWrite:
+                        if self.IR.pre_MEM_WB.rd == self.IR.pre_ID_EX.rs1:
+                            a = self.IR.pre_MEM_WB.alu_result
+                        if self.IR.pre_MEM_WB.rd == self.IR.pre_ID_EX.rs2:
+                            b = self.IR.pre_MEM_WB.alu_result
+
+                    result = self.ID_subtractor.calc(a, b)
+                    # ZF:零标志位(如果结果等于0,则设置为1,否则设置为0)
+                    zf = 1 if result == 0 else 0
+                    # SF:符号标志位(如果结果为负数,则设置为1,否则设置为0)
+                    sf = 1 if result < 0 else 0
+                    # OF:溢出标志位(如果结果溢出,则设置为1,否则设置为0)
+                    of = (
+                        1
+                        if (a > 0 and b < 0 and result < 0) or (a < 0 and b > 0 and result > 0)
+                        else 0
+                    )
+                    # CF:进位标志位(如果a小于b,则设置为1,否则设置为0)
+                    cf = 1 if a < b else 0
+                    if self.branch_condition(self.IR.pre_ID_EX.Branch, zf, sf, of, cf):
+                        new_pc = self.ID_adder.calc(self.IR.IF_ID.pc, self.IR.pre_ID_EX.imm)
+                        # 清空 IF-ID 的 IR
+                        self.IR.pre_IF_ID.is_empty = True
+                    else:
+                        new_pc = self.pc + 4
+
             elif self.IR.pre_ID_EX.ctl_sig.PCsrc == PCsrc.LUI:
                 new_pc = self.IR.pre_ID_EX.imm
-            
+
             self.pc = new_pc
+
+    def branch_condition(self, branch_type: BFunct3, zf, sf, of, cf) -> bool:
+        if branch_type == BFunct3.BEQ:
+            return zf == 1
+        elif branch_type == BFunct3.BNE:
+            return zf == 0
+        elif branch_type == BFunct3.BLT:
+            return sf ^ of == 1
+        elif branch_type == BFunct3.BGE:
+            return sf ^ of == 0
+        elif branch_type == BFunct3.BLTU:
+            return cf == 1
+        elif branch_type == BFunct3.BGEU:
+            return cf == 0
+        else:
+            raise ValueError(f"unknown branch type {branch_type}")
 
     def show_info(self, info=None):
         mem_range = 20

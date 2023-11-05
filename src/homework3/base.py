@@ -118,7 +118,7 @@ class ALUop(Enum):
     SUB = 0b1000
     LSHIFT = 0b0001
     # LSHIFT_ = 0b1001
-    B = 0b0011
+    OUTPUT_B = 0b0011 # 选择 B 结果直接输出
     # B_ = 0b1011
     XOR = 0b0100
     # XOR_ = 0b1100
@@ -176,6 +176,8 @@ class ID_EX(Component):
     # 存 rs1 和 rs2 是为了在 EX 阶段检测数据冒险
     rs1: int
     rs2: int
+    # 条件跳转的方式, 只对于 B 指令在 ID 阶段使用
+    Branch: BFunct3 
 
 
 class EX_MEM(Component):
