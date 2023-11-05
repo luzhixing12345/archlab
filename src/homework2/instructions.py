@@ -178,6 +178,9 @@ class U_AUIPC(Instruction):
 
 
 class J_JAL(Instruction):
-    def stage_ex(self):
+
+    def stage_wb(self):
+        self.isa.registers[self.isa.instruction_info.rd] = self.isa.pc + 4
         self.isa.pc += self.isa.instruction_info.imm
         self.pc_inc = False
+        return super().stage_wb()

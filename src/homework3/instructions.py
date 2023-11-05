@@ -13,7 +13,8 @@ class Instruction:
 
 class R_ADD(Instruction):
     def get_control_signal(self):
-        self.control_signal.ALUsrc = ALUsrc.RB
+        self.control_signal.ALU_Asrc = ALU_Asrc.RA
+        self.control_signal.ALU_Bsrc = ALU_Bsrc.RB
         self.control_signal.ALUop = ALUop.ADD
         self.control_signal.RegWrite = True
         self.control_signal.MemRead = False
@@ -25,7 +26,8 @@ class R_ADD(Instruction):
 
 class R_SUB(Instruction):
     def get_control_signal(self):
-        self.control_signal.ALUsrc = ALUsrc.RB
+        self.control_signal.ALU_Asrc = ALU_Asrc.RA
+        self.control_signal.ALU_Bsrc = ALU_Bsrc.RB
         self.control_signal.ALUop = ALUop.SUB
         self.control_signal.RegWrite = True
         self.control_signal.MemRead = False
@@ -49,7 +51,8 @@ class R_SLTU(Instruction):
 
 class R_XOR(Instruction):
     def get_control_signal(self) -> ControlSignal:
-        self.control_signal.ALUsrc = ALUsrc.RB
+        self.control_signal.ALU_Asrc = ALU_Asrc.RA
+        self.control_signal.ALU_Bsrc = ALU_Bsrc.RB
         self.control_signal.ALUop = ALUop.XOR
         self.control_signal.RegWrite = True
         self.control_signal.MemRead = False
@@ -69,7 +72,8 @@ class R_SRA(Instruction):
 
 class R_OR(Instruction):
     def get_control_signal(self):
-        self.control_signal.ALUsrc = ALUsrc.RB
+        self.control_signal.ALU_Asrc = ALU_Asrc.RA
+        self.control_signal.ALU_Bsrc = ALU_Bsrc.RB
         self.control_signal.ALUop = ALUop.OR
         self.control_signal.RegWrite = True
         self.control_signal.MemRead = False
@@ -81,7 +85,8 @@ class R_OR(Instruction):
 
 class R_AND(Instruction):
     def get_control_signal(self):
-        self.control_signal.ALUsrc = ALUsrc.RB
+        self.control_signal.ALU_Asrc = ALU_Asrc.RA
+        self.control_signal.ALU_Bsrc = ALU_Bsrc.RB
         self.control_signal.ALUop = ALUop.AND
         self.control_signal.RegWrite = True
         self.control_signal.MemRead = False
@@ -93,7 +98,8 @@ class R_AND(Instruction):
 
 class I_ADDI(Instruction):
     def get_control_signal(self) -> ControlSignal:
-        self.control_signal.ALUsrc = ALUsrc.IMM
+        self.control_signal.ALU_Asrc = ALU_Asrc.RA
+        self.control_signal.ALU_Bsrc = ALU_Bsrc.IMM
         self.control_signal.ALUop = ALUop.ADD
         self.control_signal.RegWrite = True
         self.control_signal.MemRead = False
@@ -141,7 +147,8 @@ class I_JALR(Instruction):
 
 class I_LB(Instruction):
     def get_control_signal(self) -> ControlSignal:
-        self.control_signal.ALUsrc = ALUsrc.IMM
+        self.control_signal.ALU_Asrc = ALU_Asrc.RA
+        self.control_signal.ALU_Bsrc = ALU_Bsrc.IMM
         self.control_signal.ALUop = ALUop.ADD
         self.control_signal.RegWrite = True
         self.control_signal.MemRead = True
@@ -169,7 +176,8 @@ class I_LHU(Instruction):
 
 class S_SB(Instruction):
     def get_control_signal(self) -> ControlSignal:
-        self.control_signal.ALUsrc = ALUsrc.IMM
+        self.control_signal.ALU_Asrc = ALU_Asrc.RA
+        self.control_signal.ALU_Bsrc = ALU_Bsrc.IMM
         self.control_signal.ALUop = ALUop.ADD
         self.control_signal.RegWrite = False
         self.control_signal.MemRead = False
@@ -195,7 +203,8 @@ class B_BNE(Instruction):
     def get_control_signal(self):
         # 这里的 ALUsrc 是 RB 而不是 IMM 是因为优化了流水线结构
         # 在 ID 阶段之后添加了 branch_ALU 用于比较计算
-        self.control_signal.ALUsrc = ALUsrc.RB
+        self.control_signal.ALU_Asrc = ALU_Asrc.RA
+        self.control_signal.ALU_Bsrc = ALU_Bsrc.RB
         self.control_signal.ALUop = ALUop.SUB
         self.control_signal.RegWrite = False
         self.control_signal.MemRead = False
@@ -231,8 +240,9 @@ class U_AUIPC(Instruction):
 
 class J_JAL(Instruction):
     def get_control_signal(self):
-        self.control_signal.ALUsrc = ALUsrc.IMM
-        self.control_signal.ALUop = ALUop.OUTPUT_B
+        self.control_signal.ALU_Asrc = ALU_Asrc.PC
+        self.control_signal.ALU_Bsrc = ALU_Bsrc.NEXT
+        self.control_signal.ALUop = ALUop.ADD
         self.control_signal.RegWrite = True
         self.control_signal.MemRead = False
         self.control_signal.MemWrite = False

@@ -1,5 +1,4 @@
 from enum import Enum
-from typing import TypedDict
 
 
 # RISCV-32I 6 种类型
@@ -118,7 +117,7 @@ class ALUop(Enum):
     SUB = 0b1000
     LSHIFT = 0b0001
     # LSHIFT_ = 0b1001
-    OUTPUT_B = 0b0011 # 选择 B 结果直接输出
+    OUTPUT_B = 0b0011  # 选择 B 结果直接输出
     # B_ = 0b1011
     XOR = 0b0100
     # XOR_ = 0b1100
@@ -130,9 +129,15 @@ class ALUop(Enum):
     # AND_ = 0b1111
 
 
-class ALUsrc(Enum):
+class ALU_Asrc(Enum):
+    RA = 0
+    PC = 1
+
+
+class ALU_Bsrc(Enum):
     RB = 0
     IMM = 1
+    NEXT = 2  # pc + 4
 
 
 class PCsrc(Enum):
@@ -151,7 +156,8 @@ class ControlSignal:
     控制信号, 决策对应 MUX 应该选择使用哪一个作为输入
     """
 
-    ALUsrc: ALUsrc  # ALU 的第二个输入选择哪一个
+    ALU_Asrc: ALU_Asrc
+    ALU_Bsrc: ALU_Bsrc  # ALU 的第二个输入选择哪一个
     ALUop: ALUop  # ALU 如何进行计算
     RegWrite: bool  # 是否写寄存器
     MemRead: bool  # 是否读内存
@@ -177,7 +183,7 @@ class ID_EX(Component):
     rs1: int
     rs2: int
     # 条件跳转的方式, 只对于 B 指令在 ID 阶段使用
-    Branch: BFunct3 
+    Branch: BFunct3
 
 
 class EX_MEM(Component):

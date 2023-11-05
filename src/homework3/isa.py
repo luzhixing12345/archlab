@@ -325,6 +325,7 @@ class PipelineISA:
 
         self.IR.pre_ID_EX.rs1 = instruction_info.rs1
         self.IR.pre_ID_EX.rs2 = instruction_info.rs2
+        self.IR.pre_ID_EX.pc = self.IR.IF_ID.pc
 
     def get_control_signal(self, instruction_info: InstructionInfo) -> ControlSignal:
         RISCV_32I_instructions = {
@@ -395,9 +396,15 @@ class PipelineISA:
         else:
             self.IR.pre_EX_MEM.is_empty = False
 
-        input_a = self.IR.ID_EX.ra
-        mux_alu_inputs = {ALUsrc.RB: self.IR.ID_EX.rb, ALUsrc.IMM: self.IR.ID_EX.imm}
-        input_b = mux_alu_inputs[self.IR.ID_EX.ctl_sig.ALUsrc]
+        mux_alu_input_a = {ALU_Asrc.RA: self.IR.ID_EX.ra, ALU_Asrc.PC: self.IR.ID_EX.pc}
+        mux_alu_input_b = {
+            ALU_Bsrc.RB: self.IR.ID_EX.rb,
+            ALU_Bsrc.IMM: self.IR.ID_EX.imm,
+            ALU_Bsrc.NEXT: 4,
+        }
+
+        input_a = mux_alu_input_a[self.IR.ID_EX.ctl_sig.ALU_Asrc]
+        input_b = mux_alu_input_b[self.IR.ID_EX.ctl_sig.ALU_Bsrc]
 
         self.IR.pre_EX_MEM.rb = self.IR.ID_EX.rb
         # 数据冒险: 见 asmcode/data_hazard.S
@@ -418,7 +425,7 @@ class PipelineISA:
                     input_a = self.IR.EX_MEM.alu_result
                 if self.IR.ID_EX.rs2 == self.IR.EX_MEM.rd:
                     self.IR.pre_EX_MEM.rb = self.IR.EX_MEM.alu_result
-                    if self.IR.ID_EX.ctl_sig.ALUsrc == ALUsrc.RB:
+                    if self.IR.ID_EX.ctl_sig.ALU_Bsrc == ALU_Bsrc.RB:
                         input_b = self.IR.EX_MEM.alu_result
 
         if not self.IR.MEM_WB.is_empty and self.IR.MEM_WB.RegWrite is True:
