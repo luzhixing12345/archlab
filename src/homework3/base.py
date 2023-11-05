@@ -138,6 +138,7 @@ class ALUsrc(Enum):
 class PCsrc(Enum):
     PC = 0
     IMM = 1
+    LUI = 2
 
 
 class MemtoReg(Enum):
@@ -161,6 +162,7 @@ class ControlSignal:
 
 class IF_ID(Component):
     instruction: str
+    pc: int
 
 
 class ID_EX(Component):
@@ -169,6 +171,7 @@ class ID_EX(Component):
     rd: int
     imm: int
     ctl_sig: ControlSignal
+    pc: int
 
     # 存 rs1 和 rs2 是为了在 EX 阶段检测数据冒险
     rs1: int

@@ -192,6 +192,8 @@ class PipelineISA:
         self.IR.pre_IF_ID.instruction += format(self.memory[self.pc + 1], "08b")
         self.IR.pre_IF_ID.instruction += format(self.memory[self.pc], "08b")
 
+        self.IR.pre_IF_ID.pc = self.pc
+
         if int(self.IR.pre_IF_ID.instruction) == 0:
             self.IR.pre_IF_ID.is_empty = True
         else:
@@ -430,7 +432,18 @@ class PipelineISA:
         )
 
     def update_pc(self):
-        self.pc += 4
+        if self.IR.ID_EX.is_empty:
+            # 流水线初期
+            self.pc += 4
+        else:
+            if self.IR.pre_ID_EX.ctl_sig.PCsrc == PCsrc.PC:
+                new_pc = self.pc + 4
+            elif self.IR.pre_ID_EX.ctl_sig.PCsrc == PCsrc.IMM:
+                new_pc = self.IR.IF_ID.pc + self.IR.pre_ID_EX.imm,
+            elif self.IR.pre_ID_EX.ctl_sig.PCsrc == PCsrc.LUI:
+                new_pc = self.IR.pre_ID_EX.imm
+            
+            self.pc = new_pc
 
     def show_info(self, info=None):
         mem_range = 20
