@@ -143,12 +143,22 @@ class ALU_Bsrc(Enum):
 class PCsrc(Enum):
     PC = 0
     IMM = 1
-    LUI = 2
+    JALR = 2
+    AUIPC = 3
 
 
 class MemtoReg(Enum):
     READ_DATA = 0
     ALU_RESULT = 1
+
+
+class MemOp(Enum):
+    NONE = 0b111
+    SIGN1 = 0b000
+    SIGN2 = 0b001
+    SIGN4 = 0b010
+    UNSIGN1 = 0b100
+    UNSIGN2 = 0b101
 
 
 class ControlSignal:
@@ -163,6 +173,7 @@ class ControlSignal:
     MemRead: bool  # 是否读内存
     MemWrite: bool  # 是否写内存
     MemtoReg: MemtoReg  # 选择写回寄存器的值
+    MemOp: MemOp  # 读取内存的方式
     PCsrc: PCsrc  # 选择更新 PC 的方式
 
 
@@ -193,6 +204,7 @@ class EX_MEM(Component):
     MemRead: bool
     MemWrite: bool
     MemtoReg: MemtoReg
+    MemOp: MemOp
     RegWrite: bool
 
 

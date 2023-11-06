@@ -1,5 +1,7 @@
 from isa import *
 import unittest
+import random
+
 
 class MyTestCase(unittest.TestCase):
     def __init__(self, methodName: str = "runTest") -> None:
@@ -158,6 +160,40 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(self.isa.registers[12], 30)
         self.assertEqual(self.isa.registers[14], 284)
         print(f"\033[92mPass test_CTL1\033[0m")
+
+    def test_CTL2(self):
+        instructions = [
+            0x18C50793,
+            0x0007A703,
+            0x00078693,
+            0xFFC78793,
+            0x00B70733,
+            0x00E7A223,
+            0xFED516E3,
+            0x00008067,
+        ]
+        self.isa.reset()
+
+        array_addr = 0x200
+        add_value = 4
+        self.isa.registers[10] = array_addr
+        self.isa.registers[11] = add_value
+
+        origin_memory = []
+        for i in range(100):
+            random_number = random.randint(0, 100)
+            origin_memory.append(random_number)
+            self.isa.memory.write(array_addr + i * 4, random_number, True, MemOp.SIGN4)
+
+        self.isa.load_instructions(instructions)
+        self.isa.run()
+
+        for i in range(100):
+            self.assertEqual(
+                origin_memory[i] + add_value,
+                self.isa.memory.read(array_addr + i * 4, True, MemOp.SIGN4),
+            )
+        print(f"\033[92mPass test_CTL2\033[0m")
 
 
 if __name__ == "__main__":
