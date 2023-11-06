@@ -407,7 +407,22 @@ class PipelineISA:
         input_b = mux_alu_input_b[self.IR.ID_EX.ctl_sig.ALU_Bsrc]
 
         self.IR.pre_EX_MEM.rb = self.IR.ID_EX.rb
-        # 数据冒险: 见 asmcode/data_hazard.S
+
+        # 数据冒险的 bypass
+        # 先检查 MEM_WB, 后 EX_MEM
+        if not self.IR.MEM_WB.is_empty and self.IR.MEM_WB.RegWrite is True:
+            # 如果有 MemtoReg 则使用 read_data
+            # 否则使用 alu_result
+            bypass_data = (
+                self.IR.MEM_WB.read_data
+                if self.IR.MEM_WB.MemtoReg is MemtoReg.READ_DATA
+                else self.IR.MEM_WB.alu_result
+            )
+            if self.IR.ID_EX.rs1 == self.IR.MEM_WB.rd:
+                input_a = bypass_data
+            if self.IR.ID_EX.rs2 == self.IR.MEM_WB.rd:
+                input_b = bypass_data
+
         if not self.IR.EX_MEM.is_empty and self.IR.EX_MEM.RegWrite:
             if self.IR.EX_MEM.MemRead and self.IR.EX_MEM.rd in (
                 self.IR.ID_EX.rs1,
@@ -428,18 +443,7 @@ class PipelineISA:
                     if self.IR.ID_EX.ctl_sig.ALU_Bsrc == ALU_Bsrc.RB:
                         input_b = self.IR.EX_MEM.alu_result
 
-        if not self.IR.MEM_WB.is_empty and self.IR.MEM_WB.RegWrite is True:
-            # 如果有 MemtoReg 则使用 read_data
-            # 否则使用 alu_result
-            bypass_data = (
-                self.IR.MEM_WB.read_data
-                if self.IR.MEM_WB.MemtoReg is MemtoReg.READ_DATA
-                else self.IR.MEM_WB.alu_result
-            )
-            if self.IR.ID_EX.rs1 == self.IR.MEM_WB.rd:
-                input_a = bypass_data
-            if self.IR.ID_EX.rs2 == self.IR.MEM_WB.rd:
-                input_b = bypass_data
+        
 
         self.IR.pre_EX_MEM.alu_result = self.ALU.calc(
             input_a=input_a, input_b=input_b, op=self.IR.ID_EX.ctl_sig.ALUop
@@ -505,19 +509,20 @@ class PipelineISA:
                     a = self.IR.pre_ID_EX.ra
                     b = self.IR.pre_ID_EX.rb
 
-                    # EX -> ID 以及 MEM -> ID 的 bypass
+                    # MEM -> ID 和 EX -> ID 的 bypass
                     # 还没有 upadte_IR, 所以值从 pre 里取
-                    if not self.IR.pre_EX_MEM.is_empty and self.IR.pre_EX_MEM.RegWrite:
-                        if self.IR.pre_EX_MEM.rd == self.IR.pre_ID_EX.rs1:
-                            a = self.IR.pre_EX_MEM.alu_result
-                        if self.IR.pre_EX_MEM.rd == self.IR.pre_ID_EX.rs2:
-                            b = self.IR.pre_EX_MEM.alu_result
-
+                    # 先检查 MEM_WB, 后 EX_MEM
                     if not self.IR.pre_MEM_WB.is_empty and self.IR.pre_MEM_WB.RegWrite:
                         if self.IR.pre_MEM_WB.rd == self.IR.pre_ID_EX.rs1:
                             a = self.IR.pre_MEM_WB.alu_result
                         if self.IR.pre_MEM_WB.rd == self.IR.pre_ID_EX.rs2:
                             b = self.IR.pre_MEM_WB.alu_result
+
+                    if not self.IR.pre_EX_MEM.is_empty and self.IR.pre_EX_MEM.RegWrite:
+                        if self.IR.pre_EX_MEM.rd == self.IR.pre_ID_EX.rs1:
+                            a = self.IR.pre_EX_MEM.alu_result
+                        if self.IR.pre_EX_MEM.rd == self.IR.pre_ID_EX.rs2:
+                            b = self.IR.pre_EX_MEM.alu_result 
 
                     result = self.ID_subtractor.calc(a, b)
                     # ZF:零标志位(如果结果等于0,则设置为1,否则设置为0)

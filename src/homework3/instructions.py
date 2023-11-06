@@ -231,8 +231,17 @@ class B_BGEU(Instruction):
 
 
 class U_LUI(Instruction):
-    ...
-
+    
+    def get_control_signal(self):
+        self.control_signal.ALU_Asrc = ALU_Asrc.RA
+        self.control_signal.ALU_Bsrc = ALU_Bsrc.IMM
+        self.control_signal.ALUop = ALUop.OUTPUT_B
+        self.control_signal.RegWrite = True
+        self.control_signal.MemRead = False
+        self.control_signal.MemWrite = False
+        self.control_signal.MemtoReg = MemtoReg.ALU_RESULT
+        self.control_signal.PCsrc = PCsrc.PC
+        return self.control_signal
 
 class U_AUIPC(Instruction):
     ...

@@ -1,8 +1,7 @@
 
-void loop_test(int *x, int n) {
-    int i;
-    int s = 4;
-    for (i = 999; i >= n; i--) {
+void loop_test(int *x, int s) {
+    
+    for (int i = 999; i >= 0; i--) {
         x[i] = x[i] + s;
     }
 }
