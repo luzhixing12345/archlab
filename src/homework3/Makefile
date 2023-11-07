@@ -1,11 +1,11 @@
 
-file = example.c
+file = loop.c
 
 run:
 	@python main.py
 
 main:
-	riscv64-linux-gnu-gcc -march=rv32i -mabi=ilp32 -Ofast -c example.c -o example.o
+	riscv64-linux-gnu-gcc -march=rv32i -mabi=ilp32 -Ofast -c $(file) -o example.o
 	riscv64-linux-gnu-objdump example.o -d
 
 asm:

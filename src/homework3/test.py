@@ -163,7 +163,9 @@ class MyTestCase(unittest.TestCase):
 
     def test_CTL2(self):
         instructions = [
-            0x18C50793,
+            0x000017B7,
+            0xF9C78793,
+            0x00F507B3,
             0x0007A703,
             0x00078693,
             0xFFC78793,
@@ -180,7 +182,7 @@ class MyTestCase(unittest.TestCase):
         self.isa.registers[11] = add_value
 
         origin_memory = []
-        for i in range(100):
+        for i in range(1000):
             random_number = random.randint(0, 100)
             origin_memory.append(random_number)
             self.isa.memory.write(array_addr + i * 4, random_number, True, MemOp.SIGN4)
@@ -188,7 +190,7 @@ class MyTestCase(unittest.TestCase):
         self.isa.load_instructions(instructions)
         self.isa.run()
 
-        for i in range(100):
+        for i in range(1000):
             self.assertEqual(
                 origin_memory[i] + add_value,
                 self.isa.memory.read(array_addr + i * 4, True, MemOp.SIGN4),

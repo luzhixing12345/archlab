@@ -172,7 +172,6 @@ class Memory(Component):
     def __getitem__(self, index):
         return self.memory[index]
 
-
 class ALU(Component):
     def __init__(self, op: Enum = None) -> None:
         super().__init__()
@@ -252,7 +251,9 @@ class PipelineISA:
         self.IR.reset()
 
     def run(self):
+        self.step = 0
         while True:
+            self.step += 1
             # stage_if ~ stage_wb 阶段的写入IR并不是真正的写入
             # 此时的才是真正的更新流水线阶段需要使用的 IR 的值
             self.IR.update()
@@ -346,6 +347,8 @@ class PipelineISA:
             self.IR.pre_ID_EX.Branch = instruction_info.funct3
 
         elif opcode_type in (OpCode.U_AUIPC, OpCode.U_LUI):
+            if opcode_type == OpCode.U_AUIPC:
+                ...
             instruction_info.funct7 = None
             instruction_info.rs2 = None
             instruction_info.rs1 = None
@@ -622,7 +625,7 @@ class PipelineISA:
 
         return input_a, input_b
 
-    def detect_control_hazard(self, a, b = None):
+    def detect_control_hazard(self, a, b=None):
         """
         ID 阶段检测的控制冒险
 
