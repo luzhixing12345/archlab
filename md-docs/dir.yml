@@ -3,7 +3,7 @@
 code:
 - python-riscv: 1
 - processor-controllor: 2
-- profiling: 3
+- pipeline-profiling: 3
 read:
 - lecture1: 1
 - lecture2: 2
