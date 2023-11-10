@@ -57,21 +57,21 @@ class RegisterGroup:
         }
 
     def __repr__(self) -> str:
-        info = ' ' * 13
+        info = " " * 13
         reg_unit_map = []
         for name, reg in self.register_map.items():
             if reg.in_used_unit is not None:
-                reg_unit_map.append((f'{name:<{len(reg.in_used_unit.name)}}', reg.in_used_unit.name))
+                reg_unit_map.append((f"{name:<{len(reg.in_used_unit.name)}}", reg.in_used_unit.name))
             else:
                 reg_unit_map.append((name, f'{" ":<{len(name)}}'))
 
         for name, _ in reg_unit_map:
-            info += name + ' '
-        info += '\n'
+            info += name + " "
+        info += "\n"
         info += f"   Cycle {CLOCK:<2}  "
         for _, unit_name in reg_unit_map:
-            info += unit_name + ' '
-        
+            info += unit_name + " "
+
         return info
 
 
@@ -113,39 +113,28 @@ class Unit:
             self.status.R_j = reg_j.is_ready
             self.status.Q_j = reg_j.in_used_unit
 
-            if reg_j.is_ready:
-                reg_j.is_ready = False
+            # if reg_j.is_ready:
+            #     reg_j.is_ready = False
                 # reg_j.in_used_unit = self
 
         self.status.F_k = reg_k
         self.status.R_k = reg_k.is_ready
         self.status.Q_k = reg_k.in_used_unit
 
-        if reg_k.is_ready:
-            reg_k.is_ready = False
+        # if reg_k.is_ready:
+        #     reg_k.is_ready = False
             # reg_k.in_used_unit = self
-
-    def check_status(self):
-        '''
-        检查
-        '''
-        if self.status.F_j is not None:
-            self.status.R_j = self.status.F_j.is_ready
-            self.status.Q_j = self.status.F_j.in_used_unit
-        self.status.R_k = self.status.F_k.is_ready
-        self.status.Q_k = self.status.F_k.in_used_unit
-
 
     def finish_read(self):
         self.status.R_j = False
         self.status.R_k = False
-        if self.status.F_j is not None:
-            self.status.F_j.is_ready = True
-        self.status.F_k.is_ready = True
+        # if self.status.F_j is not None:
+        #     self.status.F_j.is_ready = True
+        # self.status.F_k.is_ready = True
 
     def info(self) -> str:
         info = "    "
-        if self.instruction is None:
+        if self.instruction is None or self.status.Busy == False:
             info += " " * 7
         else:
             info += f"{self.instruction.left_latency:>2}/{self.instruction.latency:<2}  "
@@ -212,7 +201,6 @@ class Instruction:
 
         elif self.stage == InstructionStage.ISSUE:
             # 当两个源寄存器都可读的时候继续
-            # self.unit.check_status()
             if self.unit.status.R_j and self.unit.status.R_k:
                 self.stage = InstructionStage.READ
                 self.stage_clocks.append(CLOCK)
@@ -222,11 +210,14 @@ class Instruction:
         elif self.stage == InstructionStage.READ:
             self.stage = InstructionStage.EXEC
             self.unit.finish_read()
-            self.stage_clocks.append(CLOCK)
+            if self.left_latency == 0:
+                self.stage_clocks.append(CLOCK)
 
         elif self.stage == InstructionStage.EXEC:
             if self.left_latency > 0:
                 self.left_latency -= 1
+                if self.left_latency == 0:
+                    self.stage_clocks.append(CLOCK)
             else:
                 self.stage = InstructionStage.WRITE
                 self.unit.status.Busy = False
@@ -265,8 +256,13 @@ class ScoreBoard:
         instruction_length = len(self.instructions)
         while True:
             # 全部指令都已发射 并且 都已执行结束, 退出
-            if self.pc == instruction_length and len(self.issued_instructions) == 0:
-                break
+            if self.pc == instruction_length:
+                busy_unit_number = 0
+                for unit in self.functional_units:
+                    if unit.status.Busy:
+                        busy_unit_number += 1
+                if busy_unit_number == 0:
+                    break
 
             # 尝试发射一条新指令
             # 1. 如果有指令
@@ -287,10 +283,18 @@ class ScoreBoard:
             for issued_instruction in self.issued_instructions:
                 issued_instruction.run()
 
-            global CLOCK
-            CLOCK += 1
+            # 所有指令都执行结束之后一起更新 unit 的 Rj Rk Qj Qk 的状态, 避免指令串行更新的干扰
+            for unit in self.functional_units:
+                if unit.status.R_j == False and unit.status.Q_j and unit.status.Q_j.status.Busy == False:
+                    unit.status.R_j = True
+                    unit.status.Q_j = None
+                if unit.status.R_k == False and unit.status.Q_k and unit.status.Q_k.status.Busy == False:
+                    unit.status.R_k = True
+                    unit.status.Q_k = None
 
             self.show_info()
+            global CLOCK
+            CLOCK += 1
             pass
             # exit()
 
@@ -329,7 +333,8 @@ class ScoreBoard:
         print("\n")
         print("[#register result status#]\n")
         print(self.register_group)
-        print('\n')
+        print("\n")
+
 
 def main():
     rg = RegisterGroup()
