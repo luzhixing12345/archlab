@@ -82,7 +82,7 @@ schedule step = 6003
 
 ```bash
 .
-├── asm
+├── asmcode
 │   ├── Makefile
 │   ├── loop.S              # 汇编代码
 │   ├── loop.c              # C 代码
@@ -103,7 +103,7 @@ schedule step = 6003
     └── DH_WAW.S
 ```
 
-其中 testcase 为一些测试用例, test.py 中为这些测试用例对应的使用. `asm/loop.c` 为题目中测试代码的 C 函数表示
+其中 testcase 为一些测试用例, test.py 中为这些测试用例对应的使用. `asmcode/loop.c` 为题目中测试代码的 C 函数表示
 
 ```c
 void loop_test(int *x, int s) {
