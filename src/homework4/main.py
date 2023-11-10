@@ -1,9 +1,11 @@
 from enum import Enum
-from typing import TypedDict, List, Optional
+from typing import TypedDict, List, Optional, Union
 import logging
 
 CLOCK = 1
 LOG_DEBUG_INFO = False
+
+logger = logging.getLogger()
 
 
 class Operation(Enum):
@@ -22,29 +24,68 @@ class UnitFunction(Enum):
 
 
 class FloatRegister:
-    ...
+    def __init__(self, name: str) -> None:
+        self.name = name
+        self.is_ready = True
+        self.in_used_unit: Optional["Unit"] = None
+
+    def __str__(self) -> str:
+        return self.name
+
+    def __format__(self, __format_spec: str) -> str:
+        return format(self.name, __format_spec)
 
 
-class FloatRegGroup:
-    F0 = FloatRegister()
-    F2 = FloatRegister()
-    F4 = FloatRegister()
-    F6 = FloatRegister()
-    F8 = FloatRegister()
-    F10 = FloatRegister()
+class RegisterGroup:
+    def __init__(self) -> None:
+        self.F0 = FloatRegister("F0")
+        self.F2 = FloatRegister("F2")
+        self.F4 = FloatRegister("F4")
+        self.F6 = FloatRegister("F6")
+        self.F8 = FloatRegister("F8")
+        self.F10 = FloatRegister("F10")
+        self.R2 = FloatRegister("R2")
+        self.R3 = FloatRegister("R3")
+
+        self.register_map = {
+            "F0": self.F0,
+            "F2": self.F2,
+            "F4": self.F4,
+            "F6": self.F6,
+            "F8": self.F8,
+            "F10": self.F10,
+        }
+
+    def __repr__(self) -> str:
+        info = ' ' * 13
+        reg_unit_map = []
+        for name, reg in self.register_map.items():
+            if reg.in_used_unit is not None:
+                reg_unit_map.append((f'{name:<{len(reg.in_used_unit.name)}}', reg.in_used_unit.name))
+            else:
+                reg_unit_map.append((name, f'{" ":<{len(name)}}'))
+
+        for name, _ in reg_unit_map:
+            info += name + ' '
+        info += '\n'
+        info += f"   Cycle {CLOCK:<2}  "
+        for _, unit_name in reg_unit_map:
+            info += unit_name + ' '
+        
+        return info
 
 
 class UnitState:
     def __init__(self) -> None:
-        self.Busy: bool  # 单元是否繁忙
-        self.Op: Operation  # 部件执行的指令类型
-        self.F_i: int  # 目的寄存器
-        self.F_j: int  # 源寄存器
-        self.F_k: int  # 源寄存器
-        self.Q_j: int  # 如果源寄存器 F_j 没准备好部件该向哪里要数据
-        self.Q_k: int  # 如果源寄存器 F_k 没准备好部件该向哪里要数据
-        self.R_j: bool  # 源寄存器 F_j 是否准备好
-        self.R_k: bool  # 源寄存器 F_k 是否准备好
+        self.Busy: bool = False  # 单元是否繁忙
+        self.Op: Operation = None  # 部件执行的指令类型
+        self.F_i: FloatRegister = None  # 目的寄存器
+        self.F_j: FloatRegister = None  # 源寄存器
+        self.F_k: FloatRegister = None  # 源寄存器
+        self.Q_j: "Unit" = None  # 如果源寄存器 F_j 不可用, 部件该向哪个功能单元要数据
+        self.Q_k: "Unit" = None  # 如果源寄存器 F_k 不可用, 部件该向哪个功能单元要数据
+        self.R_j: bool = False  # 源寄存器 F_j 是否可读
+        self.R_k: bool = False  # 源寄存器 F_k 是否可读
 
 
 class Unit:
@@ -52,6 +93,76 @@ class Unit:
         self.name = name
         self.function = function
         self.status = UnitState()
+        self.used_registers = []
+        self.instruction: Instruction = None
+
+    def update_status(self, Op: Operation, dest: FloatRegister, reg_j: Union[int, FloatRegister], reg_k: FloatRegister):
+        self.status.Busy = True
+        self.status.Op = Op
+        self.status.F_i = dest
+        self.status.F_i.in_used_unit = self
+        self.status.F_i.is_ready = False
+
+        if type(reg_j) == int:
+            # 立即数
+            self.status.F_j = None
+            self.status.R_j = True
+            self.status.Q_j = None
+        else:
+            self.status.F_j = reg_j
+            self.status.R_j = reg_j.is_ready
+            self.status.Q_j = reg_j.in_used_unit
+
+            if reg_j.is_ready:
+                reg_j.is_ready = False
+                # reg_j.in_used_unit = self
+
+        self.status.F_k = reg_k
+        self.status.R_k = reg_k.is_ready
+        self.status.Q_k = reg_k.in_used_unit
+
+        if reg_k.is_ready:
+            reg_k.is_ready = False
+            # reg_k.in_used_unit = self
+
+    def check_status(self):
+        '''
+        检查
+        '''
+        if self.status.F_j is not None:
+            self.status.R_j = self.status.F_j.is_ready
+            self.status.Q_j = self.status.F_j.in_used_unit
+        self.status.R_k = self.status.F_k.is_ready
+        self.status.Q_k = self.status.F_k.in_used_unit
+
+
+    def finish_read(self):
+        self.status.R_j = False
+        self.status.R_k = False
+        if self.status.F_j is not None:
+            self.status.F_j.is_ready = True
+        self.status.F_k.is_ready = True
+
+    def info(self) -> str:
+        info = "    "
+        if self.instruction is None:
+            info += " " * 7
+        else:
+            info += f"{self.instruction.left_latency:>2}/{self.instruction.latency:<2}  "
+        info += f"{self.name:<7} | "
+        info += f'{"Yes":>4}' if self.status.Busy else f'{"No":>4}'
+        if self.status.Busy == False:
+            info += " " * 36
+        else:
+            info += f"  {self.status.Op.value:<4}  " if self.status.Op is not None else f" " * 8
+            info += f"{self.status.F_i.name:<4}" if self.status.F_i else f'{" ":<4}'
+            info += f"{self.status.F_j.name:<4}" if self.status.F_j else f'{" ":<4}'
+            info += f"{self.status.F_k.name:<4}" if self.status.F_k else f'{" ":<4}'
+            info += f"{self.status.Q_j.name:<8}" if self.status.Q_j else f'{" ":<8}'
+            info += f"{self.status.Q_k.name:<8}" if self.status.Q_k else f'{" ":<8}'
+        info += f'{"Yes":<4}' if self.status.R_j else f'{"No":<4}'
+        info += f'{"Yes":<4}' if self.status.R_k else f'{"No":<4}'
+        return info
 
 
 class InstructionStage(Enum):
@@ -64,7 +175,15 @@ class InstructionStage(Enum):
 
 
 class Instruction:
-    def __init__(self, Op: Operation, dest: str, j: str, k: str, latency: int, unit_function: UnitFunction) -> None:
+    def __init__(
+        self,
+        Op: Operation,
+        dest: FloatRegister,
+        j: Union[int, FloatRegister],
+        k: FloatRegister,
+        latency: int,
+        unit_function: UnitFunction,
+    ) -> None:
         self.Op = Op
         self.dest = dest
         self.j = j
@@ -75,10 +194,12 @@ class Instruction:
         self.functional_units: List[Unit] = None  # ScoreBoard 中所有的功能单元
         self.unit: Unit = None  # 执行当前指令的功能单元
         self.stage: InstructionStage = InstructionStage.TOBE_ISSUE  # 指令执行的阶段
+        self.left_latency = self.latency
+        self.stage_clocks = []  # 四个阶段进入的时间节点
 
     def run(self):
         """ """
-        if self.stage:
+        if self.stage == InstructionStage.COMPLETE:
             return
 
         assert self.functional_units is not None
@@ -86,19 +207,44 @@ class Instruction:
 
         if self.stage == InstructionStage.TOBE_ISSUE:
             self.stage = InstructionStage.ISSUE
-            self.unit.status.Busy = True
-            self.unit.status.Op = self.Op
-            self.unit.status.F_i = self.dest
-            self.unit.status.F_j = self.j
-            self.unit.status.F_k = self.k
+            self.unit.update_status(self.Op, self.dest, self.j, self.k)
+            self.stage_clocks.append(CLOCK)
 
+        elif self.stage == InstructionStage.ISSUE:
+            # 当两个源寄存器都可读的时候继续
+            # self.unit.check_status()
+            if self.unit.status.R_j and self.unit.status.R_k:
+                self.stage = InstructionStage.READ
+                self.stage_clocks.append(CLOCK)
+            else:
+                logger.debug("stack")
 
-class RegisterStatus:
-    ...
+        elif self.stage == InstructionStage.READ:
+            self.stage = InstructionStage.EXEC
+            self.unit.finish_read()
+            self.stage_clocks.append(CLOCK)
+
+        elif self.stage == InstructionStage.EXEC:
+            if self.left_latency > 0:
+                self.left_latency -= 1
+            else:
+                self.stage = InstructionStage.WRITE
+                self.unit.status.Busy = False
+                self.unit.status.F_i.in_used_unit = None
+                self.unit.status.F_i.is_ready = True
+                self.stage = InstructionStage.COMPLETE
+                self.stage_clocks.append(CLOCK)
+
+    def stage_info(self) -> str:
+        info = ""
+        for stage_clock in self.stage_clocks:
+            info += f"{stage_clock:>6}"
+
+        return info
 
 
 class ScoreBoard:
-    def __init__(self) -> None:
+    def __init__(self, rg: RegisterGroup) -> None:
         self.instructions: List[Instruction] = []
         self.issued_instructions: List[Instruction] = []
         self.pc: int = 0
@@ -107,9 +253,9 @@ class ScoreBoard:
             Unit(name="Mult1", function=UnitFunction.MULT),
             Unit(name="Mult2", function=UnitFunction.MULT),
             Unit(name="Add", function=UnitFunction.ADD),
-            Unit(name="Divide", function=UnitFunction.ADD),
+            Unit(name="Divide", function=UnitFunction.DIVIDE),
         ]
-        self.register_status = RegisterStatus(self.functional_units)
+        self.register_group = rg
 
     def load_instructions(self, instructions: List[Instruction]):
         self.instructions = instructions
@@ -132,6 +278,7 @@ class ScoreBoard:
                 if unit is not None and not self.has_write_conflict(self.instructions[self.pc].dest):
                     self.instructions[self.pc].functional_units = self.functional_units
                     self.instructions[self.pc].unit = unit
+                    unit.instruction = self.instructions[self.pc]
                     self.issued_instructions.append(self.instructions[self.pc])
                     self.pc += 1
 
@@ -143,7 +290,11 @@ class ScoreBoard:
             global CLOCK
             CLOCK += 1
 
-    def has_available_unit(self, unit_function: UnitFunction) -> Optional(Unit):
+            self.show_info()
+            pass
+            # exit()
+
+    def has_available_unit(self, unit_function: UnitFunction) -> Optional[Unit]:
         """
         检查当前 ScoreBoard 是否有 unit_function 类的功能单元可用
 
@@ -163,20 +314,36 @@ class ScoreBoard:
                 return True
         return False
 
+    def show_info(self):
+        print("-" * 70)
+        print("[#instruction status#]\n")
+        print(f"    Op   dest j   k  | Issue  Read  Exec  Write")
+        for instruction in self.instructions:
+            print(f"    {instruction.Op.value:<4} {instruction.dest:<4} {instruction.j}  {instruction.k}", end=" |")
+            print(instruction.stage_info())
+        print("\n")
+        print("[#functional unit status#]\n")
+        print("    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk")
+        for unit in self.functional_units:
+            print(unit.info())
+        print("\n")
+        print("[#register result status#]\n")
+        print(self.register_group)
+        print('\n')
 
 def main():
-    frg = FloatRegGroup()
+    rg = RegisterGroup()
 
     instructions = [
-        Instruction(Op=Operation.LOAD, dest=frg.F6, j=34, k="R2", latency=0, unit_function=UnitFunction.INTEGER),
-        Instruction(Op=Operation.LOAD, dest=frg.F2, j=45, k="R3", latency=0, unit_function=UnitFunction.INTEGER),
-        Instruction(Op=Operation.MUL, dest=frg.F8, j=frg.F2, k=frg.F4, latency=10, unit_function=UnitFunction.MULT),
-        Instruction(Op=Operation.SUB, dest=frg.F8, j=frg.F6, k=frg.F2, latency=2, unit_function=UnitFunction.ADD),
-        Instruction(Op=Operation.DIV, dest=frg.F10, j=frg.F0, k=frg.F6, latency=40, unit_function=UnitFunction.DIVIDE),
-        Instruction(Op=Operation.ADD, dest=frg.F6, j=frg.F8, k=frg.F2, latency=2, unit_function=UnitFunction.ADD),
+        Instruction(Op=Operation.LOAD, dest=rg.F6, j=34, k=rg.R2, latency=0, unit_function=UnitFunction.INTEGER),
+        Instruction(Op=Operation.LOAD, dest=rg.F2, j=45, k=rg.R3, latency=0, unit_function=UnitFunction.INTEGER),
+        Instruction(Op=Operation.MUL, dest=rg.F0, j=rg.F2, k=rg.F4, latency=10, unit_function=UnitFunction.MULT),
+        Instruction(Op=Operation.SUB, dest=rg.F8, j=rg.F6, k=rg.F2, latency=2, unit_function=UnitFunction.ADD),
+        Instruction(Op=Operation.DIV, dest=rg.F10, j=rg.F0, k=rg.F6, latency=40, unit_function=UnitFunction.DIVIDE),
+        Instruction(Op=Operation.ADD, dest=rg.F6, j=rg.F8, k=rg.F2, latency=2, unit_function=UnitFunction.ADD),
     ]
 
-    scoreboard = ScoreBoard()
+    scoreboard = ScoreBoard(rg)
     scoreboard.load_instructions(instructions)
     global LOG_DEBUG_INFO
     LOG_DEBUG_INFO = True

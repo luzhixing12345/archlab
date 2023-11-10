@@ -1,7 +1,7 @@
 
 # scoreboard
 
-![image](https://raw.githubusercontent.com/luzhixing12345/archlab/main/img/homework4.jpg)
+![image](https://raw.githubusercontent.com/luzhixing12345/archlab/main/img/homework4.png)
 
 ## 参考
 
