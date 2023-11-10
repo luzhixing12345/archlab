@@ -78,29 +78,32 @@ schedule step = 6003
 
 > 说实话代码实现的文档不是很好写, 因为实际上更多的是作者在工程实践上的选择, 一下子抛给读者一个完整的 ISA 实现, 很大概率会直接陷入代码细节之中, 因此笔者打算一步一步的按执行流程来解释代码实现, 并在对应位置给出该模块的设计思路.
 
-本次代码位于 `src/homework3`, 文件结构如下
+开始之前先总览一下目录结构, 本次代码位于 `src/homework3`
 
 ```bash
 .
-├── asmcode             # 测试用例
-│   ├── CTL1.S
-│   ├── DH1.S
-│   ├── DH2.S
-│   ├── DH3.S
-│   ├── DH_RAW.S
-│   ├── DH_WAR.S
-│   └── DH_WAW.S
-├── base.py             # 基础枚举类型和类定义
-├── instructions.py     # RISCV 32I 指令集
-├── isa.py              # Pipeline ISA
-├── loop.S              # 汇编代码
-├── loop.c              # C 代码
-├── main.py             # 主函数入口
-├── schedule_loop.S     # 汇编的重排序
-└── test.py             # Pipeline ISA 正确性测试文件
+├── asm
+│   ├── Makefile
+│   ├── loop.S              # 汇编代码
+│   ├── loop.c              # C 代码
+│   └── schedule_loop.S     # 汇编的重排序
+├── base.py                 # 基础枚举类型和类定义
+├── instructions.py         # RISCV 32I 指令集
+├── isa.py                  # Pipeline ISA
+├── main.ipynb
+├── main.py                 # 主函数入口
+├── test.py                 # Pipeline ISA 正确性测试文件
+└── testcase                # 测试用例
+    ├── CTL1.S
+    ├── DH1.S
+    ├── DH2.S
+    ├── DH3.S
+    ├── DH_RAW.S
+    ├── DH_WAR.S
+    └── DH_WAW.S
 ```
 
-其中 asmcode 为一些测试用例, test.py 中为这些测试用例对应的使用. `loop.c` 为题目中测试代码的 C 函数表示
+其中 testcase 为一些测试用例, test.py 中为这些测试用例对应的使用. `asm/loop.c` 为题目中测试代码的 C 函数表示
 
 ```c
 void loop_test(int *x, int s) {
@@ -119,21 +122,121 @@ riscv64-linux-gnu-objdump example.o -d
 
 ```riscvasm
 00000000 <loop_test>:
-   0:   000017b7                lui     a5,0x1
-   4:   f9c78793                addi    a5,a5,-100 # f9c <.L2+0xf90>
-   8:   00f507b3                add     a5,a0,a5
+   0:   000017b7                lui     a5,0x1          # a5 = 1<<12 = 4096
+   4:   f9c78793                addi    a5,a5,-100      # a5 = 3096 ( = 999 x 4)
+   8:   00f507b3                add     a5,a0,a5        # a5 = x + 3096 (x[999])
 
 0000000c <.L2>:
-   c:   0007a703                lw      a4,0(a5)
-  10:   00078693                mv      a3,a5
-  14:   ffc78793                addi    a5,a5,-4
-  18:   00b70733                add     a4,a4,a1
-  1c:   00e7a223                sw      a4,4(a5)
+   c:   0007a703                lw      a4,0(a5)        # a4 = x[i]
+  10:   00078693                mv      a3,a5           # a3 = &x
+  14:   ffc78793                addi    a5,a5,-4        # x--
+  18:   00b70733                add     a4,a4,a1        # a4 += s
+  1c:   00e7a223                sw      a4,4(a5)        # x[i] = a4
   20:   fed516e3                bne     a0,a3,c <.L2>
   24:   00008067                ret
 ```
 
+除此之外对于浮点数的计算有如下假设, 下图中的延迟表示**如果后续的指令(FP ALU op/Store double)使用到了前面指令(FP ALU op/Load double)的结果, 那么需要额外添加 x 个延迟周期**
 
+![20231109105011](https://raw.githubusercontent.com/learner-lu/picbed/master/20231109105011.png)
+
+因此对于原循环来说, 一个修改后的结果 loop.S 如下:
+
+```riscvasm
+    lui     a5,0x1
+    addi    a5,a5,-100
+    add     a5,a0,a5
+L2:
+    lw      a4,0(a5)
+    nop
+    add     a4,a4,a1
+    nop
+    nop
+    sw      a4,4(a5)
+    addi    a5,a5,-4
+    nop
+    bne     a0,a5, L2
+    ret
+```
+
+重排后的指令 schedule_loop.S 如下:
+
+```riscvasm
+    lui     a5,0x1
+    addi    a5,a5,-100
+    add     a5,a0,a5
+L2:
+    lw      a4,0(a5)
+    addi    a5,a5,-4
+    add     a4,a4,a1
+    nop
+    bne     a0,a5, L2
+    sw      a4,4(a5)
+    ret
+```
+
+至此就可以利用工具得到这两段汇编代码所对应的机器码, 然后对比这两段代码运行的 step 即可, 这也就是 main.py 所做的事
+
+> 其中设置 register[10] 和 [11] 相当于设置 a0 和 a1, 即 x 数组地址为 0x200, s 的值为 1
+
+```python
+def main():
+
+    # basic loop -> loop.S
+    instructions = [
+        0x000017B7,
+        0xF9C78793,
+        0x00F507B3,
+        0x0007A703,
+        0x00078693,
+        0xFFC78793,
+        0x00B70733,
+        0x00E7A223,
+        0xFED516E3,
+        0x00008067,
+    ]
+
+    isa = PipelineISA()
+    isa.registers[10] = 0x200
+    isa.registers[11] = 1
+    isa.load_instructions(instructions)
+    isa.run()
+    basic_step = isa.step
+
+    # schedule loop -> schedule_loop.S
+    schedule_instructions = [
+        0x000017B7,
+        0xF9C78793,
+        0x00F507B3,
+        0x0007A703,
+        0xFFC78793,
+        0x00B70733,
+        0x00000013,
+        0xFEF518E3,
+        0x00E7A223,
+        0x00008067,
+    ]
+
+    isa.reset()
+    isa.registers[10] = 0x200
+    isa.registers[11] = 1
+    isa.load_instructions(schedule_instructions)
+    isa.run()
+    schedule_step = isa.step
+
+    print(f"   basic step = {basic_step}")
+    print(f"schedule step = {schedule_step}")
+    print(f"   improvment = {basic_step}-{schedule_step}/{basic_step} = {(basic_step-schedule_step)/basic_step * 100:.2f}%")
+
+if __name__ == "__main__":
+    main()
+```
+
+---
+
+#### 流水线设计
+
+开始之前先来简单回顾一下经典五阶段流水线的内容
 
 ## 参考
 

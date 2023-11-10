@@ -1,8 +1,7 @@
 
 file = loop.c
 
-run:
-	@python main.py
+.PHONY: asm test
 
 main:
 	riscv64-linux-gnu-gcc -march=rv32i -mabi=ilp32 -Ofast -c $(file) -o example.o

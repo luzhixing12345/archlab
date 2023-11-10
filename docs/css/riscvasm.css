@@ -66,3 +66,7 @@ pre[class*="language-riscvasm"] .Token.STRING.Format {
 pre[class*="language-riscvasm"] .Token.STRING.Control {
     color: --control;
 }
+
+pre[class*="language-riscvasm"] .Token.ADDRESS {
+    color: #D4D4D4;
+}

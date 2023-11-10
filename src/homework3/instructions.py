@@ -4,7 +4,7 @@ from base import *
 class Instruction:
     def __init__(self) -> None:
         self.name = self.__class__.__name__
-        # print(f"{self.name}")
+        # print(f"{self.name}") 
         self.control_signal = ControlSignal()
 
     def get_control_signal(self):
@@ -299,5 +299,5 @@ class J_JAL(Instruction):
         self.control_signal.MemWrite = False
         self.control_signal.MemtoReg = MemtoReg.ALU_RESULT
         self.control_signal.MemOp = MemOp.NONE
-        self.control_signal.PCsrc = PCsrc.IMM
+        self.control_signal.PCsrc = PCsrc.JAL
         return self.control_signal

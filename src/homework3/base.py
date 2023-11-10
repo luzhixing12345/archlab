@@ -143,8 +143,9 @@ class ALU_Bsrc(Enum):
 class PCsrc(Enum):
     PC = 0
     IMM = 1
-    JALR = 2
-    AUIPC = 3
+    JAL = 2
+    JALR = 3
+    AUIPC = 4
 
 
 class MemtoReg(Enum):
@@ -188,12 +189,12 @@ class ID_EX(Component):
     rd: int
     imm: int
     ctl_sig: ControlSignal
-    pc: int
 
     # 存 rs1 和 rs2 是为了在 EX 阶段检测数据冒险
     rs1: int
     rs2: int
-    # 条件跳转的方式, 只对于 B 指令在 ID 阶段使用
+    pc: int
+    # 条件跳转的方式, 只对于 B 指令在 EX 阶段使用
     Branch: BFunct3
 
 
@@ -206,6 +207,11 @@ class EX_MEM(Component):
     MemtoReg: MemtoReg
     MemOp: MemOp
     RegWrite: bool
+    # 条件跳转是否成立
+    PCsrc: PCsrc
+    pc: int
+    imm: int
+    branch_cond: bool
 
 
 class MEM_WB(Component):

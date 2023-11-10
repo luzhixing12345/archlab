@@ -3,12 +3,6 @@ from instructions import *
 import copy
 
 
-class BubbleType(Enum):
-    NONE = 0
-    ID_EX = 1
-    EX_MEM = 2
-
-
 class IR(Component):
     """
     中间寄存器, 用于存储流水线 5 阶段的 4 个中间阶段的执行结果
@@ -31,25 +25,19 @@ class IR(Component):
         self.pre_EX_MEM = EX_MEM()
         self.pre_MEM_WB = MEM_WB()
 
-        self.bubble = BubbleType.NONE
+        self.bubble = False
 
     def update(self):
-        if self.bubble == BubbleType.EX_MEM:
+        if self.bubble:
             self.EX_MEM.is_empty = True
             self.MEM_WB = copy.deepcopy(self.pre_MEM_WB)
-        elif self.bubble == BubbleType.ID_EX:
-            self.ID_EX.is_empty = True
-            self.EX_MEM = copy.deepcopy(self.pre_EX_MEM)
-            self.MEM_WB = copy.deepcopy(self.pre_MEM_WB)
-        elif self.bubble == BubbleType.NONE:
+        else:
             self.IF_ID = copy.deepcopy(self.pre_IF_ID)
             self.ID_EX = copy.deepcopy(self.pre_ID_EX)
             self.EX_MEM = copy.deepcopy(self.pre_EX_MEM)
             self.MEM_WB = copy.deepcopy(self.pre_MEM_WB)
-        else:
-            raise ValueError(f"{self.bubble}")
 
-        self.bubble = BubbleType.NONE
+        self.bubble = False
 
     def is_flushed(self):
         """
@@ -74,7 +62,7 @@ class IR(Component):
         self.pre_EX_MEM = EX_MEM()
         self.pre_MEM_WB = MEM_WB()
 
-        self.bubble = BubbleType.NONE
+        self.bubble = False
 
 
 class RegisterGroup(Component):
@@ -172,11 +160,12 @@ class Memory(Component):
     def __getitem__(self, index):
         return self.memory[index]
 
+
 class ALU(Component):
     def __init__(self, op: Enum = None) -> None:
         super().__init__()
         # 设置 op 表示某一类特定的功能
-        # 比如 ID_adder 只做加法, ID_subtractor 只做减法
+        # 比如 ID_adder 只做加法
         self.op = op
 
     def calc(self, input_a: int, input_b: int, op: Enum = None) -> int:
@@ -342,13 +331,7 @@ class PipelineISA:
                 instruction[0] + instruction[24] + instruction[1:7] + instruction[20:24] + "0"
             )
 
-            # B 类型单独设置 Branch 标记位用于 update_pc 阶段计算
-            # 需要根据 Branch 的类型和 zero 电路判断跳转条件是否成立
-            self.IR.pre_ID_EX.Branch = instruction_info.funct3
-
         elif opcode_type in (OpCode.U_AUIPC, OpCode.U_LUI):
-            if opcode_type == OpCode.U_AUIPC:
-                ...
             instruction_info.funct7 = None
             instruction_info.rs2 = None
             instruction_info.rs1 = None
@@ -377,6 +360,13 @@ class PipelineISA:
         self.IR.pre_ID_EX.rs1 = instruction_info.rs1
         self.IR.pre_ID_EX.rs2 = instruction_info.rs2
         self.IR.pre_ID_EX.pc = self.IR.IF_ID.pc
+
+        if opcode_type == OpCode.B:
+            # B 类型单独设置 Branch 标记位用于 update_pc 阶段计算
+            # 需要根据 Branch 的类型来   判断跳转条件是否成立
+            self.IR.pre_ID_EX.Branch = instruction_info.funct3
+        else:
+            self.IR.pre_ID_EX.Branch = None
 
     def get_control_signal(self, instruction_info: InstructionInfo) -> ControlSignal:
         RISCV_32I_instructions = {
@@ -465,12 +455,15 @@ class PipelineISA:
         self.IR.pre_EX_MEM.rb = self.IR.ID_EX.rb
 
         input_a, input_b = self.detect_data_hazard(input_a, input_b)
-        if self.IR.bubble != BubbleType.NONE:
+        if self.IR.bubble:
             return
 
-        self.IR.pre_EX_MEM.alu_result = self.ALU.calc(
-            input_a=input_a, input_b=input_b, op=self.IR.ID_EX.ctl_sig.ALUop
-        )
+        alu_result = self.ALU.calc(input_a=input_a, input_b=input_b, op=self.IR.ID_EX.ctl_sig.ALUop)
+        self.IR.pre_EX_MEM.alu_result = alu_result
+
+        self.detect_control_hazard(input_a, input_b, alu_result, self.IR.ID_EX.Branch)
+        if self.IR.bubble:
+            return
 
         self.IR.pre_EX_MEM.rd = self.IR.ID_EX.rd
         self.IR.pre_EX_MEM.MemRead = self.IR.ID_EX.ctl_sig.MemRead
@@ -478,6 +471,9 @@ class PipelineISA:
         self.IR.pre_EX_MEM.MemtoReg = self.IR.ID_EX.ctl_sig.MemtoReg
         self.IR.pre_EX_MEM.MemOp = self.IR.ID_EX.ctl_sig.MemOp
         self.IR.pre_EX_MEM.RegWrite = self.IR.ID_EX.ctl_sig.RegWrite
+        self.IR.pre_EX_MEM.PCsrc = self.IR.ID_EX.ctl_sig.PCsrc
+        self.IR.pre_EX_MEM.pc = self.IR.ID_EX.pc
+        self.IR.pre_EX_MEM.imm = self.IR.ID_EX.imm
 
     def stage_mem(self):
         """
@@ -527,60 +523,36 @@ class PipelineISA:
         """
         更新 PC 指针
         """
-        if self.IR.bubble != BubbleType.NONE:
+        if self.IR.bubble:
             # 冒泡暂停一个周期
             return
-        if self.IR.ID_EX.is_empty or self.IR.pre_ID_EX.is_empty:
+        if self.IR.ID_EX.is_empty:
             # 1. 流水线初期, 还没有 ID 阶段
             # 2. ID 阶段被跳过时
             self.pc += 4
         else:
             # 对于 ID 阶段解析为 B/J 型指令, 直接判断跳转条件和地址
-            if self.IR.pre_ID_EX.ctl_sig.PCsrc == PCsrc.PC:
+            if (
+                not self.IR.EX_MEM.is_empty
+                and self.IR.pre_EX_MEM.PCsrc == PCsrc.IMM
+                and self.IR.pre_EX_MEM.branch_cond
+            ):
+                new_pc = self.ID_adder.calc(self.IR.pre_EX_MEM.pc, self.IR.pre_EX_MEM.imm)
+            elif self.IR.pre_ID_EX.is_empty:
                 new_pc = self.pc + 4
             elif self.IR.pre_ID_EX.ctl_sig.PCsrc == PCsrc.JALR:
                 a = self.IR.pre_ID_EX.ra
-                a = self.detect_control_hazard(a)
                 # TODO: test
                 new_pc = self.ID_adder.calc(a, self.IR.pre_ID_EX.imm)
                 self.IR.pre_IF_ID.is_empty = True
-            elif self.IR.pre_ID_EX.ctl_sig.PCsrc == PCsrc.IMM:
-                if self.IR.pre_ID_EX.ctl_sig.RegWrite:
-                    # JAL
-                    new_pc = self.ID_adder.calc(self.IR.IF_ID.pc, self.IR.pre_ID_EX.imm)
-                    # 清空 IF-ID 的 IR
-                    self.IR.pre_IF_ID.is_empty = True
-                else:
-                    # B 型指令, 计算 ra rb 的差, 根据符号位判断跳转条件是否成立
-                    a = self.IR.pre_ID_EX.ra
-                    b = self.IR.pre_ID_EX.rb
-
-                    a, b = self.detect_control_hazard(a, b)
-                    # TODO: test
-
-                    result = self.ID_subtractor.calc(a, b)
-                    # ZF:零标志位(如果结果等于0,则设置为1,否则设置为0)
-                    zf = 1 if result == 0 else 0
-                    # SF:符号标志位(如果结果为负数,则设置为1,否则设置为0)
-                    sf = 1 if result < 0 else 0
-                    # OF:溢出标志位(如果结果溢出,则设置为1,否则设置为0)
-                    of = (
-                        1
-                        if (a > 0 and b < 0 and result < 0) or (a < 0 and b > 0 and result > 0)
-                        else 0
-                    )
-                    # CF:进位标志位(如果a小于b,则设置为1,否则设置为0)
-                    cf = 1 if a < b else 0
-                    if self.check_branch_condition(self.IR.pre_ID_EX.Branch, zf, sf, of, cf):
-                        new_pc = self.ID_adder.calc(self.IR.IF_ID.pc, self.IR.pre_ID_EX.imm)
-                        # 清空 IF-ID 的 IR
-                        self.IR.pre_IF_ID.is_empty = True
-                    else:
-                        new_pc = self.pc + 4
-
+            elif self.IR.pre_ID_EX.ctl_sig.PCsrc == PCsrc.JAL:
+                new_pc = self.ID_adder.calc(self.IR.IF_ID.pc, self.IR.pre_ID_EX.imm)
+                self.IR.pre_IF_ID.is_empty = True
             elif self.IR.pre_ID_EX.ctl_sig.PCsrc == PCsrc.AUIPC:
                 new_pc = self.IR.pre_ID_EX.imm
                 self.IR.pre_IF_ID.is_empty = True
+            elif self.IR.pre_ID_EX.ctl_sig.PCsrc in (PCsrc.PC, PCsrc.IMM):
+                new_pc = self.pc + 4
             else:
                 raise ValueError(f"unknown PCsrc {self.IR.pre_ID_EX.ctl_sig.PCsrc}")
 
@@ -612,7 +584,7 @@ class PipelineISA:
             ):
                 # 要读内存到寄存器的 I_LOAD 指令 lb lw
                 # 必须空一个周期
-                self.IR.bubble = BubbleType.EX_MEM
+                self.IR.bubble = True
             else:
                 # 一些要写寄存器的 R 和 I 型指令
                 # 直接 bypass 过去
@@ -625,36 +597,32 @@ class PipelineISA:
 
         return input_a, input_b
 
-    def detect_control_hazard(self, a, b=None):
+    def detect_control_hazard(self, a, b, alu_result, branch_type: BFunct3):
         """
-        ID 阶段检测的控制冒险
+        B 型指令的控制冒险检测
 
-        优先检查靠后的 MEM_WB, 其次检查数据更新更靠前的 EX_MEM
-        因为此时还没有更新 IR 寄存器的值, 所以值从 pre 里取
+        J 型指令已经在 ID 阶段提前计算
         """
-        if not self.IR.pre_MEM_WB.is_empty and self.IR.pre_MEM_WB.RegWrite:
-            if self.IR.pre_MEM_WB.rd == self.IR.pre_ID_EX.rs1:
-                a = self.IR.pre_MEM_WB.alu_result
-            if self.IR.pre_MEM_WB.rd == self.IR.pre_ID_EX.rs2:
-                b = self.IR.pre_MEM_WB.alu_result
-
-        if not self.IR.pre_EX_MEM.is_empty and self.IR.pre_EX_MEM.RegWrite:
-            if self.IR.pre_EX_MEM.MemRead and self.IR.pre_EX_MEM.rd in (
-                self.IR.pre_ID_EX.rs1,
-                self.IR.pre_ID_EX.rs2,
-            ):
-                self.IR.bubble = BubbleType.ID_EX
-                return
-            else:
-                if self.IR.pre_EX_MEM.rd == self.IR.pre_ID_EX.rs1:
-                    a = self.IR.pre_EX_MEM.alu_result
-                if self.IR.pre_EX_MEM.rd == self.IR.pre_ID_EX.rs2:
-                    b = self.IR.pre_EX_MEM.alu_result
-
-        if b is None:
-            return a
+        if branch_type is None:
+            self.IR.pre_EX_MEM.branch_cond = False
+            return
+        # ZF:零标志位(如果结果等于0,则设置为1,否则设置为0)
+        zf = 1 if alu_result == 0 else 0
+        # SF:符号标志位(如果结果为负数,则设置为1,否则设置为0)
+        sf = 1 if alu_result < 0 else 0
+        # OF:溢出标志位(如果结果溢出,则设置为1,否则设置为0)
+        of = (
+            1 if (a > 0 and b < 0 and alu_result < 0) or (a < 0 and b > 0 and alu_result > 0) else 0
+        )
+        # CF:进位标志位(如果a小于b,则设置为1,否则设置为0)
+        cf = 1 if a < b else 0
+        if self.check_branch_condition(branch_type, zf, sf, of, cf):
+            self.IR.pre_EX_MEM.branch_cond = True
+            # 清空 IF_ID ID_EX 的 IR 内容
+            self.IR.pre_IF_ID.is_empty = True
+            self.IR.pre_ID_EX.is_empty = True
         else:
-            return a, b
+            self.IR.pre_EX_MEM.branch_cond = False
 
     def check_branch_condition(self, branch_type: BFunct3, zf, sf, of, cf) -> bool:
         """

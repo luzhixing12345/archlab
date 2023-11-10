@@ -70,6 +70,17 @@ pre[class*="language-shell"] .Token.DIR_PATH {
     color: #569cd6;
 }
 
+/* pre[class*="language-shell"] .Token.TreeNormal {
+    color: #D4D4D4;
+}
+
+pre[class*="language-shell"] .Token.TreeExe {
+    color: lime;
+}
+
+pre[class*="language-shell"] .Token.TreeIgnore {
+    color: #C1CCCC;
+} */
 pre[class*="language-shell"] .Token.OPTION {
     color: #b3b2b2;
 }

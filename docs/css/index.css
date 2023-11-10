@@ -521,7 +521,7 @@ ul>li>ul>li {
 
 .dir-tree a:hover {
     font-weight: bold;
-    color: #0366d6;
+    color: #000;
     /* text-decoration: underline; */
 }
 
@@ -530,7 +530,7 @@ ul>li>ul>li {
 }
 
 .dir-tree ul ul li a:hover {
-    color: #0366d6;
+    color: #000;
 }
 
 .link-active {
