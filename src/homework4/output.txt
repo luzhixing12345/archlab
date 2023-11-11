@@ -1,0 +1,1736 @@
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1
+    Load F2   45  R3 |
+    Mul  F0   F2  F4 |
+    Sub  F8   F6  F2 |
+    Div  F10  F0  F6 |
+    Add  F6   F8  F2 |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+     1/1   Integer |  Yes  Load  F6      R2                  Yes Yes 
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+           Divide  |   No                                    No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6      F8 F10 
+   Cycle 1            Integer        
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2
+    Load F2   45  R3 |
+    Mul  F0   F2  F4 |
+    Sub  F8   F6  F2 |
+    Div  F10  F0  F6 |
+    Add  F6   F8  F2 |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+     1/1   Integer |  Yes  Load  F6      R2                  Yes Yes 
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+           Divide  |   No                                    No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6      F8 F10 
+   Cycle 2            Integer        
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3
+    Load F2   45  R3 |
+    Mul  F0   F2  F4 |
+    Sub  F8   F6  F2 |
+    Div  F10  F0  F6 |
+    Add  F6   F8  F2 |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+     0/1   Integer |  Yes  Load  F6      R2                  No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+           Divide  |   No                                    No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6      F8 F10 
+   Cycle 3            Integer        
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |
+    Mul  F0   F2  F4 |
+    Sub  F8   F6  F2 |
+    Div  F10  F0  F6 |
+    Add  F6   F8  F2 |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+           Divide  |   No                                    No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10 
+   Cycle 4                      
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5
+    Mul  F0   F2  F4 |
+    Sub  F8   F6  F2 |
+    Div  F10  F0  F6 |
+    Add  F6   F8  F2 |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+     1/1   Integer |  Yes  Load  F2      R3                  Yes Yes 
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+           Divide  |   No                                    No  No  
+
+
+[#register result status#]
+
+             F0 F2      F4 F6 F8 F10 
+   Cycle 5      Integer              
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6
+    Mul  F0   F2  F4 |     6
+    Sub  F8   F6  F2 |
+    Div  F10  F0  F6 |
+    Add  F6   F8  F2 |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+     1/1   Integer |  Yes  Load  F2      R3                  Yes Yes 
+    10/10  Mult1   |  Yes  Mul   F0  F2  F4  Integer         No  Yes 
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+           Divide  |   No                                    No  No  
+
+
+[#register result status#]
+
+             F0    F2      F4 F6 F8 F10 
+   Cycle 6   Mult1 Integer              
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7
+    Mul  F0   F2  F4 |     6
+    Sub  F8   F6  F2 |     7
+    Div  F10  F0  F6 |
+    Add  F6   F8  F2 |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+     0/1   Integer |  Yes  Load  F2      R3                  No  No  
+    10/10  Mult1   |  Yes  Mul   F0  F2  F4  Integer         No  Yes 
+           Mult2   |   No                                    No  No  
+     2/2   Add     |  Yes  Sub   F8  F6  F2          Integer Yes No  
+           Divide  |   No                                    No  No  
+
+
+[#register result status#]
+
+             F0    F2      F4 F6 F8  F10 
+   Cycle 7   Mult1 Integer       Add     
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6
+    Sub  F8   F6  F2 |     7
+    Div  F10  F0  F6 |     8
+    Add  F6   F8  F2 |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+    10/10  Mult1   |  Yes  Mul   F0  F2  F4                  Yes Yes 
+           Mult2   |   No                                    No  No  
+     2/2   Add     |  Yes  Sub   F8  F6  F2                  Yes Yes 
+    40/40  Divide  |  Yes  Div   F10 F0  F6  Mult1           No  Yes 
+
+
+[#register result status#]
+
+             F0    F2 F4 F6 F8  F10    
+   Cycle 8   Mult1          Add Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9
+    Sub  F8   F6  F2 |     7     9
+    Div  F10  F0  F6 |     8
+    Add  F6   F8  F2 |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+    10/10  Mult1   |  Yes  Mul   F0  F2  F4                  Yes Yes 
+           Mult2   |   No                                    No  No  
+     2/2   Add     |  Yes  Sub   F8  F6  F2                  Yes Yes 
+    40/40  Divide  |  Yes  Div   F10 F0  F6  Mult1           No  Yes 
+
+
+[#register result status#]
+
+             F0    F2 F4 F6 F8  F10    
+   Cycle 9   Mult1          Add Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9
+    Sub  F8   F6  F2 |     7     9
+    Div  F10  F0  F6 |     8
+    Add  F6   F8  F2 |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+     9/10  Mult1   |  Yes  Mul   F0  F2  F4                  No  No  
+           Mult2   |   No                                    No  No  
+     1/2   Add     |  Yes  Sub   F8  F6  F2                  No  No  
+    40/40  Divide  |  Yes  Div   F10 F0  F6  Mult1           No  Yes 
+
+
+[#register result status#]
+
+             F0    F2 F4 F6 F8  F10    
+   Cycle 10  Mult1          Add Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9
+    Sub  F8   F6  F2 |     7     9    11
+    Div  F10  F0  F6 |     8
+    Add  F6   F8  F2 |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+     8/10  Mult1   |  Yes  Mul   F0  F2  F4                  No  No  
+           Mult2   |   No                                    No  No  
+     0/2   Add     |  Yes  Sub   F8  F6  F2                  No  No  
+    40/40  Divide  |  Yes  Div   F10 F0  F6  Mult1           No  Yes 
+
+
+[#register result status#]
+
+             F0    F2 F4 F6 F8  F10    
+   Cycle 11  Mult1          Add Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8
+    Add  F6   F8  F2 |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+     7/10  Mult1   |  Yes  Mul   F0  F2  F4                  No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    40/40  Divide  |  Yes  Div   F10 F0  F6  Mult1           No  Yes 
+
+
+[#register result status#]
+
+             F0    F2 F4 F6 F8 F10    
+   Cycle 12  Mult1             Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8
+    Add  F6   F8  F2 |    13
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+     6/10  Mult1   |  Yes  Mul   F0  F2  F4                  No  No  
+           Mult2   |   No                                    No  No  
+     2/2   Add     |  Yes  Add   F6  F8  F2                  Yes Yes 
+    40/40  Divide  |  Yes  Div   F10 F0  F6  Mult1           No  Yes 
+
+
+[#register result status#]
+
+             F0    F2 F4 F6  F8 F10    
+   Cycle 13  Mult1       Add    Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8
+    Add  F6   F8  F2 |    13    14
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+     5/10  Mult1   |  Yes  Mul   F0  F2  F4                  No  No  
+           Mult2   |   No                                    No  No  
+     2/2   Add     |  Yes  Add   F6  F8  F2                  Yes Yes 
+    40/40  Divide  |  Yes  Div   F10 F0  F6  Mult1           No  Yes 
+
+
+[#register result status#]
+
+             F0    F2 F4 F6  F8 F10    
+   Cycle 14  Mult1       Add    Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8
+    Add  F6   F8  F2 |    13    14
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+     4/10  Mult1   |  Yes  Mul   F0  F2  F4                  No  No  
+           Mult2   |   No                                    No  No  
+     1/2   Add     |  Yes  Add   F6  F8  F2                  No  No  
+    40/40  Divide  |  Yes  Div   F10 F0  F6  Mult1           No  Yes 
+
+
+[#register result status#]
+
+             F0    F2 F4 F6  F8 F10    
+   Cycle 15  Mult1       Add    Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8
+    Add  F6   F8  F2 |    13    14    16
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+     3/10  Mult1   |  Yes  Mul   F0  F2  F4                  No  No  
+           Mult2   |   No                                    No  No  
+     0/2   Add     |  Yes  Add   F6  F8  F2                  No  No  
+    40/40  Divide  |  Yes  Div   F10 F0  F6  Mult1           No  Yes 
+
+
+[#register result status#]
+
+             F0    F2 F4 F6  F8 F10    
+   Cycle 16  Mult1       Add    Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8
+    Add  F6   F8  F2 |    13    14    16
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+     2/10  Mult1   |  Yes  Mul   F0  F2  F4                  No  No  
+           Mult2   |   No                                    No  No  
+     0/2   Add     |  Yes  Add   F6  F8  F2                  No  No  
+    40/40  Divide  |  Yes  Div   F10 F0  F6  Mult1           No  Yes 
+
+
+[#register result status#]
+
+             F0    F2 F4 F6  F8 F10    
+   Cycle 17  Mult1       Add    Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8
+    Add  F6   F8  F2 |    13    14    16
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+     1/10  Mult1   |  Yes  Mul   F0  F2  F4                  No  No  
+           Mult2   |   No                                    No  No  
+     0/2   Add     |  Yes  Add   F6  F8  F2                  No  No  
+    40/40  Divide  |  Yes  Div   F10 F0  F6  Mult1           No  Yes 
+
+
+[#register result status#]
+
+             F0    F2 F4 F6  F8 F10    
+   Cycle 18  Mult1       Add    Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8
+    Add  F6   F8  F2 |    13    14    16
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+     0/10  Mult1   |  Yes  Mul   F0  F2  F4                  No  No  
+           Mult2   |   No                                    No  No  
+     0/2   Add     |  Yes  Add   F6  F8  F2                  No  No  
+    40/40  Divide  |  Yes  Div   F10 F0  F6  Mult1           No  Yes 
+
+
+[#register result status#]
+
+             F0    F2 F4 F6  F8 F10    
+   Cycle 19  Mult1       Add    Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8
+    Add  F6   F8  F2 |    13    14    16
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+     0/2   Add     |  Yes  Add   F6  F8  F2                  No  No  
+    40/40  Divide  |  Yes  Div   F10 F0  F6                  Yes Yes 
+
+
+[#register result status#]
+
+             F0 F2 F4 F6  F8 F10    
+   Cycle 20           Add    Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+     0/2   Add     |  Yes  Add   F6  F8  F2                  No  No  
+    40/40  Divide  |  Yes  Div   F10 F0  F6                  Yes Yes 
+
+
+[#register result status#]
+
+             F0 F2 F4 F6  F8 F10    
+   Cycle 21           Add    Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    39/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 22                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    38/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 23                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    37/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 24                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    36/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 25                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    35/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 26                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    34/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 27                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    33/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 28                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    32/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 29                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    31/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 30                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    30/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 31                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    29/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 32                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    28/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 33                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    27/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 34                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    26/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 35                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    25/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 36                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    24/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 37                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    23/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 38                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    22/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 39                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    21/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 40                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    20/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 41                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    19/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 42                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    18/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 43                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    17/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 44                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    16/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 45                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    15/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 46                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    14/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 47                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    13/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 48                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    12/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 49                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    11/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 50                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+    10/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 51                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+     9/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 52                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+     8/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 53                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+     7/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 54                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+     6/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 55                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+     5/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 56                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+     4/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 57                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+     3/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 58                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+     2/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 59                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+     1/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 60                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21    61
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+     0/40  Divide  |  Yes  Div   F10 F0  F6                  No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10    
+   Cycle 61                 Divide 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op   dest j   k  | Issue  Read  Exec  Write
+    Load F6   34  R2 |     1     2     3     4
+    Load F2   45  R3 |     5     6     7     8
+    Mul  F0   F2  F4 |     6     9    19    20
+    Sub  F8   F6  F2 |     7     9    11    12
+    Div  F10  F0  F6 |     8    21    61    62
+    Add  F6   F8  F2 |    13    14    16    22
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk
+           Integer |   No                                    No  No  
+           Mult1   |   No                                    No  No  
+           Mult2   |   No                                    No  No  
+           Add     |   No                                    No  No  
+           Divide  |   No                                    No  No  
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10 
+   Cycle 62                     
+
+

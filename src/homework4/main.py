@@ -1,12 +1,7 @@
 from enum import Enum
-from typing import TypedDict, List, Optional, Union
-import logging
+from typing import List, Optional, Union
 
 CLOCK = 1
-LOG_DEBUG_INFO = False
-
-logger = logging.getLogger()
-
 
 class Operation(Enum):
     LOAD = "Load"
@@ -26,7 +21,8 @@ class UnitFunction(Enum):
 class FloatRegister:
     def __init__(self, name: str) -> None:
         self.name = name
-        self.is_ready = True
+        self.ready_to_be_read = True
+        self.be_asked_to_read = 0
         self.in_used_unit: Optional["Unit"] = None
 
     def __str__(self) -> str:
@@ -58,18 +54,18 @@ class RegisterGroup:
 
     def __repr__(self) -> str:
         info = " " * 13
-        reg_unit_map = []
+        reg_unit_tuples = []
         for name, reg in self.register_map.items():
             if reg.in_used_unit is not None:
-                reg_unit_map.append((f"{name:<{len(reg.in_used_unit.name)}}", reg.in_used_unit.name))
+                reg_unit_tuples.append((f"{name:<{len(reg.in_used_unit.name)}}", reg.in_used_unit.name))
             else:
-                reg_unit_map.append((name, f'{" ":<{len(name)}}'))
+                reg_unit_tuples.append((name, f'{" ":<{len(name)}}'))
 
-        for name, _ in reg_unit_map:
+        for name, _ in reg_unit_tuples:
             info += name + " "
         info += "\n"
         info += f"   Cycle {CLOCK:<2}  "
-        for _, unit_name in reg_unit_map:
+        for _, unit_name in reg_unit_tuples:
             info += unit_name + " "
 
         return info
@@ -93,7 +89,6 @@ class Unit:
         self.name = name
         self.function = function
         self.status = UnitState()
-        self.used_registers = []
         self.instruction: Instruction = None
 
     def update_status(self, Op: Operation, dest: FloatRegister, reg_j: Union[int, FloatRegister], reg_k: FloatRegister):
@@ -101,7 +96,7 @@ class Unit:
         self.status.Op = Op
         self.status.F_i = dest
         self.status.F_i.in_used_unit = self
-        self.status.F_i.is_ready = False
+        self.status.F_i.ready_to_be_read = False
 
         if type(reg_j) == int:
             # 立即数
@@ -110,27 +105,25 @@ class Unit:
             self.status.Q_j = None
         else:
             self.status.F_j = reg_j
-            self.status.R_j = reg_j.is_ready
+            self.status.R_j = reg_j.ready_to_be_read
             self.status.Q_j = reg_j.in_used_unit
 
-            # if reg_j.is_ready:
-            #     reg_j.is_ready = False
-                # reg_j.in_used_unit = self
+            if self.status.R_j:
+                self.status.F_j.be_asked_to_read += 1
 
         self.status.F_k = reg_k
-        self.status.R_k = reg_k.is_ready
+        self.status.R_k = reg_k.ready_to_be_read
         self.status.Q_k = reg_k.in_used_unit
 
-        # if reg_k.is_ready:
-        #     reg_k.is_ready = False
-            # reg_k.in_used_unit = self
+        if self.status.R_k:
+            self.status.F_k.be_asked_to_read += 1
 
     def finish_read(self):
         self.status.R_j = False
         self.status.R_k = False
-        # if self.status.F_j is not None:
-        #     self.status.F_j.is_ready = True
-        # self.status.F_k.is_ready = True
+        if self.status.F_j is not None:
+            self.status.F_j.be_asked_to_read -= 1
+        self.status.F_k.be_asked_to_read -= 1
 
     def info(self) -> str:
         info = "    "
@@ -204,12 +197,11 @@ class Instruction:
             if self.unit.status.R_j and self.unit.status.R_k:
                 self.stage = InstructionStage.READ
                 self.stage_clocks.append(CLOCK)
-            else:
-                logger.debug("stack")
 
         elif self.stage == InstructionStage.READ:
             self.stage = InstructionStage.EXEC
             self.unit.finish_read()
+            self.left_latency -= 1
             if self.left_latency == 0:
                 self.stage_clocks.append(CLOCK)
 
@@ -219,10 +211,12 @@ class Instruction:
                 if self.left_latency == 0:
                     self.stage_clocks.append(CLOCK)
             else:
+                if self.unit.status.F_i.be_asked_to_read != 0:
+                    return
                 self.stage = InstructionStage.WRITE
                 self.unit.status.Busy = False
                 self.unit.status.F_i.in_used_unit = None
-                self.unit.status.F_i.is_ready = True
+                self.unit.status.F_i.ready_to_be_read = True
                 self.stage = InstructionStage.COMPLETE
                 self.stage_clocks.append(CLOCK)
 
@@ -340,8 +334,8 @@ def main():
     rg = RegisterGroup()
 
     instructions = [
-        Instruction(Op=Operation.LOAD, dest=rg.F6, j=34, k=rg.R2, latency=0, unit_function=UnitFunction.INTEGER),
-        Instruction(Op=Operation.LOAD, dest=rg.F2, j=45, k=rg.R3, latency=0, unit_function=UnitFunction.INTEGER),
+        Instruction(Op=Operation.LOAD, dest=rg.F6, j=34, k=rg.R2, latency=1, unit_function=UnitFunction.INTEGER),
+        Instruction(Op=Operation.LOAD, dest=rg.F2, j=45, k=rg.R3, latency=1, unit_function=UnitFunction.INTEGER),
         Instruction(Op=Operation.MUL, dest=rg.F0, j=rg.F2, k=rg.F4, latency=10, unit_function=UnitFunction.MULT),
         Instruction(Op=Operation.SUB, dest=rg.F8, j=rg.F6, k=rg.F2, latency=2, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.DIV, dest=rg.F10, j=rg.F0, k=rg.F6, latency=40, unit_function=UnitFunction.DIVIDE),
