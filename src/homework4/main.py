@@ -21,8 +21,8 @@ class UnitFunction(Enum):
 class FloatRegister:
     def __init__(self, name: str) -> None:
         self.name = name
-        self.ready_to_be_read = True
-        self.be_asked_to_read = 0
+        self.ready_to_be_read = True # 当前寄存器是否可以被读
+        self.be_asked_to_read = 0 # 正在读当前寄存器的 unit 的数量 (用于 WAR) 的判断
         self.in_used_unit: Optional["Unit"] = None
 
     def __str__(self) -> str:
@@ -212,6 +212,7 @@ class Instruction:
                     self.stage_clocks.append(CLOCK)
             else:
                 if self.unit.status.F_i.be_asked_to_read != 0:
+                    # WAR hazard
                     return
                 self.stage = InstructionStage.WRITE
                 self.unit.status.Busy = False

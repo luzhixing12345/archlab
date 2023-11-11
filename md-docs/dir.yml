@@ -5,7 +5,6 @@ code:
 - processor-controllor: 2
 - pipeline-profiling: 3
 - scoreboard: 4
-- Tomasulo: 5
 read:
 - lecture1: 1
 - lecture2: 2

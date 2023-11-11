@@ -11,7 +11,7 @@ python src/homework4/main.py
 
 > 输出结果很多, 仅展示部分内容, 完整内容见 [output.txt](https://github.com/luzhixing12345/archlab/blob/main/src/homework4/output.txt)
 
-```bash
+```txt
 ----------------------------------------------------------------------
 [#instruction status#]
 
@@ -39,7 +39,9 @@ python src/homework4/main.py
              F0 F2 F4 F6      F8 F10
    Cycle 1            Integer
 
-# 所有周期
+.
+.
+.
 
 ----------------------------------------------------------------------
 [#instruction status#]
