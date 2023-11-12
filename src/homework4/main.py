@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Dict
 
 CLOCK = 0
 
@@ -81,8 +81,8 @@ class UnitState:
         self.F_k: FloatRegister = None  # 源寄存器
         self.Q_j: "Unit" = None  # 如果源寄存器 F_j 不可用, 部件该向哪个功能单元要数据
         self.Q_k: "Unit" = None  # 如果源寄存器 F_k 不可用, 部件该向哪个功能单元要数据
-        self.R_j: bool = False  # 源寄存器 F_j 是否可读
-        self.R_k: bool = False  # 源寄存器 F_k 是否可读
+        self.R_j: bool = False  # 源寄存器 F_j 是否可读/需要读
+        self.R_k: bool = False  # 源寄存器 F_k 是否可读/需要读
 
 
 class Unit:
@@ -91,6 +91,8 @@ class Unit:
         self.function = function
         self.status = UnitState()
         self.instruction: Instruction = None
+
+        self.usage_data: Dict[Instruction, List[int]] = {}
 
     def update_status(self, Op: Operation, dest: FloatRegister, reg_j: Union[int, FloatRegister], reg_k: FloatRegister):
         self.status.Busy = True
@@ -126,7 +128,7 @@ class Unit:
             self.status.F_j.be_asked_to_read -= 1
         self.status.F_k.be_asked_to_read -= 1
 
-    def info(self) -> str:
+    def get_info_str(self) -> str:
         info = "    "
         if self.instruction is None or self.status.Busy == False:
             info += " " * 7
@@ -145,6 +147,17 @@ class Unit:
             info += f"{self.status.Q_k.name:<8}" if self.status.Q_k else f'{" ":<8}'
         info += f'{"Yes":<4}' if self.status.R_j else f'{"No":<4}'
         info += f'{"Yes":<4}' if self.status.R_k else f'{"No":<4}'
+        return info
+
+    def get_usage_data(self) -> str:
+        info = f"{self.name:<9}"
+
+        for i, (instruction, stage_clock) in enumerate(self.usage_data.items()):
+            if i != 0:
+                info += ' ' * 9
+            info += f"{instruction.Op.name} {instruction.dest.name} {instruction.j if type(instruction.j) == int else instruction.j.name} {instruction.k.name}".ljust(16)
+            info += f"{stage_clock[0]:>5}   {stage_clock[-1]:>3}"
+            info += f"     {3 + instruction.latency}/{stage_clock[-1]-stage_clock[0] + 1}\n"
         return info
 
 
@@ -174,7 +187,6 @@ class Instruction:
         self.latency = latency
         self.unit_function = unit_function  # 执行指令需要的功能单元
 
-        self.functional_units: List[Unit] = None  # ScoreBoard 中所有的功能单元
         self.unit: Unit = None  # 执行当前指令的功能单元
         self.stage: InstructionStage = InstructionStage.TOBE_ISSUE  # 指令执行的阶段
         self.left_latency = self.latency
@@ -184,9 +196,6 @@ class Instruction:
         """ """
         if self.stage == InstructionStage.COMPLETE:
             return
-
-        assert self.functional_units is not None
-        assert self.unit is not None
 
         if self.stage == InstructionStage.TOBE_ISSUE:
             self.stage = InstructionStage.ISSUE
@@ -222,7 +231,10 @@ class Instruction:
                 self.stage = InstructionStage.COMPLETE
                 self.stage_clocks.append(CLOCK)
 
-    def stage_info(self) -> str:
+                # 添加统计数据
+                self.unit.usage_data[self] = self.stage_clocks
+
+    def get_info_str(self) -> str:
         info = ""
         for stage_clock in self.stage_clocks:
             info += f"{stage_clock:>6}"
@@ -249,8 +261,7 @@ class ScoreBoard:
         self.pc = 0
 
     def run(self):
-
-        self.show_info()
+        self.show_status()
         global CLOCK
         CLOCK += 1
 
@@ -273,7 +284,6 @@ class ScoreBoard:
             if self.pc != instruction_length:
                 unit = self.has_available_unit(self.instructions[self.pc].unit_function)
                 if unit is not None and not self.has_write_conflict(self.instructions[self.pc].dest):
-                    self.instructions[self.pc].functional_units = self.functional_units
                     self.instructions[self.pc].unit = unit
                     unit.instruction = self.instructions[self.pc]
                     self.issued_instructions.append(self.instructions[self.pc])
@@ -293,10 +303,12 @@ class ScoreBoard:
                     unit.status.R_k = True
                     unit.status.Q_k = None
 
-            self.show_info()
+            self.show_status()
             CLOCK += 1
             pass
             # exit()
+
+        self.show_usage_data()
 
     def has_available_unit(self, unit_function: UnitFunction) -> Optional[Unit]:
         """
@@ -318,22 +330,27 @@ class ScoreBoard:
                 return True
         return False
 
-    def show_info(self):
+    def show_status(self):
         print("-" * 70)
         print("[#instruction status#]\n")
         print(f"    Op   dest j   k  | Issue  Read  Exec  Write")
         for instruction in self.instructions:
             print(f"    {instruction.Op.value:<4} {instruction.dest:<4} {instruction.j}  {instruction.k}", end=" |")
-            print(instruction.stage_info())
+            print(instruction.get_info_str())
         print("\n")
         print("[#functional unit status#]\n")
         print("    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk")
         for unit in self.functional_units:
-            print(unit.info())
+            print(unit.get_info_str())
         print("\n")
         print("[#register result status#]\n")
         print(self.register_group)
         print("\n")
+
+    def show_usage_data(self):
+        print("Unit     Instruction     start   end     theoretical/running")
+        for unit in self.functional_units:
+            print(unit.get_usage_data())
 
 
 def main():
