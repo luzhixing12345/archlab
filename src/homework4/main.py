@@ -1,7 +1,8 @@
 from enum import Enum
 from typing import List, Optional, Union
 
-CLOCK = 1
+CLOCK = 0
+
 
 class Operation(Enum):
     LOAD = "Load"
@@ -21,8 +22,8 @@ class UnitFunction(Enum):
 class FloatRegister:
     def __init__(self, name: str) -> None:
         self.name = name
-        self.ready_to_be_read = True # 当前寄存器是否可以被读
-        self.be_asked_to_read = 0 # 正在读当前寄存器的 unit 的数量 (用于 WAR) 的判断
+        self.ready_to_be_read = True  # 当前寄存器是否可以被读
+        self.be_asked_to_read = 0  # 正在读当前寄存器的 unit 的数量 (用于 WAR) 的判断
         self.in_used_unit: Optional["Unit"] = None
 
     def __str__(self) -> str:
@@ -248,6 +249,11 @@ class ScoreBoard:
         self.pc = 0
 
     def run(self):
+
+        self.show_info()
+        global CLOCK
+        CLOCK += 1
+
         instruction_length = len(self.instructions)
         while True:
             # 全部指令都已发射 并且 都已执行结束, 退出
@@ -288,7 +294,6 @@ class ScoreBoard:
                     unit.status.Q_k = None
 
             self.show_info()
-            global CLOCK
             CLOCK += 1
             pass
             # exit()
