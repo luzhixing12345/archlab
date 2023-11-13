@@ -24,7 +24,7 @@ class FloatRegister:
         self.name = name
         self.ready_to_be_read = True  # 当前寄存器是否可以被读
         self.be_asked_to_read = 0  # 正在读当前寄存器的 unit 的数量 (用于 WAR) 的判断
-        self.in_used_unit: Optional["Unit"] = None
+        self.in_used_unit: Optional["Unit"] = None # 正在使用当前寄存器作为目的寄存器的 unit
 
     def __str__(self) -> str:
         return self.name
@@ -189,7 +189,7 @@ class Instruction:
 
         self.unit: Unit = None  # 执行当前指令的功能单元
         self.stage: InstructionStage = InstructionStage.TOBE_ISSUE  # 指令执行的阶段
-        self.left_latency = self.latency
+        self.left_latency = self.latency # 剩余执行时间
         self.stage_clocks = []  # 四个阶段进入的时间节点
 
     def run(self):
@@ -267,7 +267,7 @@ class ScoreBoard:
 
         instruction_length = len(self.instructions)
         while True:
-            # 全部指令都已发射 并且 都已执行结束, 退出
+            # 当全部指令都已发射并且所有功能单元都空闲时退出
             if self.pc == instruction_length:
                 busy_unit_number = 0
                 for unit in self.functional_units:
@@ -279,7 +279,7 @@ class ScoreBoard:
             # 尝试发射一条新指令
             # 1. 如果有指令
             # 2. 并且有可用的功能单元
-            # 3. 且指令要写的目标寄存器没有别的指令将要写
+            # 3. 且指令要写的目的寄存器没有别的指令将要写
             # 则发射下一条指令
             if self.pc != instruction_length:
                 unit = self.has_available_unit(self.instructions[self.pc].unit_function)
@@ -367,8 +367,6 @@ def main():
 
     scoreboard = ScoreBoard(rg)
     scoreboard.load_instructions(instructions)
-    global LOG_DEBUG_INFO
-    LOG_DEBUG_INFO = True
     scoreboard.run()
 
 

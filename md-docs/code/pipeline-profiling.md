@@ -42,12 +42,12 @@ python src/homework3/main.py
 ```
 
 ```txt
-   basic step = 7008
-schedule step = 6003
-   improvment = 7008-6003/7008 = 14.34%
+   basic step = 8007
+schedule step = 7001
+   improvment = 8007-7001/8007 = 12.56%
 ```
 
-其中原指令序列执行共 7008 步, 重排后的指令执行 6003 步, 优化提升了 14% 的效率
+其中原指令序列执行共 8007 步, 重排后的指令执行 7001 步, 优化提升了 12.56% 的效率
 
 ## 实验报告
 
