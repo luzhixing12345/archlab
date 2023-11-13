@@ -74,6 +74,59 @@ schedule step = 7001
 
 相当于采用了双倍的硬件资源, 在所有阶段完成之后同步更新 IR 的值, 这样就实现了串行的读写分离, 笔者选择采用这种方式来模拟流水线执行
 
+### 流水线设计
+
+这一部分我们重新回顾一下流水线的设计
+
+> 下文讨论的内容为 RISCV 32I 指令集在标准五级流水线上的情况
+
+标准的五级流水线分为 `IF ID EX MEM WB` 五个阶段, 每两个阶段之间有一个中间寄存器 IR, 分别为 `IF_ID ID_EX EX_MEM MEM_WB`
+
+下图是各个阶段的简化内容:
+
+- IF: 根据 PC 寄存器的值读取一条指令(instruction), 存入 IF_ID 中
+- ID: 从 IF_ID 中取出指令, 根据 RISCV 指令设计规则拿到相关信息, 读取 rs1 rs2 寄存器的值, 将结果(ra rb)同其他信息(others)一同写入 ID_EX
+- EX: 从 ID_EX 中取出信息, 并将两个值送入 ALU 中进行计算, 拿到计算结果(result), 同其他信息(others)一同写入 EX_MEM
+- MEM: 从 EX_MEM 中取出信息, 将 write_data 的值写入 address 或者从 address 读取 read_data, 同其他信息(others)一同写入 MEM_WB
+- WB: 从 MEM_WB 中取出信息, 将 write_data 写入 rd
+
+![20231113213334](https://raw.githubusercontent.com/learner-lu/picbed/master/20231113213334.png)
+
+相信读者可以注意到笔者在表述的过程中频繁使用到了 "**其他信息(others)**" 这样一个词语. 同时上述文字存在一些模糊不清的说法, 比如 EX 阶段的 "**将两个值**(什么值)" "**进行计算**(进行什么计算)", MEM 阶段的 "**写入或者读取**(怎么判断读还是写, 怎么写入, 怎么读取)", WB 阶段的 "**write_data 写入 rd**(其实不一定写入)", 以及一个很重要的问题: "**PC 如何更新**"
+
+为了回答上面的问题首先需要介绍一下**控制信号**. RISCV 在确定指令类型(opcode)后,**需要生成每个指令对应的控制信号,来控制数据通路部件进行对应的动作**.控制信号生产部件(Control Signal Generator)是根据instr中的操作码 `opcode` ,及 `func3` 和 `func7` 来生成对应的控制信号的, 主要有如下的几个控制信号
+
+- `ALU_Asrc`: ALU 的第一个输入选择哪一个
+- `ALU_Bsrc`: ALU 的第二个输入选择哪一个
+- `ALUop`: ALU 如何进行计算
+- `RegWrite`: 是否写寄存器
+- `MemRead`: 是否读内存
+- `MemWrite`: 是否写内存
+- `MemtoReg`: 写回寄存器的值选择哪一个
+- `MemOp`: 读取内存的方式
+- `PCsrc`: 如何更新 PC
+
+![20231113221650](https://raw.githubusercontent.com/learner-lu/picbed/master/20231113221650.png)
+
+> RISCV 在设计时选择将立即数分散,寄存器编码位置固定, 这样可以使不同指令间拥有尽可能多的共同数据通路,降低指令信号的扇出,提高立即数多路复用水平(简单来说就是 ID 译码很快, 得益于指令的设计和硬件单元的实现, 可以快速拿到信息)
+
+首先在 ID 阶段生成了指令对应的控制信号, 不同的控制信号有对应的功能
+
+- `ALU_Asrc ALU_Bsrc MemtoReg` 这三个信号**对应三个多路选择器(mux)**, 如图中蓝色的单元所示. 它们的功能是有多个输入, 根据信号的状态选择其中一个作为输出
+- `ALUop MemOp` 这两个信号会被**传递给 ALU 控制单元 和 存储器控制单元**, 会交给控制单元去处理, 类似 ALU 中的加减乘除等运算, Mem 中的 1/2/4字节读写的选择
+- `RegWrite MemRead MemWrite` 这三个信号**仅有 0 和 1 两个状态, 类似于开关**
+
+> PCsrc 并没有在图中画出来, 这个稍微有点复杂, 后文结合跳转指令再提
+
+---
+
+根据这些控制信号可以得出系统在给定指令下的一个周期内所需要做的具体操作, 应该选择哪一个作为输入, 是否应该写, 是否应该读, ALU 做何种计算等等. 这时候我们就可以回答第一个问题 "**其他信息(others)指的是什么?**", 或者于此等价的问题 "**每一阶段的 IR 都保留了哪些值?**"
+
+![20231113222435](https://raw.githubusercontent.com/learner-lu/picbed/master/20231113222435.png)
+
+
+![20231113222525](https://raw.githubusercontent.com/learner-lu/picbed/master/20231113222525.png)
+
 ### 代码实现
 
 > 说实话代码实现的文档不是很好写, 因为实际上更多的是作者在工程实践上的选择, 一下子抛给读者一个完整的 ISA 实现, 很大概率会直接陷入代码细节之中, 因此笔者打算一步一步的按执行流程来解释代码实现, 并在对应位置给出该模块的设计思路.
@@ -234,13 +287,10 @@ if __name__ == "__main__":
 
 ---
 
-#### 流水线设计
-
-开始之前先来简单回顾一下经典五阶段流水线的内容
-
 ## 参考
 
 - [RISC-V控制单元的简单介绍](https://zhuanlan.zhihu.com/p/471466242)
 - [RISCV32I CPU](https://nju-projectn.github.io/dlco-lecture-note/exp/11.html)
 - [基于RISC-V架构-五级流水线CPU](https://zhuanlan.zhihu.com/p/453232311)
 - [基于RISC-V的CPU设计入门__控制冒险](https://www.sunnychen.top/archives/rvintroch)
+- [请问RiscV的那种将立即数分散,寄存器编码位置固定,比起传统的cpu,如mips等,有何优缺点?](https://www.zhihu.com/question/405003253)
