@@ -106,6 +106,8 @@ schedule step = 7001
 - `MemOp`: 读取内存的方式
 - `PCsrc`: 如何更新 PC
 
+> 所有的图片都可以点击放大查看
+
 ![20231113221650](https://raw.githubusercontent.com/learner-lu/picbed/master/20231113221650.png)
 
 > RISCV 在设计时选择将立即数分散,寄存器编码位置固定, 这样可以使不同指令间拥有尽可能多的共同数据通路,降低指令信号的扇出,提高立即数多路复用水平(简单来说就是 ID 译码很快, 得益于指令的设计和硬件单元的实现, 可以快速拿到信息)
@@ -122,170 +124,103 @@ schedule step = 7001
 
 根据这些控制信号可以得出系统在给定指令下的一个周期内所需要做的具体操作, 应该选择哪一个作为输入, 是否应该写, 是否应该读, ALU 做何种计算等等. 这时候我们就可以回答第一个问题 "**其他信息(others)指的是什么?**", 或者于此等价的问题 "**每一阶段的 IR 都保留了哪些值?**"
 
+下图为各阶段 IR 设计, 考虑到流水线设计, 每一阶段 IR 必须包含 **当前阶段所需的所有信息** 以及当前阶段执行后产生的 **下一阶段需要的信息**
+
 ![20231113222435](https://raw.githubusercontent.com/learner-lu/picbed/master/20231113222435.png)
 
+#### IF_ID -> ID_EX
+
+IF_ID 只需要保存指令 Instruction 和 PC 的值, 保存 PC 是因为对于跳转指令来说需要**指令对应时刻的 PC 作为跳转起点**.
+
+经由 ID 译码之后将 Instruction 拆分得到了 `rd imm ctl_sig Branch` 这样一些之后阶段需要信息, 同时通过 rs1 和 rs2 从寄存器组中读取得到对应的 ra rb 值, pc 值继承自 IF_ID, **需要注意的是还需要额外保留 rs1 和 rs2, 这是为了后续的数据冒险单元的检测考虑, 后文再做展开**
 
 ![20231113222525](https://raw.githubusercontent.com/learner-lu/picbed/master/20231113222525.png)
 
-### 代码实现
+#### ID_EX -> EX_MEM
 
-> 说实话代码实现的文档不是很好写, 因为实际上更多的是作者在工程实践上的选择, 一下子抛给读者一个完整的 ISA 实现, 很大概率会直接陷入代码细节之中, 因此笔者打算一步一步的按执行流程来解释代码实现, 并在对应位置给出该模块的设计思路.
+EX_MEM 继续继承来自 ID_EX 的 `rb rd imm pc` 等值, 以及控制信号(ControlSignal) 中的 6 个. 这些信息需要在 MEM 和 WB 阶段被使用
 
-开始之前先总览一下目录结构, 本次代码位于 `src/homework3`
+> 不直接继承完整的 ControlSignal 而是只保留有效的 6 个是因为 EX 阶段已经使用了其中的 3 个, 从硬件资源的角度来说节省 IR 空间
 
-```bash
-.
-├── asmcode
-│   ├── Makefile
-│   ├── loop.S              # 汇编代码
-│   ├── loop.c              # C 代码
-│   └── schedule_loop.S     # 汇编的重排序
-├── base.py                 # 基础枚举类型和类定义
-├── instructions.py         # RISCV 32I 指令集
-├── isa.py                  # Pipeline ISA
-├── main.ipynb
-├── main.py                 # 主函数入口
-├── test.py                 # Pipeline ISA 正确性测试文件
-└── testcase                # 测试用例
-    ├── CTL1.S
-    ├── DH1.S
-    ├── DH2.S
-    ├── DH3.S
-    ├── DH_RAW.S
-    ├── DH_WAR.S
-    └── DH_WAW.S
-```
+另外额外保存 ALU 的计算结果 `alu_result`, 以及经过**一个用于判断条件跳转指令是否成立的 Branch Cond 电路** 得到的跳转条件是否成立的 branch_cond
 
-其中 testcase 为一些测试用例, test.py 中为这些测试用例对应的使用. `asmcode/loop.c` 为题目中测试代码的 C 函数表示
+![20231114103614](https://raw.githubusercontent.com/learner-lu/picbed/master/20231114103614.png)
 
-```c
-void loop_test(int *x, int s) {
-    for (int i = 999; i >= 0; i--) {
-        x[i] = x[i] + s;
-    }
-}
-```
+#### EX_MEM -> MEM_WB
 
-可以使用如下命令查看反汇编结果
+MEM_WB 继承来自 EX_MEM 剩余的两个控制信号 `MemtoReg RegWrite` 用于选择写回的内容, 以及判断是否写回, rd 判断写回的地址, 从 MEM 读取的 read_data 值以及另一个可能写回的 alu_result 的值
 
-```bash
-riscv64-linux-gnu-gcc -march=rv32i -mabi=ilp32 -Ofast -c loop.c -o example.o
-riscv64-linux-gnu-objdump example.o -d
-```
+![20231114103921](https://raw.githubusercontent.com/learner-lu/picbed/master/20231114103921.png)
 
-```riscvasm
-00000000 <loop_test>:
-   0:   000017b7                lui     a5,0x1          # a5 = 1<<12 = 4096
-   4:   f9c78793                addi    a5,a5,-100      # a5 = 3096 ( = 999 x 4)
-   8:   00f507b3                add     a5,a0,a5        # a5 = x + 3096 (x[999])
+#### PC(控制冒险)
 
-0000000c <.L2>:
-   c:   0007a703                lw      a4,0(a5)        # a4 = x[i]
-  10:   00078693                mv      a3,a5           # a3 = &x
-  14:   ffc78793                addi    a5,a5,-4        # x--
-  18:   00b70733                add     a4,a4,a1        # a4 += s
-  1c:   00e7a223                sw      a4,4(a5)        # x[i] = a4
-  20:   fed516e3                bne     a0,a3,c <.L2>
-  24:   00008067                ret
-```
+至此, 全部 5 阶段流水线以及 4 个 IR 的设计都已经介绍完毕. 然后我们再来看一下最麻烦的 PCsrc
 
-除此之外对于浮点数的计算有如下假设, 下图中的延迟表示**如果后续的指令(FP ALU op/Store double)使用到了前面指令(FP ALU op/Load double)的结果, 那么需要额外添加 x 个延迟周期**
+更新 PC 一共有 4 种情况
 
-![20231109105011](https://raw.githubusercontent.com/learner-lu/picbed/master/20231109105011.png)
+1. 最简单最基本的, 因为 RISCV32I 为32位定长指令集, 所以只需要 PC(IF) + 4 即可
+2. 对于 J 型指令 jal, 这是一个无条件跳转指令. **由于 ID 阶段就可以判断出这条指令是 jal 指令, 因此无需再等到 EX 阶段由 ALU 完成计算, 只需要在ID阶段添加一个加法器只用于计算 PC(ID) + imm(ID), 这样就可以节省一个周期的时间(只浪费下一条指令的 IF)**
+3. 对于 RISCV 32I 中的 JALR 指令, 其作用是 PC = ra + imm(ID).
 
-因此对于原循环来说, 一个修改后的结果 loop.S 如下:
+   > 除此之外可以看到笔者补全了 `ALU_Asrc` 和 `ALU_Bsrc` 的 mux 的输入, **有且仅当指令是 jal 和 jalr 的时候, 才会选择 ALU_Asrc 为 PC 以及 ALU_Bsrc 为 4**, 因为 jal jalr 除了改变 PC 之外还有 `R[rd] = pc + 4` 的功能
 
-```riscvasm
-    lui     a5,0x1
-    addi    a5,a5,-100
-    add     a5,a0,a5
-L2:
-    lw      a4,0(a5)
-    nop
-    add     a4,a4,a1
-    nop
-    nop
-    sw      a4,4(a5)
-    addi    a5,a5,-4
-    nop
-    bne     a0,a5, L2
-    ret
-```
+4. 对于 B 型指令, 如果 Branch Cond 电路判断跳转条件为真, 则使用该指令对应的 PC(EX) 和 imm(EX) 计算跳转地址来改变 PC
 
-重排后的指令 schedule_loop.S 如下:
+因此需要添加一个加法器, 加法器有两个输入
 
-```riscvasm
-    lui     a5,0x1
-    addi    a5,a5,-100
-    add     a5,a0,a5
-L2:
-    lw      a4,0(a5)
-    addi    a5,a5,-4
-    add     a4,a4,a1
-    nop
-    bne     a0,a5, L2
-    sw      a4,4(a5)
-    ret
-```
+- 第一个输入(PC_A), 取决于信号 `PCsrc.A(ID)` `PCsrc.A(EX)` `branch cond` 
+  - PC(IF)
+  - PC(ID)
+  - PC(EX)
+  - ra
+- 第二个输入(PC_B), 取决于信号 `PCsrc.B(ID)` `PCsrc.B(EX)` `branch cond` 
+  - Imm(ID)
+  - Imm(EX)
+  - 4
 
-至此就可以利用工具得到这两段汇编代码所对应的机器码, 然后对比这两段代码运行的 step 即可, 这也就是 main.py 所做的事
+![20231114175338](https://raw.githubusercontent.com/learner-lu/picbed/master/20231114175338.png)
 
-> 其中设置 register[10] 和 [11] 相当于设置 a0 和 a1, 即 x 数组地址为 0x200, s 的值为 1
+根据信号确定加法器的两个输入, 由加法器计算得到更新后的 PC 的值并写回 PC
 
-```python
-def main():
+> 这里其实还有一些小细节, 比如 B/J 完成跳转之后还需要把前面的流水线寄存器清空, 或者在编译阶段添加延迟槽
 
-    # basic loop -> loop.S
-    instructions = [
-        0x000017B7,
-        0xF9C78793,
-        0x00F507B3,
-        0x0007A703,
-        0x00078693,
-        0xFFC78793,
-        0x00B70733,
-        0x00E7A223,
-        0xFED516E3,
-        0x00008067,
-    ]
+判断 B 型指令的跳转条件需要使用 Branch Cond 电路, ALU 中会进行一个减法计算. 下图是 X86 指令对应的跳转条件判断(RISV同理), 只需要判断 CF SF ZF OF 这四个标志位即可确定
 
-    isa = PipelineISA()
-    isa.registers[10] = 0x200
-    isa.registers[11] = 1
-    isa.load_instructions(instructions)
-    isa.run()
-    basic_step = isa.step
+![image](https://raw.githubusercontent.com/learner-lu/picbed/master/20230629132011.png)
 
-    # schedule loop -> schedule_loop.S
-    schedule_instructions = [
-        0x000017B7,
-        0xF9C78793,
-        0x00F507B3,
-        0x0007A703,
-        0xFFC78793,
-        0x00B70733,
-        0x00000013,
-        0xFEF518E3,
-        0x00E7A223,
-        0x00008067,
-    ]
+#### 数据冒险
 
-    isa.reset()
-    isa.registers[10] = 0x200
-    isa.registers[11] = 1
-    isa.load_instructions(schedule_instructions)
-    isa.run()
-    schedule_step = isa.step
+由于冯诺依曼体系结构要求指令顺序执行, 但流水线的设计导致读和写的操作分开, 因此数据的同步是一个必须要解决的问题. 我们以如下的指令序列为例
 
-    print(f"   basic step = {basic_step}")
-    print(f"schedule step = {schedule_step}")
-    print(f"   improvment = {basic_step}-{schedule_step}/{basic_step} = {(basic_step-schedule_step)/basic_step * 100:.2f}%")
+![20231114203944](https://raw.githubusercontent.com/learner-lu/picbed/master/20231114203944.png)
 
-if __name__ == "__main__":
-    main()
-```
+其中指令 1 读取并修改了 r1 寄存器的值, 直到 WB 阶段修改后正确的结果才会被写回寄存器 r1. 但其后四条指令都有 ID 阶段读取使用 r1 寄存器的行为, 如图 ①②③④ 所示
 
----
+对于 ③, 写入在前半周期, 读取在后半周期, 因此并不会产生冲突. 同理 ④ 也不会有问题. 如下图所示
+
+![20231114205250](https://raw.githubusercontent.com/learner-lu/picbed/master/20231114205250.png)
+
+对于 ①②, 虽然指令 1 在 WB 周期才会写回, 但是实际上在 EX 周期结束之后已经完成了计算, 得到 alu_result 保存在 EX_MEM 中. 因此指令 2 3 虽然在 ID 阶段读取出来的寄存器值是错误的, **但是可以构建一个数据旁路(bypass), 在指令 2 3 EX 阶段之前将正确的结果从后面的 IR 中移动过来, 在 EX 阶段使用正确的值进行计算**. 如下图所示
+
+![20231114210509](https://raw.githubusercontent.com/learner-lu/picbed/master/20231114210509.png)
+
+![20231114222155](https://raw.githubusercontent.com/learner-lu/picbed/master/20231114222155.png)
+
+对于体系结构来说, 需要判断 ID_EX 来的 `rs1 rs2` 与 EX_MEM 的 `rd` 与 MEM_WB 的 `rd` 是否相同(即图中红色单元), 同时需要判断 `RegWrite` 信号为 True(即上条指令是需要写回寄存器的). 如果相同则通过图中蓝色的 bypass 将来自 EX_MEM / MEM_WB 单元的数据传送过来, 需要根据 `Hazard Detection` 的 forwarding 信号来判断选择哪一个最终交给 ALU 进行计算 (有需要额外添加两个 mux)
+
+**但是上述情况是建立在指令 1 在 EX 阶段即可计算完毕得到正确写回结果之上的**, 如果指令 1 是一条 load 指令, **即必须要在 MEM 阶段之后才可以拿到写回结果**, 那么对于指令 3 依然可以使用此 bypass, 但指令 2 无论如何也差一个时钟周期
+
+![20231114220913](https://raw.githubusercontent.com/learner-lu/picbed/master/20231114220913.png)
+
+那么面对这种情况, 只能使流水线暂停一个周期(也成为冒泡 bubble), 
+
+![20231114221437](https://raw.githubusercontent.com/learner-lu/picbed/master/20231114221437.png)
+
+最后再把所有的信号补全, 我们就得到了最终的 ISA 设计
+
+![20231114222700](https://raw.githubusercontent.com/learner-lu/picbed/master/20231114222700.png)
+
+> 最终设计没有说明如何 flush 流水线 IR, 以及如何 bubble; 另外在 jalr 指令中 ra 寄存器也存在数据冒险的问题, 也是需要考虑 bypass 和 bubble 的情况的, 这里也做了省略
 
 ## 参考
 

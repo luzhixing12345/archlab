@@ -548,9 +548,6 @@ class PipelineISA:
             elif self.IR.pre_ID_EX.ctl_sig.PCsrc == PCsrc.JAL:
                 new_pc = self.ID_adder.calc(self.IR.IF_ID.pc, self.IR.pre_ID_EX.imm)
                 self.IR.pre_IF_ID.is_empty = True
-            elif self.IR.pre_ID_EX.ctl_sig.PCsrc == PCsrc.AUIPC:
-                new_pc = self.IR.pre_ID_EX.imm
-                self.IR.pre_IF_ID.is_empty = True
             elif self.IR.pre_ID_EX.ctl_sig.PCsrc in (PCsrc.PC, PCsrc.IMM):
                 new_pc = self.pc + 4
             else:

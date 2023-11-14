@@ -145,7 +145,6 @@ class PCsrc(Enum):
     IMM = 1
     JAL = 2
     JALR = 3
-    AUIPC = 4
 
 
 class MemtoReg(Enum):
@@ -215,8 +214,8 @@ class EX_MEM(Component):
     imm: int
 
 class MEM_WB(Component):
+    alu_result: int
     rd: int
     read_data: int
-    alu_result: int
     MemtoReg: MemtoReg
     RegWrite: bool
