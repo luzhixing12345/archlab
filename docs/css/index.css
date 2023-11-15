@@ -129,11 +129,11 @@ blockquote {
 
 .markdown-body hr {
     height: 0;
-    margin: 15px 0;
+    margin: 25px 0;
     overflow: hidden;
     background: transparent;
     border: 0;
-    border-bottom: 1px solid #dfe2e5;
+    border-bottom: 2px solid #dfe2e5;
 }
 
 .markdown-body hr:after,
@@ -345,6 +345,10 @@ ul>li>ul>li {
     background-color: #ffffff;
     box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
     border-radius: 5px;
+}
+
+.markdown-body ol li blockquote {
+    margin-top: 10px;
 }
 
 .markdown-body ul li blockquote {

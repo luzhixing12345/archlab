@@ -84,11 +84,11 @@ schedule step = 7001
 
 下图是各个阶段的简化内容:
 
-- IF: 根据 PC 寄存器的值读取一条指令(instruction), 存入 IF_ID 中
-- ID: 从 IF_ID 中取出指令, 根据 RISCV 指令设计规则拿到相关信息, 读取 rs1 rs2 寄存器的值, 将结果(ra rb)同其他信息(others)一同写入 ID_EX
-- EX: 从 ID_EX 中取出信息, 并将两个值送入 ALU 中进行计算, 拿到计算结果(result), 同其他信息(others)一同写入 EX_MEM
-- MEM: 从 EX_MEM 中取出信息, 将 write_data 的值写入 address 或者从 address 读取 read_data, 同其他信息(others)一同写入 MEM_WB
-- WB: 从 MEM_WB 中取出信息, 将 write_data 写入 rd
+- `IF`: 根据 PC 寄存器的值读取一条指令(instruction), 存入 IF_ID 中
+- `ID`: 从 IF_ID 中取出指令, 根据 RISCV 指令设计规则拿到相关信息, 读取 rs1 rs2 寄存器的值, 将结果(ra rb)同其他信息(others)一同写入 ID_EX
+- `EX`: 从 ID_EX 中取出信息, 并将两个值送入 ALU 中进行计算, 拿到计算结果(result), 同其他信息(others)一同写入 EX_MEM
+- `MEM`: 从 EX_MEM 中取出信息, 将 write_data 的值写入 address 或者从 address 读取 read_data, 同其他信息(others)一同写入 MEM_WB
+- `WB`: 从 MEM_WB 中取出信息, 将 write_data 写入 rd
 
 ![20231113213334](https://raw.githubusercontent.com/learner-lu/picbed/master/20231113213334.png)
 
@@ -122,7 +122,7 @@ schedule step = 7001
 
 ---
 
-根据这些控制信号可以得出系统在给定指令下的一个周期内所需要做的具体操作, 应该选择哪一个作为输入, 是否应该写, 是否应该读, ALU 做何种计算等等. 这时候我们就可以回答第一个问题 "**其他信息(others)指的是什么?**", 或者于此等价的问题 "**每一阶段的 IR 都保留了哪些值?**"
+根据这些控制信号可以得出系统在给定指令下的一个周期内所需要做的具体操作, 应该选择哪一个作为输入, 是否应该写, 是否应该读, ALU 做何种计算等等. 这时候我们就可以回答第一个问题 "**其他信息(others)指的是什么?**", 或者与此等价的问题 "**每一阶段的 IR 都保留了哪些值?**"
 
 下图为各阶段 IR 设计, 考虑到流水线设计, 每一阶段 IR 必须包含 **当前阶段所需的所有信息** 以及当前阶段执行后产生的 **下一阶段需要的信息**
 
