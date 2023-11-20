@@ -5,17 +5,17 @@ def main():
     rg = RegisterGroup()
     rg.R2.value = 200
 
-    lw       a0,0(R2)
-    fadd     a2,a0,R3
-    sw       a2,0(R2)
+    # lw       a0,0(R2)
+    # fadd     a2,a0,R3
+    # sw       a2,0(R2)
 
-    lw       a4,-4(R2)
-    fadd     a6,a4,R3
-    sw       a6,-4(R2)
+    # lw       a4,-4(R2)
+    # fadd     a6,a4,R3
+    # sw       a6,-4(R2)
 
-    lw       a8,-8(R2)
-    fadd     a10,a8,R3
-    sw       a10,-8(R2)
+    # lw       a8,-8(R2)
+    # fadd     a10,a8,R3
+    # sw       a10,-8(R2)
 
     instructions = [
         Instruction(Op=Operation.LOAD, dest=rg.F0, j=0, k=rg.R2, latency=1, unit_function=UnitFunction.LOAD),
