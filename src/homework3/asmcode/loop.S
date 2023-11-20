@@ -16,7 +16,7 @@ L2:
     add     a4,a4,a1
     nop
     nop
-    sw      a4,4(a5)
+    sw      a4,0(a5)
     addi    a5,a5,-4
     nop
     bne     a0,a5, L2

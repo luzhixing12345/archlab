@@ -3,9 +3,8 @@ from isa import *
 
 
 def main():
-
     # basic loop -> loop.S
-    # 
+    #
     #     lui     a5,0x1
     #     addi    a5,a5,-100 # f9c <.L2+0xf90>
     #     add     a5,a0,a5
@@ -16,7 +15,7 @@ def main():
     #     add     a4,a4,a1
     #     nop
     #     nop
-    #     sw      a4,4(a5)
+    #     sw      a4,0(a5)
     #     addi    a5,a5,-4
     #     nop
     #     bne     a0,a5, L2
@@ -26,14 +25,16 @@ def main():
         0xF9C78793,
         0x00F507B3,
         0x0007A703,
-        0x00078693,
-        0xFFC78793,
+        0x00000013,
         0x00B70733,
-        0x00E7A223,
-        0xFED516E3,
+        0x00000013,
+        0x00000013,
+        0x00E7A023,
+        0xFFC78793,
+        0x00000013,
+        0xFEF510E3,
         0x00008067,
     ]
-
 
     isa = PipelineISA()
     isa.registers[10] = 0x200
@@ -78,7 +79,10 @@ def main():
 
     print(f"   basic step = {basic_step}")
     print(f"schedule step = {schedule_step}")
-    print(f"   improvment = {basic_step}-{schedule_step}/{basic_step} = {(basic_step-schedule_step)/basic_step * 100:.2f}%")
+    print(
+        f"   improvment = {basic_step}-{schedule_step}/{basic_step} = {(basic_step-schedule_step)/basic_step * 100:.2f}%"
+    )
+
 
 if __name__ == "__main__":
     main()
