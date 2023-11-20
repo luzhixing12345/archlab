@@ -1,0 +1,1914 @@
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |
+    Load   F2   45  R3  |
+    Mul    F0   F2  F4  |
+    Sub    F8   F6  F2  |
+    Div    F10  F0  F6  |
+    Add    F6   F8  F2  |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+           Mult2   |   No                                    
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10 
+   Cycle 0                      
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1
+    Load   F2   45  R3  |
+    Mul    F0   F2  F4  |
+    Sub    F8   F6  F2  |
+    Div    F10  F0  F6  |
+    Add    F6   F8  F2  |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+     1/1   Load1   |  Yes  Load        200                   34
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+           Mult2   |   No                                    
+
+
+[#register result status#]
+
+             F0 F2 F4 F6    F8 F10 
+   Cycle 1            Load1        
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1
+    Load   F2   45  R3  |     2
+    Mul    F0   F2  F4  |
+    Sub    F8   F6  F2  |
+    Div    F10  F0  F6  |
+    Add    F6   F8  F2  |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+     1/1   Load1   |  Yes  Load        200                   234
+     1/1   Load2   |  Yes  Load        300                   45
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+           Mult2   |   No                                    
+
+
+[#register result status#]
+
+             F0 F2    F4 F6    F8 F10 
+   Cycle 2      Load2    Load1        
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3
+    Load   F2   45  R3  |     2
+    Mul    F0   F2  F4  |     3
+    Sub    F8   F6  F2  |
+    Div    F10  F0  F6  |
+    Add    F6   F8  F2  |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+     0/1   Load1   |  Yes  Load        200                   234
+     1/1   Load2   |  Yes  Load        300                   345
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+    10/10  Mult1   |  Yes  Mul         0     Load2           
+           Mult2   |   No                                    
+
+
+[#register result status#]
+
+             F0    F2    F4 F6    F8 F10 
+   Cycle 3   Mult1 Load2    Load1        
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4
+    Mul    F0   F2  F4  |     3
+    Sub    F8   F6  F2  |     4
+    Div    F10  F0  F6  |
+    Add    F6   F8  F2  |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+     0/1   Load2   |  Yes  Load        300                   345
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+     2/2   Add1    |  Yes  Sub   234                 Load2   
+           Add2    |   No                                    
+    10/10  Mult1   |  Yes  Mul         0     Load2           
+           Mult2   |   No                                    
+
+
+[#register result status#]
+
+             F0    F2    F4 F6 F8   F10 
+   Cycle 4   Mult1 Load2       Add1     
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3
+    Sub    F8   F6  F2  |     4
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+     2/2   Add1    |  Yes  Sub   234   345                   
+           Add2    |   No                                    
+    10/10  Mult1   |  Yes  Mul   345   0                     
+    40/40  Mult2   |  Yes  Div         234   Mult1           
+
+
+[#register result status#]
+
+             F0    F2 F4 F6 F8   F10   
+   Cycle 5   Mult1          Add1 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3
+    Sub    F8   F6  F2  |     4
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+     1/2   Add1    |  Yes  Sub   234   345                   
+     2/2   Add2    |  Yes  Add         345   Add1            
+     9/10  Mult1   |  Yes  Mul   345   0                     
+    40/40  Mult2   |  Yes  Div         234   Mult1           
+
+
+[#register result status#]
+
+             F0    F2 F4 F6   F8   F10   
+   Cycle 6   Mult1       Add2 Add1 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3
+    Sub    F8   F6  F2  |     4     7
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+     0/2   Add1    |  Yes  Sub   234   345                   
+     2/2   Add2    |  Yes  Add         345   Add1            
+     8/10  Mult1   |  Yes  Mul   345   0                     
+    40/40  Mult2   |  Yes  Div         234   Mult1           
+
+
+[#register result status#]
+
+             F0    F2 F4 F6   F8   F10   
+   Cycle 7   Mult1       Add2 Add1 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+     2/2   Add2    |  Yes  Add   -111  345                   
+     7/10  Mult1   |  Yes  Mul   345   0                     
+    40/40  Mult2   |  Yes  Div         234   Mult1           
+
+
+[#register result status#]
+
+             F0    F2 F4 F6   F8 F10   
+   Cycle 8   Mult1       Add2    Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+     1/2   Add2    |  Yes  Add   -111  345                   
+     6/10  Mult1   |  Yes  Mul   345   0                     
+    40/40  Mult2   |  Yes  Div         234   Mult1           
+
+
+[#register result status#]
+
+             F0    F2 F4 F6   F8 F10   
+   Cycle 9   Mult1       Add2    Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+     0/2   Add2    |  Yes  Add   -111  345                   
+     5/10  Mult1   |  Yes  Mul   345   0                     
+    40/40  Mult2   |  Yes  Div         234   Mult1           
+
+
+[#register result status#]
+
+             F0    F2 F4 F6   F8 F10   
+   Cycle 10  Mult1       Add2    Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+     4/10  Mult1   |  Yes  Mul   345   0                     
+    40/40  Mult2   |  Yes  Div         234   Mult1           
+
+
+[#register result status#]
+
+             F0    F2 F4 F6 F8 F10   
+   Cycle 11  Mult1             Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+     3/10  Mult1   |  Yes  Mul   345   0                     
+    40/40  Mult2   |  Yes  Div         234   Mult1           
+
+
+[#register result status#]
+
+             F0    F2 F4 F6 F8 F10   
+   Cycle 12  Mult1             Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+     2/10  Mult1   |  Yes  Mul   345   0                     
+    40/40  Mult2   |  Yes  Div         234   Mult1           
+
+
+[#register result status#]
+
+             F0    F2 F4 F6 F8 F10   
+   Cycle 13  Mult1             Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+     1/10  Mult1   |  Yes  Mul   345   0                     
+    40/40  Mult2   |  Yes  Div         234   Mult1           
+
+
+[#register result status#]
+
+             F0    F2 F4 F6 F8 F10   
+   Cycle 14  Mult1             Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+     0/10  Mult1   |  Yes  Mul   345   0                     
+    40/40  Mult2   |  Yes  Div         234   Mult1           
+
+
+[#register result status#]
+
+             F0    F2 F4 F6 F8 F10   
+   Cycle 15  Mult1             Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    40/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 16                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    39/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 17                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    38/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 18                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    37/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 19                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    36/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 20                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    35/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 21                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    34/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 22                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    33/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 23                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    32/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 24                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    31/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 25                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    30/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 26                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    29/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 27                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    28/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 28                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    27/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 29                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    26/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 30                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    25/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 31                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    24/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 32                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    23/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 33                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    22/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 34                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    21/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 35                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    20/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 36                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    19/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 37                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    18/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 38                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    17/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 39                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    16/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 40                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    15/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 41                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    14/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 42                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    13/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 43                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    12/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 44                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    11/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 45                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+    10/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 46                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+     9/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 47                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+     8/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 48                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+     7/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 49                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+     6/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 50                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+     5/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 51                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+     4/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 52                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+     3/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 53                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+     2/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 54                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+     1/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 55                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5    56
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+     0/40  Mult2   |  Yes  Div   0     234                   
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10   
+   Cycle 56                 Mult2 
+
+
+----------------------------------------------------------------------
+[#instruction status#]
+
+    Op     dest j   k   | Issue  Exec  Write
+    Load   F6   34  R2  |     1     3     4
+    Load   F2   45  R3  |     2     4     5
+    Mul    F0   F2  F4  |     3    15    16
+    Sub    F8   F6  F2  |     4     7     8
+    Div    F10  F0  F6  |     5    56    57
+    Add    F6   F8  F2  |     6    10    11
+
+
+[#functional unit status#]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Store1  |   No                                    
+           Store2  |   No                                    
+           Store2  |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+           Mult2   |   No                                    
+
+
+[#register result status#]
+
+             F0 F2 F4 F6 F8 F10 
+   Cycle 57                     
+
+

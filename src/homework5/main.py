@@ -3,8 +3,6 @@ from typing import List, Optional, Union
 
 CLOCK = 0
 
-MEMORY = []
-
 class Operation(Enum):
     LOAD = "Load"
     STORE = 'Store'
@@ -98,18 +96,31 @@ class Unit:
         self.status.Busy = True
         self.status.Op = Op
 
-        assert dest.in_used_unit is None  # 写回寄存器不应该存在冲突
-        dest.in_used_unit = self
-
         if Op in (Operation.LOAD, Operation.STORE):
             # 对于 Load/Store 指令来说需要先计算目的地址
             if reg_k.in_used_unit is not None:
                 self.status.Q_k = reg_k.in_used_unit
             else:
-                self.status.V_j = reg_j
+                # 对于 Load 指令
+                #   j       -> A
+                #   reg_k   -> Vk
+
+                # 对于 Store 指令, dest 寄存器的值要在一开始读出来, 但是没有额外的空间了, 所以放在 Vj
+                #   dest    -> Vj
+                #   j       -> A
+                #   reg_k   -> Vk
+                if Op == Operation.STORE:
+                    self.status.V_j = dest.value
+                else:
+                    assert dest.in_used_unit is None  # 写回寄存器不应该存在冲突
+                    dest.in_used_unit = self            
+                self.status.A = reg_j
                 self.status.V_k = reg_k.value
                 self.instruction.stage = InstructionStage.CALC
             return
+
+        assert dest.in_used_unit is None  # 写回寄存器不应该存在冲突
+        dest.in_used_unit = self
 
         if reg_j.in_used_unit is None:
             self.status.V_j = reg_j.value
@@ -147,11 +158,12 @@ class Unit:
         if self.status.Busy == False:
             info += " " * 36
         else:
-            info += f"  {self.status.Op.value:<4}  " if self.status.Op is not None else f" " * 8
+            info += f"  {self.status.Op.value:<6}" if self.status.Op is not None else f" " * 8
+            info += f"{self.status.V_j:<6}" if self.status.V_j is not None else f'{" ":<6}'
+            info += f"{self.status.V_k:<6}" if self.status.V_k is not None else f'{" ":<6}'
             info += f"{self.status.Q_j.name:<8}" if self.status.Q_j else f'{" ":<8}'
             info += f"{self.status.Q_k.name:<8}" if self.status.Q_k else f'{" ":<8}'
-        info += f'{"Yes":<4}' if self.status.R_j else f'{"No":<4}'
-        info += f'{"Yes":<4}' if self.status.R_k else f'{"No":<4}'
+            info += f'{self.status.A}' if self.status.A is not None else ""
         return info
 
 
@@ -195,19 +207,23 @@ class Instruction:
         if self.stage == InstructionStage.TOBE_ISSUE:
             self.stage = InstructionStage.ISSUE
             self.unit.update_status(self.Op, self.dest, self.j, self.k)
+            self.stage_clocks.append(CLOCK)
 
         elif self.stage == InstructionStage.CALC:
-            self.unit.status.A = self.unit.status.V_j + self.unit.status.V_k
+            self.unit.status.A = self.unit.status.A + self.unit.status.V_k
             # load/store 需要两个周期完成发射
             self.stage = InstructionStage.ISSUE
 
         elif self.stage == InstructionStage.ISSUE:
+            if self.unit.status.Q_j or self.unit.status.Q_k:
+                return
             self.left_latency -= 1
             if self.left_latency != 0:
                 return
             else:
                 self.stage = InstructionStage.EXEC
                 self.return_value = self.unit.exec()
+                self.stage_clocks.append(CLOCK)
 
         elif self.stage == InstructionStage.EXEC:
             self.stage = InstructionStage.WRITE
@@ -215,7 +231,9 @@ class Instruction:
                 self.dest.value = self.return_value
             self.stage = InstructionStage.COMPLETE
             self.unit.status.Busy = False
-            self.dest.in_used_unit = None
+            if self.dest:
+                self.dest.in_used_unit = None
+            self.stage_clocks.append(CLOCK)
 
     def get_info_str(self) -> str:
         info = ""
@@ -245,14 +263,6 @@ class Tomasulo:
         self.register_group = rg
 
     def load_instructions(self, instructions: List[Instruction]):
-        # 检查是否存在 WAW
-        destinations = []
-        for instruction in instructions:
-            destinations.append(instruction.dest)
-        if len(destinations) != len(set(destinations)):
-            print("WAW detected! Solve the problem by renaming register")
-            exit()
-
         self.instructions = instructions
         self.pc = 0
 
@@ -289,21 +299,21 @@ class Tomasulo:
             for issued_instruction in self.issued_instructions:
                 issued_instruction.run()
 
-            # 所有指令都执行结束之后一起更新 unit 的 Rj Rk Qj Qk 的状态, 避免指令串行更新的干扰
+            # 所有指令都执行结束之后一起更新 unit 的 Qj Qk 的状态, 避免指令串行更新的干扰
             for unit in self.functional_units:
-                if unit.status.R_j == False and unit.status.Q_j and unit.status.Q_j.status.Busy == False:
-                    unit.status.R_j = True
+                if unit.status.Q_j and unit.status.Q_j.status.Busy == False:
+                    unit.status.V_j = unit.status.Q_j.instruction.dest.value
                     unit.status.Q_j = None
-                if unit.status.R_k == False and unit.status.Q_k and unit.status.Q_k.status.Busy == False:
-                    unit.status.R_k = True
+                    
+                if unit.status.Q_k and unit.status.Q_k.status.Busy == False:
+                    unit.status.V_k = unit.status.Q_k.instruction.dest.value
                     unit.status.Q_k = None
+
 
             self.show_status()
             CLOCK += 1
             pass
             # exit()
-
-        self.show_usage_data()
 
     def has_available_unit(self, unit_function: UnitFunction) -> Optional[Unit]:
         """
@@ -321,13 +331,13 @@ class Tomasulo:
     def show_status(self):
         print("-" * 70)
         print("[#instruction status#]\n")
-        print(f"    Op   dest j   k  | Issue  Read  Exec  Write")
+        print(f"    Op     dest j   k   | Issue  Exec  Write")
         for instruction in self.instructions:
-            print(f"    {instruction.Op.value:<4} {instruction.dest:<4} {instruction.j}  {instruction.k}", end=" |")
+            print(f"    {instruction.Op.value:<6} {instruction.dest:<4} {instruction.j:<4}{instruction.k:<3}", end=" |")
             print(instruction.get_info_str())
         print("\n")
         print("[#functional unit status#]\n")
-        print("    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk")
+        print("    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A")
         for unit in self.functional_units:
             print(unit.get_info_str())
         print("\n")
@@ -335,14 +345,10 @@ class Tomasulo:
         print(self.register_group)
         print("\n")
 
-    def show_usage_data(self):
-        print("Unit     Instruction     start   end     theoretical/running")
-        for unit in self.functional_units:
-            print(unit.get_usage_data())
-
-
 def main():
     rg = RegisterGroup()
+    rg.R2.value = 200
+    rg.R3.value = 300
 
     instructions = [
         Instruction(Op=Operation.LOAD, dest=rg.F6, j=34, k=rg.R2, latency=1, unit_function=UnitFunction.LOAD),
