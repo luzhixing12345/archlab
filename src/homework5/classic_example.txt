@@ -79,7 +79,7 @@
 [functional unit status]
 
     Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
-     1/1   Load1   |  Yes  Load        200                   234
+     1/1   Load1   |  Yes  Load                              234
      1/1   Load2   |  Yes  Load        300                   45
            Load3   |   No                                    
            Store1  |   No                                    
@@ -112,8 +112,8 @@
 [functional unit status]
 
     Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
-     0/1   Load1   |  Yes  Load        200                   234
-     1/1   Load2   |  Yes  Load        300                   345
+     0/1   Load1   |  Yes  Load                              234
+     1/1   Load2   |  Yes  Load                              345
            Load3   |   No                                    
            Store1  |   No                                    
            Store2  |   No                                    
@@ -146,7 +146,7 @@
 
     Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
            Load1   |   No                                    
-     0/1   Load2   |  Yes  Load        300                   345
+     0/1   Load2   |  Yes  Load                              345
            Load3   |   No                                    
            Store1  |   No                                    
            Store2  |   No                                    

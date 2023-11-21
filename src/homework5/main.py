@@ -3,9 +3,10 @@ from typing import List, Optional, Union
 
 CLOCK = 0
 
+
 class Operation(Enum):
     LOAD = "Load"
-    STORE = 'Store'
+    STORE = "Store"
     MUL = "Mul"
     SUB = "Sub"
     DIV = "Div"
@@ -14,10 +15,9 @@ class Operation(Enum):
 
 class UnitFunction(Enum):
     LOAD = "Load"
-    STORE = 'Store'
+    STORE = "Store"
     MULT = "Mult"
     ADD = "Add"
-    DIVIDE = "Divide"
 
 
 class FloatRegister:
@@ -83,12 +83,46 @@ class UnitState:
         self.A: Optional[int] = None  # 地址, 对于 Load/Store Unit 有效
 
 
+class Buffer:
+    def __init__(self, function: UnitFunction, buffer_size: int) -> None:
+        self.units: List["Unit"] = []
+        self.function = function
+        for i in range(1, buffer_size + 1):
+            unit = Unit(name=f"{function.value}{i}", function=function)
+            unit.buffer = self
+            self.units.append(unit)
+
+    def get_busy_unit_number(self):
+        busy_unit_number = 0
+        for unit in self.units:
+            if unit.status.Busy:
+                busy_unit_number += 1
+        return busy_unit_number
+
+    def check_exec_instruction(self):
+        """
+        真正可以用于计算的功能部件只有一个, 因此同一时刻在一个 buffer 内部
+        只能有一个指令进入执行阶段, 其余等候
+        """
+        for unit in self.units:
+            if unit.instruction is not None and unit.instruction.stage == InstructionStage.EXEC:
+                return True
+        return False
+
+    def get_info_str(self):
+        info = ""
+        for unit in self.units:
+            info += unit.get_info_str() + "\n"
+        return info[:-1]
+
+
 class Unit:
     def __init__(self, name: str, function: UnitFunction) -> None:
         self.name = name
         self.function = function
         self.status = UnitState()
         self.instruction: Instruction = None
+        self.buffer: Buffer = None
 
     def update_status(self, Op: Operation, dest: FloatRegister, reg_j: Union[int, FloatRegister], reg_k: FloatRegister):
         self.status.Busy = True
@@ -114,7 +148,7 @@ class Unit:
                         self.status.V_j = dest.value
                 else:
                     assert dest.in_used_unit is None  # 写回寄存器不应该存在冲突
-                    dest.in_used_unit = self            
+                    dest.in_used_unit = self
                 self.status.A = reg_j
                 self.status.V_k = reg_k.value
                 self.instruction.stage = InstructionStage.CALC
@@ -164,7 +198,7 @@ class Unit:
             info += f"{self.status.V_k:<6}" if self.status.V_k is not None else f'{" ":<6}'
             info += f"{self.status.Q_j.name:<8}" if self.status.Q_j else f'{" ":<8}'
             info += f"{self.status.Q_k.name:<8}" if self.status.Q_k else f'{" ":<8}'
-            info += f'{self.status.A}' if self.status.A is not None else ""
+            info += f"{self.status.A}" if self.status.A is not None else ""
         return info
 
 
@@ -201,33 +235,49 @@ class Instruction:
         self.return_value = None
 
     def run(self):
-        """ """
         if self.stage == InstructionStage.COMPLETE:
-            return   
+            return
 
+        # 如果尚未发射进入发射阶段
         if self.stage == InstructionStage.TOBE_ISSUE:
             self.stage = InstructionStage.ISSUE
+
+            # 对于带立即数的指令(load/store), update_status 会进入 InstructionStage.CALC 阶段
             self.unit.update_status(self.Op, self.dest, self.j, self.k)
             self.stage_clocks.append(CLOCK)
 
+        # load/store 需要两个周期完成发射
+        # 因为在 ISSUE 阶段还需要额外一个周期来计算 Vk + imm 的结果
         elif self.stage == InstructionStage.CALC:
             self.unit.status.A = self.unit.status.A + self.unit.status.V_k
-            # load/store 需要两个周期完成发射
             self.stage = InstructionStage.ISSUE
+            self.unit.status.V_k = None
 
         elif self.stage == InstructionStage.ISSUE:
+            # 如果有需要等待的数据, 直接返回
             if self.unit.status.Q_j or self.unit.status.Q_k:
                 return
-            self.left_latency -= 1
-            if self.left_latency != 0:
+
+            # 进入执行阶段前需要判断当前 buffer 是否有其他正在执行的单元
+            # 因为只有一个功能部件, 如果有其他指令正在使用则当前指令需要等待
+            if self.unit.buffer.check_exec_instruction():
                 return
-            else:
-                self.stage = InstructionStage.EXEC
+
+            self.stage = InstructionStage.EXEC
+            self.left_latency -= 1
+            if self.left_latency == 0:
                 self.return_value = self.unit.exec()
                 self.stage_clocks.append(CLOCK)
+                self.stage = InstructionStage.WRITE
 
         elif self.stage == InstructionStage.EXEC:
-            self.stage = InstructionStage.WRITE
+            self.left_latency -= 1
+            if self.left_latency == 0:
+                self.return_value = self.unit.exec()
+                self.stage_clocks.append(CLOCK)
+                self.stage = InstructionStage.WRITE
+
+        elif self.stage == InstructionStage.WRITE:
             if self.return_value is not None:
                 self.dest.value = self.return_value
             self.stage = InstructionStage.COMPLETE
@@ -249,17 +299,11 @@ class Tomasulo:
         self.instructions: List[Instruction] = []
         self.issued_instructions: List[Instruction] = []
         self.pc: int = 0
-        self.functional_units: List[Unit] = [
-            Unit(name="Load1", function=UnitFunction.LOAD),
-            Unit(name="Load2", function=UnitFunction.LOAD),
-            Unit(name="Load3", function=UnitFunction.LOAD),
-            Unit(name="Store1", function=UnitFunction.STORE),
-            Unit(name="Store2", function=UnitFunction.STORE),
-            Unit(name="Store3", function=UnitFunction.STORE),
-            Unit(name="Add1", function=UnitFunction.ADD),
-            Unit(name="Add2", function=UnitFunction.ADD),
-            Unit(name="Mult1", function=UnitFunction.MULT),
-            Unit(name="Mult2", function=UnitFunction.MULT),
+        self.functional_buffers: List[Buffer] = [
+            Buffer(function=UnitFunction.LOAD, buffer_size=3),
+            Buffer(function=UnitFunction.STORE, buffer_size=3),
+            Buffer(function=UnitFunction.ADD, buffer_size=2),
+            Buffer(function=UnitFunction.MULT, buffer_size=2),
         ]
         self.register_group = rg
 
@@ -277,18 +321,17 @@ class Tomasulo:
             # 当全部指令都已发射并且所有功能单元都空闲时退出
             if self.pc == instruction_length:
                 busy_unit_number = 0
-                for unit in self.functional_units:
-                    if unit.status.Busy:
-                        busy_unit_number += 1
+                for buffer in self.functional_buffers:
+                    busy_unit_number += buffer.get_busy_unit_number()
                 if busy_unit_number == 0:
                     break
 
             # 尝试发射一条新指令
             # 1. 如果有指令
-            # 2. 并且有可用的功能单元
+            # 2. 对应的功能单元还有 buffer
             # 则发射下一条指令
             if self.pc != instruction_length:
-                unit = self.has_available_unit(self.instructions[self.pc].unit_function)
+                unit = self.has_available_buffer(self.instructions[self.pc].unit_function)
                 if unit is not None:
                     self.instructions[self.pc].unit = unit
                     unit.instruction = self.instructions[self.pc]
@@ -301,31 +344,33 @@ class Tomasulo:
                 issued_instruction.run()
 
             # 所有指令都执行结束之后一起更新 unit 的 Qj Qk 的状态, 避免指令串行更新的干扰
-            for unit in self.functional_units:
-                if unit.status.Q_j and unit.status.Q_j.status.Busy == False:
-                    unit.status.V_j = unit.status.Q_j.instruction.dest.value
-                    unit.status.Q_j = None
-                    
-                if unit.status.Q_k and unit.status.Q_k.status.Busy == False:
-                    unit.status.V_k = unit.status.Q_k.instruction.dest.value
-                    unit.status.Q_k = None
+            for buffer in self.functional_buffers:
+                for unit in buffer.units:
+                    if unit.status.Q_j and unit.status.Q_j.status.Busy == False:
+                        unit.status.V_j = unit.status.Q_j.instruction.dest.value
+                        unit.status.Q_j = None
 
+                    if unit.status.Q_k and unit.status.Q_k.status.Busy == False:
+                        unit.status.V_k = unit.status.Q_k.instruction.dest.value
+                        unit.status.Q_k = None
 
             self.show_status()
             CLOCK += 1
             pass
             # exit()
 
-    def has_available_unit(self, unit_function: UnitFunction) -> Optional[Unit]:
+    def has_available_buffer(self, unit_function: UnitFunction) -> Optional[Unit]:
         """
         检查当前缓冲区是否还有 unit_function 类的功能单元可用
 
         如有返回对应的 Unit
         没有返回 None
         """
-        for unit in self.functional_units:
-            if unit.function == unit_function and unit.status.Busy == False:
-                return unit
+        for buffer in self.functional_buffers:
+            if buffer.function == unit_function:
+                for unit in buffer.units:
+                    if unit.status.Busy == False:
+                        return unit
 
         return None
 
@@ -339,12 +384,13 @@ class Tomasulo:
         print("\n")
         print("[functional unit status]\n")
         print("    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A")
-        for unit in self.functional_units:
-            print(unit.get_info_str())
+        for buffer in self.functional_buffers:
+            print(buffer.get_info_str())
         print("\n")
         print("[register result status]\n")
         print(self.register_group)
         print("\n")
+
 
 def main():
     rg = RegisterGroup()

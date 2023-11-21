@@ -88,7 +88,7 @@
 [functional unit status]
 
     Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
-     1/1   Load1   |  Yes  Load        200                   200
+     1/1   Load1   |  Yes  Load                              200
            Load2   |   No                                    
            Load3   |   No                                    
            Store1  |   No                                    
@@ -124,7 +124,7 @@
 [functional unit status]
 
     Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
-     0/1   Load1   |  Yes  Load        200                   200
+     0/1   Load1   |  Yes  Load                              200
            Load2   |   No                                    
            Load3   |   No                                    
      1/1   Store1  |  Yes  Store       200   Add1            0
@@ -163,7 +163,7 @@
            Load1   |   No                                    
      1/1   Load2   |  Yes  Load        200                   -4
            Load3   |   No                                    
-     1/1   Store1  |  Yes  Store       200   Add1            200
+     1/1   Store1  |  Yes  Store             Add1            200
            Store2  |   No                                    
            Store3  |   No                                    
      2/2   Add1    |  Yes  Add   200   0                     
@@ -197,9 +197,9 @@
 
     Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
            Load1   |   No                                    
-     1/1   Load2   |  Yes  Load        200                   196
+     1/1   Load2   |  Yes  Load                              196
            Load3   |   No                                    
-     1/1   Store1  |  Yes  Store       200   Add1            200
+     1/1   Store1  |  Yes  Store             Add1            200
            Store2  |   No                                    
            Store3  |   No                                    
      1/2   Add1    |  Yes  Add   200   0                     
@@ -233,9 +233,9 @@
 
     Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
            Load1   |   No                                    
-     0/1   Load2   |  Yes  Load        200                   196
+     0/1   Load2   |  Yes  Load                              196
            Load3   |   No                                    
-     1/1   Store1  |  Yes  Store       200   Add1            200
+     1/1   Store1  |  Yes  Store             Add1            200
      1/1   Store2  |  Yes  Store       200   Add2            -4
            Store3  |   No                                    
      0/2   Add1    |  Yes  Add   200   0                     
@@ -271,8 +271,8 @@
      1/1   Load1   |  Yes  Load        200                   -8
            Load2   |   No                                    
            Load3   |   No                                    
-     1/1   Store1  |  Yes  Store 200   200                   200
-     1/1   Store2  |  Yes  Store       200   Add2            196
+     1/1   Store1  |  Yes  Store 200                         200
+     1/1   Store2  |  Yes  Store             Add2            196
            Store3  |   No                                    
            Add1    |   No                                    
      2/2   Add2    |  Yes  Add   196   0                     
@@ -304,11 +304,11 @@
 [functional unit status]
 
     Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
-     1/1   Load1   |  Yes  Load        200                   192
+     1/1   Load1   |  Yes  Load                              192
            Load2   |   No                                    
            Load3   |   No                                    
-     0/1   Store1  |  Yes  Store 200   200                   200
-     1/1   Store2  |  Yes  Store       200   Add2            196
+     0/1   Store1  |  Yes  Store 200                         200
+     1/1   Store2  |  Yes  Store             Add2            196
            Store3  |   No                                    
      2/2   Add1    |  Yes  Add   200   0     Load1           
      1/2   Add2    |  Yes  Add   196   0                     
@@ -340,11 +340,11 @@
 [functional unit status]
 
     Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A
-     0/1   Load1   |  Yes  Load        200                   192
+     0/1   Load1   |  Yes  Load                              192
            Load2   |   No                                    
            Load3   |   No                                    
            Store1  |   No                                    
-     1/1   Store2  |  Yes  Store       200   Add2            196
+     1/1   Store2  |  Yes  Store             Add2            196
      1/1   Store3  |  Yes  Store       200   Add1            -8
      2/2   Add1    |  Yes  Add   200   0     Load1           
      0/2   Add2    |  Yes  Add   196   0                     
@@ -380,8 +380,8 @@
            Load2   |   No                                    
            Load3   |   No                                    
            Store1  |   No                                    
-     1/1   Store2  |  Yes  Store 196   200                   196
-     1/1   Store3  |  Yes  Store       200   Add1            192
+     1/1   Store2  |  Yes  Store 196                         196
+     1/1   Store3  |  Yes  Store             Add1            192
      2/2   Add1    |  Yes  Add   192   0                     
            Add2    |   No                                    
            Mult1   |   No                                    
@@ -416,8 +416,8 @@
            Load2   |   No                                    
            Load3   |   No                                    
            Store1  |   No                                    
-     0/1   Store2  |  Yes  Store 196   200                   196
-     1/1   Store3  |  Yes  Store       200   Add1            192
+     0/1   Store2  |  Yes  Store 196                         196
+     1/1   Store3  |  Yes  Store             Add1            192
      1/2   Add1    |  Yes  Add   192   0                     
            Add2    |   No                                    
            Mult1   |   No                                    
@@ -453,7 +453,7 @@
            Load3   |   No                                    
            Store1  |   No                                    
            Store2  |   No                                    
-     1/1   Store3  |  Yes  Store       200   Add1            192
+     1/1   Store3  |  Yes  Store             Add1            192
      0/2   Add1    |  Yes  Add   192   0                     
            Add2    |   No                                    
            Mult1   |   No                                    
@@ -489,7 +489,7 @@
            Load3   |   No                                    
            Store1  |   No                                    
            Store2  |   No                                    
-     1/1   Store3  |  Yes  Store 192   200                   192
+     1/1   Store3  |  Yes  Store 192                         192
            Add1    |   No                                    
            Add2    |   No                                    
            Mult1   |   No                                    
@@ -525,7 +525,7 @@
            Load3   |   No                                    
            Store1  |   No                                    
            Store2  |   No                                    
-     0/1   Store3  |  Yes  Store 192   200                   192
+     0/1   Store3  |  Yes  Store 192                         192
            Add1    |   No                                    
            Add2    |   No                                    
            Mult1   |   No                                    
