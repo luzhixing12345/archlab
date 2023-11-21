@@ -101,7 +101,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(self.isa.registers[1], 101)
         print(f"\033[92mPass test_DH_WAW\033[0m")
 
-    def test_DH_WAR(self):
+    def test_DH_RAW(self):
         instructions = [
             0x003100B3,
             0x40308233,
@@ -117,7 +117,7 @@ class MyTestCase(unittest.TestCase):
         self.assertEqual(self.isa.registers[4], 100)
         print(f"\033[92mPass test_DH_WAR\033[0m")
 
-    def test_DH_RAW(self):
+    def test_DH_WAR(self):
         instructions = [
             0x40308233,
             0x003100B3,

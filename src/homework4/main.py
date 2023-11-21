@@ -332,18 +332,18 @@ class ScoreBoard:
 
     def show_status(self):
         print("-" * 70)
-        print("[#instruction status#]\n")
+        print("[instruction status]\n")
         print(f"    Op   dest j   k  | Issue  Read  Exec  Write")
         for instruction in self.instructions:
             print(f"    {instruction.Op.value:<4} {instruction.dest:<4} {instruction.j}  {instruction.k}", end=" |")
             print(instruction.get_info_str())
         print("\n")
-        print("[#functional unit status#]\n")
+        print("[functional unit status]\n")
         print("    Time   Name    | Busy  Op    Fi  Fj  Fk  Qj      Qk      Rj  Rk")
         for unit in self.functional_units:
             print(unit.get_info_str())
         print("\n")
-        print("[#register result status#]\n")
+        print("[register result status]\n")
         print(self.register_group)
         print("\n")
 

@@ -24,8 +24,6 @@ class FloatRegister:
     def __init__(self, name: str) -> None:
         self.name = name
         self.value = 0
-        self.ready_to_be_read = True  # 当前寄存器是否可以被读
-        self.be_asked_to_read = 0  # 正在读当前寄存器的 unit 的数量 (用于 WAR) 的判断
         self.in_used_unit: Optional["Unit"] = None  # 正在使用当前寄存器作为目的寄存器的 unit
 
     def __str__(self) -> str:
@@ -110,7 +108,10 @@ class Unit:
                 #   j       -> A
                 #   reg_k   -> Vk
                 if Op == Operation.STORE:
-                    self.status.V_j = dest.value
+                    if dest.in_used_unit is not None:
+                        self.status.Q_j = dest.in_used_unit
+                    else:
+                        self.status.V_j = dest.value
                 else:
                     assert dest.in_used_unit is None  # 写回寄存器不应该存在冲突
                     dest.in_used_unit = self            
@@ -254,7 +255,7 @@ class Tomasulo:
             Unit(name="Load3", function=UnitFunction.LOAD),
             Unit(name="Store1", function=UnitFunction.STORE),
             Unit(name="Store2", function=UnitFunction.STORE),
-            Unit(name="Store2", function=UnitFunction.STORE),
+            Unit(name="Store3", function=UnitFunction.STORE),
             Unit(name="Add1", function=UnitFunction.ADD),
             Unit(name="Add2", function=UnitFunction.ADD),
             Unit(name="Mult1", function=UnitFunction.MULT),
@@ -330,18 +331,18 @@ class Tomasulo:
 
     def show_status(self):
         print("-" * 70)
-        print("[#instruction status#]\n")
+        print("[instruction status]\n")
         print(f"    Op     dest j   k   | Issue  Exec  Write")
         for instruction in self.instructions:
             print(f"    {instruction.Op.value:<6} {instruction.dest:<4} {instruction.j:<4}{instruction.k:<3}", end=" |")
             print(instruction.get_info_str())
         print("\n")
-        print("[#functional unit status#]\n")
+        print("[functional unit status]\n")
         print("    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A")
         for unit in self.functional_units:
             print(unit.get_info_str())
         print("\n")
-        print("[#register result status#]\n")
+        print("[register result status]\n")
         print(self.register_group)
         print("\n")
 
