@@ -76,10 +76,10 @@ class UnitState:
     def __init__(self) -> None:
         self.Busy: bool = False  # 单元是否繁忙
         self.Op: Operation = None  # 部件执行的指令类型
-        self.V_j: Optional[int] = None
-        self.V_k: Optional[int] = None
-        self.Q_j: "Unit" = None  # 如果源寄存器 F_j 不可用, 部件该向哪个功能单元要数据
-        self.Q_k: "Unit" = None  # 如果源寄存器 F_k 不可用, 部件该向哪个功能单元要数据
+        self.V_j: Optional[int] = None # 源寄存器 j 的值
+        self.V_k: Optional[int] = None # 源寄存器 k 的值
+        self.Q_j: "Unit" = None  # 如果源寄存器 j 的值暂不可读, 部件该向哪个功能单元要数据
+        self.Q_k: "Unit" = None  # 如果源寄存器 k 的值暂不可读, 部件该向哪个功能单元要数据
         self.A: Optional[int] = None  # 地址, 对于 Load/Store Unit 有效
 
 
@@ -251,6 +251,7 @@ class Instruction:
         elif self.stage == InstructionStage.CALC:
             self.unit.status.A = self.unit.status.A + self.unit.status.V_k
             self.stage = InstructionStage.ISSUE
+            # 计算完成之后就不需要 Vk 了, 为了输出好看一些
             self.unit.status.V_k = None
 
         elif self.stage == InstructionStage.ISSUE:
@@ -318,7 +319,7 @@ class Tomasulo:
 
         instruction_length = len(self.instructions)
         while True:
-            # 当全部指令都已发射并且所有功能单元都空闲时退出
+            # 当全部指令都已发射并且所有 buffer 的所有功能单元都空闲时退出
             if self.pc == instruction_length:
                 busy_unit_number = 0
                 for buffer in self.functional_buffers:
