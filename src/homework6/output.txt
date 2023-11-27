@@ -215,8 +215,8 @@ tail ->     4  Yes SUB F8 F6 F2        ISSUE   F8
         Entry Busy Instruction         Stat    Dest  value
             1   No LOAD F6 34 R2       COMMIT  F6    234
             2   No LOAD F2 45 R3       COMMIT  F2    345
-head ->     3  Yes MUL F0 F2 F4        ISSUE   F0    
-            4  Yes SUB F8 F6 F2        ISSUE   F8    
+head ->     3  Yes MUL F0 F2 F4        EXEC    F0    
+            4  Yes SUB F8 F6 F2        EXEC    F8    
 tail ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
             6   No                         
 
@@ -255,7 +255,7 @@ tail ->     5  Yes DIV F10 F0 F6       ISSUE   F10
         Entry Busy Instruction         Stat    Dest  value
             1   No LOAD F6 34 R2       COMMIT  F6    234
             2   No LOAD F2 45 R3       COMMIT  F2    345
-head ->     3  Yes MUL F0 F2 F4        ISSUE   F0    
+head ->     3  Yes MUL F0 F2 F4        EXEC    F0    
             4  Yes SUB F8 F6 F2        EXEC    F8    
             5  Yes DIV F10 F0 F6       ISSUE   F10   
 tail ->     6  Yes ADD F6 F8 F2        ISSUE   F6    
@@ -295,7 +295,7 @@ tail ->     6  Yes ADD F6 F8 F2        ISSUE   F6
         Entry Busy Instruction         Stat    Dest  value
             1   No LOAD F6 34 R2       COMMIT  F6    234
             2   No LOAD F2 45 R3       COMMIT  F2    345
-head ->     3  Yes MUL F0 F2 F4        ISSUE   F0    
+head ->     3  Yes MUL F0 F2 F4        EXEC    F0    
             4  Yes SUB F8 F6 F2        WRITE   F8    234
             5  Yes DIV F10 F0 F6       ISSUE   F10   
 tail ->     6  Yes ADD F6 F8 F2        ISSUE   F6    
@@ -335,10 +335,10 @@ tail ->     6  Yes ADD F6 F8 F2        ISSUE   F6
         Entry Busy Instruction         Stat    Dest  value
             1   No LOAD F6 34 R2       COMMIT  F6    234
             2   No LOAD F2 45 R3       COMMIT  F2    345
-head ->     3  Yes MUL F0 F2 F4        ISSUE   F0    
+head ->     3  Yes MUL F0 F2 F4        EXEC    F0    
             4  Yes SUB F8 F6 F2        WRITE   F8    234
             5  Yes DIV F10 F0 F6       ISSUE   F10   
-tail ->     6  Yes ADD F6 F8 F2        ISSUE   F6    
+tail ->     6  Yes ADD F6 F8 F2        EXEC    F6    
 
 [reservation station]
 
@@ -375,7 +375,7 @@ tail ->     6  Yes ADD F6 F8 F2        ISSUE   F6
         Entry Busy Instruction         Stat    Dest  value
             1   No LOAD F6 34 R2       COMMIT  F6    234
             2   No LOAD F2 45 R3       COMMIT  F2    345
-head ->     3  Yes MUL F0 F2 F4        ISSUE   F0    
+head ->     3  Yes MUL F0 F2 F4        EXEC    F0    
             4  Yes SUB F8 F6 F2        WRITE   F8    234
             5  Yes DIV F10 F0 F6       ISSUE   F10   
 tail ->     6  Yes ADD F6 F8 F2        EXEC    F6    
@@ -415,7 +415,7 @@ tail ->     6  Yes ADD F6 F8 F2        EXEC    F6
         Entry Busy Instruction         Stat    Dest  value
             1   No LOAD F6 34 R2       COMMIT  F6    234
             2   No LOAD F2 45 R3       COMMIT  F2    345
-head ->     3  Yes MUL F0 F2 F4        ISSUE   F0    
+head ->     3  Yes MUL F0 F2 F4        EXEC    F0    
             4  Yes SUB F8 F6 F2        WRITE   F8    234
             5  Yes DIV F10 F0 F6       ISSUE   F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
@@ -455,7 +455,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
         Entry Busy Instruction         Stat    Dest  value
             1   No LOAD F6 34 R2       COMMIT  F6    234
             2   No LOAD F2 45 R3       COMMIT  F2    345
-head ->     3  Yes MUL F0 F2 F4        ISSUE   F0    
+head ->     3  Yes MUL F0 F2 F4        EXEC    F0    
             4  Yes SUB F8 F6 F2        WRITE   F8    234
             5  Yes DIV F10 F0 F6       ISSUE   F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
@@ -495,7 +495,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
         Entry Busy Instruction         Stat    Dest  value
             1   No LOAD F6 34 R2       COMMIT  F6    234
             2   No LOAD F2 45 R3       COMMIT  F2    345
-head ->     3  Yes MUL F0 F2 F4        ISSUE   F0    
+head ->     3  Yes MUL F0 F2 F4        EXEC    F0    
             4  Yes SUB F8 F6 F2        WRITE   F8    234
             5  Yes DIV F10 F0 F6       ISSUE   F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
@@ -535,7 +535,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
         Entry Busy Instruction         Stat    Dest  value
             1   No LOAD F6 34 R2       COMMIT  F6    234
             2   No LOAD F2 45 R3       COMMIT  F2    345
-head ->     3  Yes MUL F0 F2 F4        ISSUE   F0    
+head ->     3  Yes MUL F0 F2 F4        EXEC    F0    
             4  Yes SUB F8 F6 F2        WRITE   F8    234
             5  Yes DIV F10 F0 F6       ISSUE   F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
@@ -645,7 +645,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -656,8 +656,8 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             1   No LOAD F6 34 R2       COMMIT  F6    234
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
-            4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     4  Yes SUB F8 F6 F2        WRITE   F8    234
+            5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -675,7 +675,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 [register result status]
 
              F0  F2  F4  F6  F8  F10 
-   Cycle 16              #6      #5  
+   Cycle 16              #6  #4  #5  
 
 
 ----------------------------------------------------------------------
@@ -685,7 +685,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -697,7 +697,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -725,7 +725,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -737,7 +737,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -765,7 +765,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -777,7 +777,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -805,7 +805,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -817,7 +817,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -845,7 +845,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -857,7 +857,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -885,7 +885,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -897,7 +897,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -925,7 +925,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -937,7 +937,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -965,7 +965,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -977,7 +977,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1005,7 +1005,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1017,7 +1017,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1045,7 +1045,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1057,7 +1057,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1085,7 +1085,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1097,7 +1097,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1125,7 +1125,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1137,7 +1137,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1165,7 +1165,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1177,7 +1177,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1205,7 +1205,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1217,7 +1217,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1245,7 +1245,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1257,7 +1257,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1285,7 +1285,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1297,7 +1297,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1325,7 +1325,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1337,7 +1337,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1365,7 +1365,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1377,7 +1377,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1405,7 +1405,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1417,7 +1417,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1445,7 +1445,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1457,7 +1457,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1485,7 +1485,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1497,7 +1497,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1525,7 +1525,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1537,7 +1537,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1565,7 +1565,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1577,7 +1577,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1605,7 +1605,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1617,7 +1617,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1645,7 +1645,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1657,7 +1657,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1685,7 +1685,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1697,7 +1697,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1725,7 +1725,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1737,7 +1737,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1765,7 +1765,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1777,7 +1777,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1805,7 +1805,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1817,7 +1817,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1845,7 +1845,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1857,7 +1857,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1885,7 +1885,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1897,7 +1897,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1925,7 +1925,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1937,7 +1937,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -1965,7 +1965,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -1977,7 +1977,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -2005,7 +2005,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -2017,7 +2017,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -2045,7 +2045,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -2057,7 +2057,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -2085,7 +2085,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -2097,7 +2097,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -2125,7 +2125,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -2137,7 +2137,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -2165,7 +2165,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5
     Add    F6   F8  F2  |     6     9    10
 
@@ -2177,7 +2177,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
             2   No LOAD F2 45 R3       COMMIT  F2    345
             3   No MUL F0 F2 F4        COMMIT  F0    0
             4   No SUB F8 F6 F2        COMMIT  F8    234
-head ->     5  Yes DIV F10 F0 F6       ISSUE   F10   
+head ->     5  Yes DIV F10 F0 F6       EXEC    F10   
 tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
 
 [reservation station]
@@ -2205,7 +2205,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5    55
     Add    F6   F8  F2  |     6     9    10
 
@@ -2245,7 +2245,7 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5    55    56
     Add    F6   F8  F2  |     6     9    10
 
@@ -2285,9 +2285,49 @@ tail ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
     Load   F6   34  R2  |     1     2     3     4
     Load   F2   45  R3  |     2     3     4     5
     Mul    F0   F2  F4  |     3    14    15    16
-    Sub    F8   F6  F2  |     4     6     7    16
+    Sub    F8   F6  F2  |     4     6     7    17
     Div    F10  F0  F6  |     5    55    56    57
-    Add    F6   F8  F2  |     6     9    10    57
+    Add    F6   F8  F2  |     6     9    10
+
+
+[reorder buffer]
+
+        Entry Busy Instruction         Stat    Dest  value
+            1   No LOAD F6 34 R2       COMMIT  F6    234
+            2   No LOAD F2 45 R3       COMMIT  F2    345
+            3   No MUL F0 F2 F4        COMMIT  F0    0
+            4   No SUB F8 F6 F2        COMMIT  F8    234
+            5   No DIV F10 F0 F6       COMMIT  F10   0.0
+ H/T ->     6  Yes ADD F6 F8 F2        WRITE   F6    345
+
+[reservation station]
+
+    Time   Name    | Busy  Op    Vj    Vk    Qj  Qk  A   Dest
+           Load1   |   No                                    
+           Load2   |   No                                    
+           Load3   |   No                                    
+           Add1    |   No                                    
+           Add2    |   No                                    
+           Mult1   |   No                                    
+           Mult2   |   No                                    
+
+
+[register result status]
+
+             F0  F2  F4  F6  F8  F10 
+   Cycle 57              #6          
+
+
+----------------------------------------------------------------------
+[instruction status]
+
+    Op     dest j   k   | Issue  Exec  Write  Commit
+    Load   F6   34  R2  |     1     2     3     4
+    Load   F2   45  R3  |     2     3     4     5
+    Mul    F0   F2  F4  |     3    14    15    16
+    Sub    F8   F6  F2  |     4     6     7    17
+    Div    F10  F0  F6  |     5    55    56    57
+    Add    F6   F8  F2  |     6     9    10    58
 
 
 [reorder buffer]
@@ -2315,6 +2355,6 @@ tail ->     6   No ADD F6 F8 F2        COMMIT  F6    345
 [register result status]
 
              F0  F2  F4  F6  F8  F10 
-   Cycle 57                          
+   Cycle 58                          
 
 

@@ -182,7 +182,7 @@ class Unit:
             info += f"{self.status.Q_j:<4}" if self.status.Q_j else f'{" ":<4}'
             info += f"{self.status.Q_k:<4}" if self.status.Q_k else f'{" ":<4}'
             info += f"{self.status.A:<4}" if self.status.A is not None else f'{"":<4}'
-            info += f'{self.instruction.rob_item}'
+            info += f"{self.instruction.rob_item}"
         return info
 
 
@@ -239,25 +239,30 @@ class Instruction:
             if self.unit.buffer.check_exec_instruction():
                 return
 
+            self.stage = InstructionStage.EXEC
             self.left_latency -= 1
             if self.left_latency == 0:
-                self.stage = InstructionStage.EXEC
                 self.return_value = self.unit.exec()
                 self.stage_clocks.append(CLOCK)
 
         elif self.stage == InstructionStage.EXEC:
-            self.stage = InstructionStage.WRITE
-            self.rob_item.value = self.return_value
-            self.unit.status.Busy = False
-            self.dest.in_used_unit = None
-            self.stage_clocks.append(CLOCK)
+            if self.return_value is not None:
+                self.stage = InstructionStage.WRITE
+                self.rob_item.value = self.return_value
+                self.unit.status.Busy = False
+                self.dest.in_used_unit = None
+                self.stage_clocks.append(CLOCK)
+            else:
+                self.left_latency -= 1
+                if self.left_latency == 0:
+                    self.return_value = self.unit.exec()
+                    self.stage_clocks.append(CLOCK)
 
         elif self.stage == InstructionStage.WRITE:
             # 只有是 head 的时候才可以 commit
             if self.rob_item.parent_rob.head + 1 == self.rob_item.entry:
-                self.rob_item.parent_rob.head = (
-                    self.rob_item.parent_rob.head + 1
-                ) % self.rob_item.parent_rob.buffer_size
+                # 更新 head 指针, 避免指令顺序影响
+                self.rob_item.parent_rob.head_move = True
                 self.stage = InstructionStage.COMMIT
                 self.dest.value = self.rob_item.value
                 self.dest.in_rob_item = None
@@ -299,6 +304,7 @@ class ReorderBuffer:
         for i in range(1, buffer_size + 1):
             self.buffer.append(ReorderBufferItem(i, self))
 
+        self.head_move = False
         self.issued_instructions: List[Instruction] = []
 
     def insert(self, instruction: Instruction):
@@ -404,6 +410,11 @@ class TomasuloROB:
                     if unit.status.Q_k and unit.status.Q_k.instruction.stage == InstructionStage.WRITE:
                         unit.status.V_k = unit.status.Q_k.instruction.dest.value
                         unit.status.Q_k = None
+
+            # 只会更新一次
+            if self.reorder_buffer.head_move:
+                self.reorder_buffer.head = (self.reorder_buffer.head + 1) % self.reorder_buffer.buffer_size
+                self.reorder_buffer.head_move = False
 
             self.show_status()
             CLOCK += 1
