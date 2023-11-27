@@ -25,6 +25,7 @@ class FloatRegister:
         self.name = name
         self.value = 0
         self.in_used_unit: Optional["Unit"] = None  # 正在使用当前寄存器作为目的寄存器的 unit
+        self.in_rob_item: Optional["ReorderBufferItem"] = None
 
     def __str__(self) -> str:
         return self.name
@@ -55,19 +56,16 @@ class RegisterGroup:
 
     def __repr__(self) -> str:
         info = " " * 13
-        reg_unit_tuples = []
-        for name, reg in self.register_map.items():
-            if reg.in_used_unit is not None:
-                reg_unit_tuples.append((f"{name:<{len(reg.in_used_unit.name)}}", reg.in_used_unit.name))
-            else:
-                reg_unit_tuples.append((name, f'{" ":<{len(name)}}'))
 
-        for name, _ in reg_unit_tuples:
-            info += name + " "
+        for name, _ in self.register_map.items():
+            info += f"{name:<3} "
         info += "\n"
         info += f"   Cycle {CLOCK:<2}  "
-        for _, unit_name in reg_unit_tuples:
-            info += unit_name + " "
+        for _, reg in self.register_map.items():
+            if reg.in_rob_item:
+                info += f'{"#" + str(reg.in_rob_item.entry):<4}'
+            else:
+                info += " " * 4
 
         return info
 
@@ -78,8 +76,8 @@ class UnitState:
         self.Op: Operation = None  # 部件执行的指令类型
         self.V_j: Optional[int] = None  # 源寄存器 j 的值
         self.V_k: Optional[int] = None  # 源寄存器 k 的值
-        self.Q_j: "Unit" = None  # 如果源寄存器 j 的值暂不可读, 部件该向哪个功能单元要数据
-        self.Q_k: "Unit" = None  # 如果源寄存器 k 的值暂不可读, 部件该向哪个功能单元要数据
+        self.Q_j: "ReorderBufferItem" = None  # 如果源寄存器 j 的值暂不可读, 部件该向哪个功能单元要数据
+        self.Q_k: "ReorderBufferItem" = None  # 如果源寄存器 k 的值暂不可读, 部件该向哪个功能单元要数据
         self.A: Optional[int] = None  # 地址, 对于 Load/Store Unit 有效
         self.dest: "ReorderBufferItem" = None
 
@@ -131,26 +129,43 @@ class Unit:
 
         assert dest.in_used_unit is None  # 写回寄存器不应该存在冲突
         dest.in_used_unit = self
+        dest.in_rob_item = self.instruction.rob_item
 
         if type(reg_j) == int:
-            self.status.V_j = reg_j
-            if reg_k.in_used_unit is None:
+            self.status.A = reg_j
+            if reg_k.in_rob_item is None:
                 self.status.V_k = reg_k.value
             else:
-                self.status.Q_k = reg_k.in_used_unit
+                self.status.Q_k = reg_k.in_rob_item
         else:
-
-            if reg_j.in_used_unit is None:
+            if reg_j.in_rob_item is None:
                 self.status.V_j = reg_j.value
             else:
-                self.status.Q_j = reg_j.in_used_unit
+                self.status.Q_j = reg_j.in_rob_item
 
-            if reg_k.in_used_unit is None:
+            if reg_k.in_rob_item is None:
                 self.status.V_k = reg_k.value
             else:
-                self.status.Q_k = reg_k.in_used_unit
+                self.status.Q_k = reg_k.in_rob_item
+
+    def exec(self):
+        if self.status.Op == Operation.LOAD:
+            # 正常应该从 Memory 取数据
+            # 这里偷个懒, 直接认为 Memory[addr] = addr
+            self.status.A += self.status.V_k
+            return self.status.A
+        elif self.status.Op == Operation.ADD:
+            return self.status.V_j + self.status.V_k
+        elif self.status.Op == Operation.MUL:
+            return self.status.V_j * self.status.V_k
+        elif self.status.Op == Operation.DIV:
+            return self.status.V_j / self.status.V_k
+        elif self.status.Op == Operation.SUB:
+            return self.status.V_j - self.status.V_k
+        # STORE 没有返回值
 
     def get_info_str(self) -> str:
+        # "    Time   Name    | Busy  Op    Vj    Vk    Qj  Qk  A   Dest"
         info = "    "
         if self.instruction is None or self.status.Busy == False:
             info += " " * 7
@@ -164,9 +179,10 @@ class Unit:
             info += f"  {self.status.Op.value:<6}" if self.status.Op is not None else f" " * 8
             info += f"{self.status.V_j:<6}" if self.status.V_j is not None else f'{" ":<6}'
             info += f"{self.status.V_k:<6}" if self.status.V_k is not None else f'{" ":<6}'
-            info += f"{self.status.Q_j.name:<8}" if self.status.Q_j else f'{" ":<8}'
-            info += f"{self.status.Q_k.name:<8}" if self.status.Q_k else f'{" ":<8}'
-            info += f"{self.status.A}" if self.status.A is not None else ""
+            info += f"{self.status.Q_j:<4}" if self.status.Q_j else f'{" ":<4}'
+            info += f"{self.status.Q_k:<4}" if self.status.Q_k else f'{" ":<4}'
+            info += f"{self.status.A:<4}" if self.status.A is not None else f'{"":<4}'
+            info += f'{self.instruction.rob_item}'
         return info
 
 
@@ -176,7 +192,6 @@ class InstructionStage(Enum):
     EXEC = "EXEC"
     WRITE = "WRITE"
     COMMIT = "COMMIT"
-    COMPLETE = "COMPLETE"
 
 
 class Instruction:
@@ -204,15 +219,14 @@ class Instruction:
         self.return_value = None
 
     def run(self):
-        if self.stage == InstructionStage.COMPLETE:
+        if self.stage == InstructionStage.COMMIT:
             return
 
         # 如果尚未发射进入发射阶段
         if self.stage == InstructionStage.TOBE_ISSUE:
             self.stage = InstructionStage.ISSUE
-
-            # 对于带立即数的指令(load/store), update_status 会进入 InstructionStage.CALC 阶段
             self.unit.update_status(self.Op, self.dest, self.j, self.k)
+            self.rob_item.Busy = True
             self.stage_clocks.append(CLOCK)
 
         elif self.stage == InstructionStage.ISSUE:
@@ -225,28 +239,30 @@ class Instruction:
             if self.unit.buffer.check_exec_instruction():
                 return
 
-            self.stage = InstructionStage.EXEC
             self.left_latency -= 1
             if self.left_latency == 0:
+                self.stage = InstructionStage.EXEC
                 self.return_value = self.unit.exec()
                 self.stage_clocks.append(CLOCK)
-                self.stage = InstructionStage.WRITE
 
         elif self.stage == InstructionStage.EXEC:
-            self.left_latency -= 1
-            if self.left_latency == 0:
-                self.return_value = self.unit.exec()
-                self.stage_clocks.append(CLOCK)
-                self.stage = InstructionStage.WRITE
+            self.stage = InstructionStage.WRITE
+            self.rob_item.value = self.return_value
+            self.unit.status.Busy = False
+            self.dest.in_used_unit = None
+            self.stage_clocks.append(CLOCK)
 
         elif self.stage == InstructionStage.WRITE:
-            if self.return_value is not None:
-                self.dest.value = self.return_value
-            self.stage = InstructionStage.COMPLETE
-            self.unit.status.Busy = False
-            if self.dest:
-                self.dest.in_used_unit = None
-            self.stage_clocks.append(CLOCK)
+            # 只有是 head 的时候才可以 commit
+            if self.rob_item.parent_rob.head + 1 == self.rob_item.entry:
+                self.rob_item.parent_rob.head = (
+                    self.rob_item.parent_rob.head + 1
+                ) % self.rob_item.parent_rob.buffer_size
+                self.stage = InstructionStage.COMMIT
+                self.dest.value = self.rob_item.value
+                self.dest.in_rob_item = None
+                self.rob_item.Busy = False
+                self.stage_clocks.append(CLOCK)
 
     def get_info_str(self) -> str:
         info = ""
@@ -261,12 +277,18 @@ class Instruction:
 
 
 class ReorderBufferItem:
-    def __init__(self, entry: int) -> None:
+    def __init__(self, entry: int, parent_rob: "ReorderBuffer") -> None:
         self.entry = entry
 
         self.Busy: bool = False
         self.value = None
+
         self.instruction: Instruction = None
+        self.parent_rob: ReorderBuffer = parent_rob
+
+    def __format__(self, __format_spec: str) -> str:
+        return format(f"#{str(self.entry)}", __format_spec)
+
 
 class ReorderBuffer:
     def __init__(self, buffer_size: int) -> None:
@@ -275,7 +297,7 @@ class ReorderBuffer:
         self.tail = -1
         self.buffer: List[ReorderBufferItem] = []
         for i in range(1, buffer_size + 1):
-            self.buffer.append(ReorderBufferItem(i))
+            self.buffer.append(ReorderBufferItem(i, self))
 
         self.issued_instructions: List[Instruction] = []
 
@@ -299,7 +321,9 @@ class ReorderBuffer:
         # "Entry Busy Instruction         Stat    Dest  value"
         info = ""
         for i, buffer_item in enumerate(self.buffer):
-            if i == self.head:
+            if i == self.head and self.head == self.tail:
+                info += " H/T -> "
+            elif i == self.head:
                 info += "head -> "
             elif i == self.tail:
                 info += "tail -> "
@@ -307,13 +331,15 @@ class ReorderBuffer:
                 info += "        "
             info += f"{buffer_item.entry:>5} "
             info += f'{"Yes":>4} ' if buffer_item.Busy else f'{"No":>4} '
-            if buffer_item.Busy:
-                info += f'{buffer_item.instruction:<20}'
-                info += f'{buffer_item.instruction.stage.value:<8}'
-                info += f'{buffer_item.instruction.dest.name:<6}'
-                if buffer_item.value is not None:
-                    info += buffer_item.value
-            info += '\n'
+            if buffer_item.instruction is None:
+                info += " " * 24
+            else:
+                info += f"{buffer_item.instruction:<20}"
+                info += f"{buffer_item.instruction.stage.value:<8}"
+                info += f"{buffer_item.instruction.dest.name:<6}"
+            if buffer_item.value is not None:
+                info += str(buffer_item.value)
+            info += "\n"
 
         return info
 
@@ -322,7 +348,6 @@ class TomasuloROB:
     def __init__(self, rg: RegisterGroup) -> None:
         self.register_group = rg
         self.instructions: List[Instruction] = []
-        self.issued_instructions: List[Instruction] = []
         self.pc: int = 0
         self.functional_buffers: List[Buffer] = [
             Buffer(function=UnitFunction.LOAD, buffer_size=3),
@@ -342,12 +367,12 @@ class TomasuloROB:
 
         instruction_length = len(self.instructions)
         while True:
-            # 当全部指令都已发射并且所有 buffer 的所有功能单元都空闲时退出
+            # 当全部指令都已发射并且所有 ROB 都空闲时退出
             if self.pc == instruction_length:
-                busy_unit_number = 0
-                for buffer in self.functional_buffers:
-                    busy_unit_number += buffer.get_busy_unit_number()
-                if busy_unit_number == 0:
+                busy_rob_number = 0
+                for buffer in self.reorder_buffer.buffer:
+                    busy_rob_number += buffer.Busy
+                if busy_rob_number == 0:
                     break
 
             # 尝试发射一条新指令
@@ -358,8 +383,10 @@ class TomasuloROB:
             if self.pc != instruction_length:
                 unit = self.has_available_buffer(self.instructions[self.pc].unit_function)
                 if unit is not None and self.reorder_buffer.is_available():
+                    # 绑定 instruction <-> unit
                     self.instructions[self.pc].unit = unit
                     unit.instruction = self.instructions[self.pc]
+                    # 绑定 instruction <-> rob
                     self.reorder_buffer.insert(self.instructions[self.pc])
                     self.pc += 1
 
@@ -370,11 +397,11 @@ class TomasuloROB:
             # 所有指令都执行结束之后一起更新 unit 的 Qj Qk 的状态, 避免指令串行更新的干扰
             for buffer in self.functional_buffers:
                 for unit in buffer.units:
-                    if unit.status.Q_j and unit.status.Q_j.status.Busy == False:
+                    if unit.status.Q_j and unit.status.Q_j.instruction.stage == InstructionStage.WRITE:
                         unit.status.V_j = unit.status.Q_j.instruction.dest.value
                         unit.status.Q_j = None
 
-                    if unit.status.Q_k and unit.status.Q_k.status.Busy == False:
+                    if unit.status.Q_k and unit.status.Q_k.instruction.stage == InstructionStage.WRITE:
                         unit.status.V_k = unit.status.Q_k.instruction.dest.value
                         unit.status.Q_k = None
 
@@ -410,7 +437,7 @@ class TomasuloROB:
         print("        Entry Busy Instruction         Stat    Dest  value")
         print(self.reorder_buffer.get_info_str())
         print("[reservation station]\n")
-        print("    Time   Name    | Busy  Op    Vj    Vk    Qj      Qk      A   Dest")
+        print("    Time   Name    | Busy  Op    Vj    Vk    Qj  Qk  A   Dest")
         for buffer in self.functional_buffers:
             print(buffer.get_info_str())
         print("\n")
