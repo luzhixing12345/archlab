@@ -6,6 +6,7 @@ code:
 - pipeline-profiling: 3
 - scoreboard: 4
 - Tomasulo: 5
+- rob-tom: 6
 read:
 - lecture1: 1
 - lecture2: 2
