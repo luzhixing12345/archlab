@@ -262,7 +262,7 @@ class Instruction:
             # 只有是 head 的时候才可以 commit
             if self.rob_item.parent_rob.head + 1 == self.rob_item.entry:
                 # 更新 head 指针, 避免指令顺序影响
-                self.rob_item.parent_rob.head_move = True
+                self.rob_item.parent_rob.is_head_move = True
                 self.stage = InstructionStage.COMMIT
                 self.dest.value = self.rob_item.value
                 self.dest.in_rob_item = None
@@ -304,7 +304,7 @@ class ReorderBuffer:
         for i in range(1, buffer_size + 1):
             self.buffer.append(ReorderBufferItem(i, self))
 
-        self.head_move = False
+        self.is_head_move = False # head 指针是否移动
         self.issued_instructions: List[Instruction] = []
 
     def insert(self, instruction: Instruction):
@@ -412,9 +412,9 @@ class TomasuloROB:
                         unit.status.Q_k = None
 
             # 只会更新一次
-            if self.reorder_buffer.head_move:
+            if self.reorder_buffer.is_head_move:
                 self.reorder_buffer.head = (self.reorder_buffer.head + 1) % self.reorder_buffer.buffer_size
-                self.reorder_buffer.head_move = False
+                self.reorder_buffer.is_head_move = False
 
             self.show_status()
             CLOCK += 1
