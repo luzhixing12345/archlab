@@ -11,7 +11,7 @@
 python src/homework1/main.py
 ```
 
-> jupyter 提交版见 [archlab main.ipynb](https://github.com/luzhixing12345/archlab/blob/main/src/homework1/main.ipynb)
+> jupyter 提交版见 [main.ipynb](https://github.com/luzhixing12345/archlab/blob/main/src/homework1/main.ipynb)
 
 ```bash
 before

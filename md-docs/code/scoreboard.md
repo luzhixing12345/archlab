@@ -5,7 +5,7 @@
 
 ## 运行结果
 
-> jupyter 提交版见 [archlab main.ipynb](https://github.com/luzhixing12345/archlab/blob/main/src/homework4/main.ipynb)
+> jupyter 提交版见 [main.ipynb](https://github.com/luzhixing12345/archlab/blob/main/src/homework4/main.ipynb)
 
 ```bash
 python src/homework4/main.py

@@ -13,7 +13,7 @@
 python src/homework2/main.py
 ```
 
-> jupyter 提交版见 [archlab main.ipynb](https://github.com/luzhixing12345/archlab/blob/main/src/homework2/main.ipynb)
+> jupyter 提交版见 [main.ipynb](https://github.com/luzhixing12345/archlab/blob/main/src/homework2/main.ipynb)
 
 运行结果为一段汇编的机器码表示:
 

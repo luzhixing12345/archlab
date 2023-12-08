@@ -2,7 +2,16 @@
 
 NUDT 高级体系结构实验
 
-本系列实验笔者使用 RISCV-32I 作为指令集, 经典的单周期 5 阶段和 5 级流水线作为 ISA 实现
+本系列实验笔者使用 RISCV-32I 作为指令集, 代码保存在 `src` 目录下的对应 homework{x} 位置
+
+1. RISCV 简单指令模拟
+2. 单周期五阶段
+3. 五级流水线
+4. 记分牌算法(ScoreBoard)
+5. Tomasulo 算法
+6. Tomasulo ROB 算法
+7. 超标量(SuperScale)
+
 
 ## 参考
 

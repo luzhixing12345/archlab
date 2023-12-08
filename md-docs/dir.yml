@@ -7,6 +7,7 @@ code:
 - scoreboard: 4
 - Tomasulo: 5
 - rob-tom: 6
+- superscale: 7
 read:
 - lecture1: 1
 - lecture2: 2

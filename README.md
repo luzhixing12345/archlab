@@ -1,10 +1,10 @@
 # archlab
 
-NUDT 高级体系结构实验
+NUDT 高级体系结构课程的代码和阅读作业
 
-[archlab document](https://luzhixing12345.github.io/archlab/)
+代码保存在 `src` 目录下的对应 homework{x} 位置
 
-本系列实验笔者使用 RISCV-32I 作为指令集, 经典的单周期 5 阶段和 5 级流水线作为 ISA 实现
+文档记录了相关的使用方法: [archlab document](https://luzhixing12345.github.io/archlab/)
 
 ## 参考
 

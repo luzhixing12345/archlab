@@ -7,7 +7,7 @@
 
 ## 运行结果
 
-> jupyter 提交版见 [archlab main.ipynb](https://github.com/luzhixing12345/archlab/blob/main/src/homework3/main.ipynb)
+> jupyter 提交版见 [main.ipynb](https://github.com/luzhixing12345/archlab/blob/main/src/homework3/main.ipynb)
 
 本实验结果分为两部分, 首先是对于 5 级流水线功能实现的检验
 
