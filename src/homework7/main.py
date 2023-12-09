@@ -1,5 +1,5 @@
 from enum import Enum
-from typing import List, Optional, Union
+from typing import List, Dict, Union, Optional
 
 CLOCK = 0
 
@@ -9,13 +9,15 @@ class Operation(Enum):
     STORE = "Store"
     SUB = "Sub"
     ADD = "Add"
-    BNE = 'Bne'
+    FADD = "Fadd"
+    BNE = "Bne"
 
 
 class UnitFunction(Enum):
-    LOAD = "Load"
-    MULT = "Mult"
+    INTEGER = "Integer"
     ADD = "Add"
+    FADD = "Fadd"
+    BRANCH = "Branch"
 
 
 class FloatRegister:
@@ -23,7 +25,6 @@ class FloatRegister:
         self.name = name
         self.value = 0
         self.in_used_unit: Optional["Unit"] = None  # 正在使用当前寄存器作为目的寄存器的 unit
-        self.in_rob_item: Optional["ReorderBufferItem"] = None
 
     def __str__(self) -> str:
         return self.name
@@ -52,65 +53,18 @@ class RegisterGroup:
             "F10": self.F10,
         }
 
-    def __repr__(self) -> str:
-        info = " " * 13
-
-        for name, _ in self.register_map.items():
-            info += f"{name:<3} "
-        info += "\n"
-        info += f"   Cycle {CLOCK:<2}  "
-        for _, reg in self.register_map.items():
-            if reg.in_rob_item:
-                info += f'{"#" + str(reg.in_rob_item.entry):<4}'
-            else:
-                info += " " * 4
-
-        return info
-
 
 class UnitState:
     def __init__(self) -> None:
         self.Busy: bool = False  # 单元是否繁忙
         self.Op: Operation = None  # 部件执行的指令类型
-        self.V_j: Optional[int] = None  # 源寄存器 j 的值
-        self.V_k: Optional[int] = None  # 源寄存器 k 的值
-        self.Q_j: "ReorderBufferItem" = None  # 如果源寄存器 j 的值暂不可读, 部件该向哪个功能单元要数据
-        self.Q_k: "ReorderBufferItem" = None  # 如果源寄存器 k 的值暂不可读, 部件该向哪个功能单元要数据
-        self.A: Optional[int] = None  # 地址, 对于 Load/Store Unit 有效
-        self.dest: "ReorderBufferItem" = None
-
-
-class Buffer:
-    def __init__(self, function: UnitFunction, buffer_size: int) -> None:
-        self.units: List["Unit"] = []
-        self.function = function
-        for i in range(1, buffer_size + 1):
-            unit = Unit(name=f"{function.value}{i}", function=function)
-            unit.buffer = self
-            self.units.append(unit)
-
-    def get_busy_unit_number(self):
-        busy_unit_number = 0
-        for unit in self.units:
-            if unit.status.Busy:
-                busy_unit_number += 1
-        return busy_unit_number
-
-    def check_exec_instruction(self):
-        """
-        真正可以用于计算的功能部件只有一个, 因此同一时刻在一个 buffer 内部
-        只能有一个指令进入执行阶段, 其余等候
-        """
-        for unit in self.units:
-            if unit.instruction is not None and unit.instruction.stage == InstructionStage.EXEC:
-                return True
-        return False
-
-    def get_info_str(self):
-        info = ""
-        for unit in self.units:
-            info += unit.get_info_str() + "\n"
-        return info[:-1]
+        self.F_i: FloatRegister = None  # 目的寄存器
+        self.F_j: FloatRegister = None  # 源寄存器
+        self.F_k: FloatRegister = None  # 源寄存器
+        self.Q_j: "Unit" = None  # 如果源寄存器 F_j 不可用, 部件该向哪个功能单元要数据
+        self.Q_k: "Unit" = None  # 如果源寄存器 F_k 不可用, 部件该向哪个功能单元要数据
+        self.R_j: bool = False  # 源寄存器 F_j 是否可读/需要读
+        self.R_k: bool = False  # 源寄存器 F_k 是否可读/需要读
 
 
 class Unit:
@@ -119,51 +73,33 @@ class Unit:
         self.function = function
         self.status = UnitState()
         self.instruction: Instruction = None
-        self.buffer: Buffer = None
+        
+        self.instructions_buffer: Dict[Instruction, Optional[UnitState]] = {}
 
-    def update_status(self, Op: Operation, dest: FloatRegister, reg_j: Union[int, FloatRegister], reg_k: FloatRegister):
-        self.status.Busy = True
-        self.status.Op = Op
-
-        assert dest.in_used_unit is None  # 写回寄存器不应该存在冲突
-        dest.in_used_unit = self
-        dest.in_rob_item = self.instruction.rob_item
-
-        if type(reg_j) == int:
-            self.status.A = reg_j
-            if reg_k.in_rob_item is None:
-                self.status.V_k = reg_k.value
-            else:
-                self.status.Q_k = reg_k.in_rob_item
+    def buffer_instruction(self, instruction: "Instruction"):
+        # 如果当前功能单元没有被占用, 直接使用指令
+        if self.instruction is None:
+            self.instruction = instruction
         else:
-            if reg_j.in_rob_item is None:
-                self.status.V_j = reg_j.value
-            else:
-                self.status.Q_j = reg_j.in_rob_item
+            # 否则进入缓冲区
+            self.instructions_buffer[instruction] = None
+        instruction.unit = self
 
-            if reg_k.in_rob_item is None:
-                self.status.V_k = reg_k.value
-            else:
-                self.status.Q_k = reg_k.in_rob_item
-
-    def exec(self):
-        if self.status.Op == Operation.LOAD:
-            # 正常应该从 Memory 取数据
-            # 这里偷个懒, 直接认为 Memory[addr] = addr
-            self.status.A += self.status.V_k
-            return self.status.A
-        elif self.status.Op == Operation.ADD:
-            return self.status.V_j + self.status.V_k
-        elif self.status.Op == Operation.MUL:
-            return self.status.V_j * self.status.V_k
-        elif self.status.Op == Operation.DIV:
-            return self.status.V_j / self.status.V_k
-        elif self.status.Op == Operation.SUB:
-            return self.status.V_j - self.status.V_k
-        # STORE 没有返回值
+    def update_status(self, Op: Operation, dest: FloatRegister, reg_j: Union[int, FloatRegister], reg_k: FloatRegister) -> UnitState:
+        status = UnitState()
+        status.Busy = True
+        status.Op = Op
+        status.F_i = dest
+        
+        if type(reg_j) == int:
+            status.F_j = None
+        else:
+            status.F_j = reg_j
+            
+        status
+                    
 
     def get_info_str(self) -> str:
-        # "    Time   Name    | Busy  Op    Vj    Vk    Qj  Qk  A   Dest"
         info = "    "
         if self.instruction is None or self.status.Busy == False:
             info += " " * 7
@@ -188,8 +124,9 @@ class InstructionStage(Enum):
     TOBE_ISSUE = "TOBE_ISSUE"
     ISSUE = "ISSUE"
     EXEC = "EXEC"
+    MEM = "MEM"
     WRITE = "WRITE"
-    COMMIT = "COMMIT"
+    COMPLETE = "COMPLETE"
 
 
 class Instruction:
@@ -199,166 +136,85 @@ class Instruction:
         dest: FloatRegister,
         j: Union[int, FloatRegister],
         k: FloatRegister,
-        latency: int,
         unit_function: UnitFunction,
+        latency: int = 1,
     ) -> None:
         self.Op = Op
         self.dest = dest
         self.j = j
         self.k = k
-        self.latency = latency
         self.unit_function = unit_function  # 执行指令需要的功能单元
+        self.latency = latency
 
         self.unit: Unit = None  # 执行当前指令的功能单元
         self.stage: InstructionStage = InstructionStage.TOBE_ISSUE  # 指令执行的阶段
-        self.rob_item: "ReorderBufferItem" = None
         self.left_latency = self.latency  # 剩余执行时间
-        self.stage_clocks = []  # 四个阶段进入的时间节点
-        self.return_value = None
+        self.stage_clocks: Dict[Enum, Optional[int]] = {
+            InstructionStage.ISSUE: None,
+            InstructionStage.EXEC: None,
+            InstructionStage.MEM: None,
+            InstructionStage.WRITE: None,
+        }  # 四个阶段进入的时间节点
 
     def run(self):
-        if self.stage == InstructionStage.COMMIT:
+        if self.stage == InstructionStage.WRITE:
             return
 
-        # 如果尚未发射进入发射阶段
+        # 其实并未真的进入发射阶段, 只是指令流出
         if self.stage == InstructionStage.TOBE_ISSUE:
             self.stage = InstructionStage.ISSUE
-            self.unit.update_status(self.Op, self.dest, self.j, self.k)
-            self.rob_item.Busy = True
-            self.stage_clocks.append(CLOCK)
+            if self.unit.instruction == self:
+                self.unit.update_status(self.Op, self.dest, self.j, self.k)
+            else:
+                self
+            self.stage_clocks[InstructionStage.ISSUE] = CLOCK
 
         elif self.stage == InstructionStage.ISSUE:
+            # 如果当前功能单元并不在被当前指令占用, 返回
+            if self.unit.instruction != self:
+                return
+            
             # 如果有需要等待的数据, 直接返回
             if self.unit.status.Q_j or self.unit.status.Q_k:
-                return
-
-            # 进入执行阶段前需要判断当前 buffer 是否有其他正在执行的单元
-            # 因为只有一个功能部件, 如果有其他指令正在使用则当前指令需要等待
-            if self.unit.buffer.check_exec_instruction():
                 return
 
             self.stage = InstructionStage.EXEC
             self.left_latency -= 1
             if self.left_latency == 0:
-                self.return_value = self.unit.exec()
-                self.stage_clocks.append(CLOCK)
+                self.stage_clocks[InstructionStage.EXEC] = CLOCK
 
         elif self.stage == InstructionStage.EXEC:
-            if self.return_value is not None:
-                self.stage = InstructionStage.WRITE
-                self.rob_item.value = self.return_value
-                self.unit.status.Busy = False
-                self.dest.in_used_unit = None
-                self.stage_clocks.append(CLOCK)
-            else:
-                self.left_latency -= 1
-                if self.left_latency == 0:
-                    self.return_value = self.unit.exec()
-                    self.stage_clocks.append(CLOCK)
+            ...
 
-        elif self.stage == InstructionStage.WRITE:
-            # 只有是 head 的时候才可以 commit
-            if self.rob_item.parent_rob.head + 1 == self.rob_item.entry:
-                # 更新 head 指针, 避免指令顺序影响
-                self.rob_item.parent_rob.is_head_move = True
-                self.stage = InstructionStage.COMMIT
-                self.dest.value = self.rob_item.value
-                self.dest.in_rob_item = None
-                self.rob_item.Busy = False
-                self.stage_clocks.append(CLOCK)
+        elif self.stage == InstructionStage.MEM:
+            ...
 
     def get_info_str(self) -> str:
         info = ""
-        for stage_clock in self.stage_clocks:
-            info += f"{stage_clock:>6}"
-
+        for stage, clock in self.stage_clocks.items():
+            info += f"{clock:>6}" if clock is not None else " " * 6
+            
         return info
 
     def __format__(self, __format_spec: str) -> str:
-        info = f"{self.Op.name} {self.dest.name} {self.j if type(self.j) == int else self.j.name} {self.k.name}"
+        
+        dest_name = self.dest if type(self.dest) == str else self.dest.name
+        info = f"{self.Op.name:<5} {dest_name:<4} {self.j if type(self.j) == int else self.j.name:>2} {self.k.name:>2}"
         return format(info, __format_spec)
 
 
-class ReorderBufferItem:
-    def __init__(self, entry: int, parent_rob: "ReorderBuffer") -> None:
-        self.entry = entry
-
-        self.Busy: bool = False
-        self.value = None
-
-        self.instruction: Instruction = None
-        self.parent_rob: ReorderBuffer = parent_rob
-
-    def __format__(self, __format_spec: str) -> str:
-        return format(f"#{str(self.entry)}", __format_spec)
-
-
-class ReorderBuffer:
-    def __init__(self, buffer_size: int) -> None:
-        self.buffer_size = buffer_size
-        self.head = 0
-        self.tail = -1
-        self.buffer: List[ReorderBufferItem] = []
-        for i in range(1, buffer_size + 1):
-            self.buffer.append(ReorderBufferItem(i, self))
-
-        self.is_head_move = False # head 指针是否移动
-        self.issued_instructions: List[Instruction] = []
-
-    def insert(self, instruction: Instruction):
-        self.tail = (self.tail + 1) % self.buffer_size
-        instruction.rob_item = self.buffer[self.tail]
-        self.buffer[self.tail].instruction = instruction
-        self.issued_instructions.append(instruction)
-
-    def run(self):
-        for issued_instruction in self.issued_instructions:
-            issued_instruction.run()
-
-    def is_available(self) -> bool:
-        """
-        ROB 有空闲
-        """
-        return self.tail == -1 or (self.tail + 1) % self.buffer_size != self.head
-
-    def get_info_str(self) -> str:
-        # "Entry Busy Instruction         Stat    Dest  value"
-        info = ""
-        for i, buffer_item in enumerate(self.buffer):
-            if i == self.head and self.head == self.tail:
-                info += " H/T -> "
-            elif i == self.head:
-                info += "head -> "
-            elif i == self.tail:
-                info += "tail -> "
-            else:
-                info += "        "
-            info += f"{buffer_item.entry:>5} "
-            info += f'{"Yes":>4} ' if buffer_item.Busy else f'{"No":>4} '
-            if buffer_item.instruction is None:
-                info += " " * 24
-            else:
-                info += f"{buffer_item.instruction:<20}"
-                info += f"{buffer_item.instruction.stage.value:<8}"
-                info += f"{buffer_item.instruction.dest.name:<6}"
-            if buffer_item.value is not None:
-                info += str(buffer_item.value)
-            info += "\n"
-
-        return info
-
-
 class SuperScale:
-    def __init__(self, rg: RegisterGroup) -> None:
+    def __init__(self, multi_issue_number: int, rg: RegisterGroup) -> None:
+        self.multi_issue_number = multi_issue_number  # 超标量个数
         self.register_group = rg
         self.instructions: List[Instruction] = []
         self.pc: int = 0
-        self.functional_buffers: List[Buffer] = [
-            Buffer(function=UnitFunction.LOAD, buffer_size=3),
-            Buffer(function=UnitFunction.ADD, buffer_size=2),
-            Buffer(function=UnitFunction.MULT, buffer_size=2),
+        self.functional_units: List[Unit] = [
+            Unit(name="Address Adder", function=UnitFunction.INTEGER),
+            Unit(name="Integer ALU", function=UnitFunction.ADD),
+            Unit(name="FP ALU", function=UnitFunction.FADD),
         ]
-        self.reorder_buffer = ReorderBuffer(buffer_size=6)
+        self.issued_instructions: List[Instruction] = []  # 所有已发射的指令
 
     def load_instructions(self, instructions: List[Instruction]):
         self.instructions = instructions
@@ -371,87 +227,67 @@ class SuperScale:
 
         instruction_length = len(self.instructions)
         while True:
-            # 当全部指令都已发射并且所有 ROB 都空闲时退出
-            if self.pc == instruction_length:
-                busy_rob_number = 0
-                for buffer in self.reorder_buffer.buffer:
-                    busy_rob_number += buffer.Busy
-                if busy_rob_number == 0:
+            # 当全部指令都已发射并且所有 Unit 都空闲时退出
+            if self.pc >= instruction_length:
+                busy_unit_number = 0
+                for unit in self.functional_units:
+                    if unit.status.Busy:
+                        busy_unit_number += 1
+                if busy_unit_number == 0:
                     break
 
-            # 尝试发射一条新指令
-            # 1. 如果有指令
-            # 2. 对应的功能单元还有 buffer
-            # 3. ROB 还有空位
-            # 则发射下一条指令
+            # 发射两条新指令
             if self.pc != instruction_length:
-                unit = self.has_available_buffer(self.instructions[self.pc].unit_function)
-                if unit is not None and self.reorder_buffer.is_available():
-                    # 绑定 instruction <-> unit
-                    self.instructions[self.pc].unit = unit
-                    unit.instruction = self.instructions[self.pc]
-                    # 绑定 instruction <-> rob
-                    self.reorder_buffer.insert(self.instructions[self.pc])
+                branch_operators = [Operation.BNE]
+                for _ in range(self.multi_issue_number):
+                    instruction = self.instructions[self.pc]
+                    unit = self.get_unit(instruction.unit_function)
+                    unit.buffer_instruction(instruction)
+                    self.issued_instructions.append(instruction)
                     self.pc += 1
-
+                    # 如果是分支指令则发射一条指令
+                    if instruction.Op in branch_operators:
+                        break
+                    if self.pc >= instruction_length:
+                        break
+                    # 如果下一条是分支则也停止
+                    if self.instructions[self.pc].Op in branch_operators:
+                        break
+        
             # 所有指令发射后交由指令本身去执行
-            # 指令内部维护 issue -> exec -> write -> commit 的执行顺序
-            self.reorder_buffer.run()
+            # 指令内部维护 issue -> exec -> mem -> write 的执行顺序
+            for instruction in self.issued_instructions:
+                instruction.run()
 
             # 所有指令都执行结束之后一起更新 unit 的 Qj Qk 的状态, 避免指令串行更新的干扰
-            for buffer in self.functional_buffers:
-                for unit in buffer.units:
-                    if unit.status.Q_j and unit.status.Q_j.instruction.stage == InstructionStage.WRITE:
-                        unit.status.V_j = unit.status.Q_j.instruction.dest.value
-                        unit.status.Q_j = None
-
-                    if unit.status.Q_k and unit.status.Q_k.instruction.stage == InstructionStage.WRITE:
-                        unit.status.V_k = unit.status.Q_k.instruction.dest.value
-                        unit.status.Q_k = None
-
-            # 只会更新一次
-            if self.reorder_buffer.is_head_move:
-                self.reorder_buffer.head = (self.reorder_buffer.head + 1) % self.reorder_buffer.buffer_size
-                self.reorder_buffer.is_head_move = False
+            for unit in self.functional_units:
+                ...
 
             self.show_status()
             CLOCK += 1
             pass
             # exit()
 
-    def has_available_buffer(self, unit_function: UnitFunction) -> Optional[Unit]:
+    def get_unit(self, unit_function: UnitFunction) -> Unit:
         """
         检查当前缓冲区是否还有 unit_function 类的功能单元可用
 
         如有返回对应的 Unit
         没有返回 None
         """
-        for buffer in self.functional_buffers:
-            if buffer.function == unit_function:
-                for unit in buffer.units:
-                    if unit.status.Busy == False:
-                        return unit
+        for unit in self.functional_units:
+            if unit.function == unit_function:
+                return unit
 
-        return None
+        raise ValueError("fail to find available unit")
 
     def show_status(self):
         print("-" * 70)
         print("[instruction status]\n")
-        print(f"    Op     dest j   k   | Issue  Exec  Write  Commit")
+        print(f"    Instructions     | Issue  Exec   Mem Write | Comment")
         for instruction in self.instructions:
-            print(f"    {instruction.Op.value:<6} {instruction.dest:<4} {instruction.j:<4}{instruction.k:<3}", end=" |")
+            print(f"    {instruction:<17}", end="|")
             print(instruction.get_info_str())
-        print("\n")
-        print("[reorder buffer]\n")
-        print("        Entry Busy Instruction         Stat    Dest  value")
-        print(self.reorder_buffer.get_info_str())
-        print("[reservation station]\n")
-        print("    Time   Name    | Busy  Op    Vj    Vk    Qj  Qk  A   Dest")
-        for buffer in self.functional_buffers:
-            print(buffer.get_info_str())
-        print("\n")
-        print("[register result status]\n")
-        print(self.register_group)
         print("\n")
 
 
@@ -461,14 +297,26 @@ def main():
     rg.R2.value = 300
 
     instructions = [
-        Instruction(Op=Operation.LOAD, dest=rg.F0, j=0, k=rg.R1, latency=1, unit_function=UnitFunction.LOAD),
-        Instruction(Op=Operation.ADD, dest=rg.F4, j=rg.F0, k=rg.F2, latency=2, unit_function=UnitFunction.ADD),
-        Instruction(Op=Operation.STORE, dest=rg.F4, j=0, k=rg.R1, latency=2, unit_function=UnitFunction.LOAD),
-        Instruction(Op=Operation.ADD, dest=rg.R1, j=-8, k=rg.R1, latency=1, unit_function=UnitFunction.ADD),
-        Instruction(Op=Operation.BNE, dest=rg.R1, j=rg.R1, k=rg.R1, latency=1, unit_function=UnitFunction.ADD),
+        Instruction(Op=Operation.LOAD, dest=rg.F0, j=0, k=rg.R1, unit_function=UnitFunction.INTEGER),
+        Instruction(Op=Operation.FADD, dest=rg.F4, j=rg.F0, k=rg.F2, unit_function=UnitFunction.FADD, latency=3),
+        Instruction(Op=Operation.STORE, dest=rg.F4, j=0, k=rg.R1, unit_function=UnitFunction.INTEGER),
+        Instruction(Op=Operation.ADD, dest=rg.R1, j=-8, k=rg.R1, unit_function=UnitFunction.ADD),
+        Instruction(Op=Operation.BNE, dest="Loop", j=rg.R1, k=rg.R2, unit_function=UnitFunction.ADD),
+        
+        Instruction(Op=Operation.LOAD, dest=rg.F0, j=0, k=rg.R1, unit_function=UnitFunction.INTEGER),
+        Instruction(Op=Operation.FADD, dest=rg.F4, j=rg.F0, k=rg.F2, unit_function=UnitFunction.FADD, latency=3),
+        Instruction(Op=Operation.STORE, dest=rg.F4, j=0, k=rg.R1, unit_function=UnitFunction.INTEGER),
+        Instruction(Op=Operation.ADD, dest=rg.R1, j=-8, k=rg.R1, unit_function=UnitFunction.ADD),
+        Instruction(Op=Operation.BNE, dest="Loop", j=rg.R1, k=rg.R2, unit_function=UnitFunction.ADD),
+        
+        Instruction(Op=Operation.LOAD, dest=rg.F0, j=0, k=rg.R1, unit_function=UnitFunction.INTEGER),
+        Instruction(Op=Operation.FADD, dest=rg.F4, j=rg.F0, k=rg.F2, unit_function=UnitFunction.FADD, latency=3),
+        Instruction(Op=Operation.STORE, dest=rg.F4, j=0, k=rg.R1, unit_function=UnitFunction.INTEGER),
+        Instruction(Op=Operation.ADD, dest=rg.R1, j=-8, k=rg.R1, unit_function=UnitFunction.ADD),
+        Instruction(Op=Operation.BNE, dest="Loop", j=rg.R1, k=rg.R2, unit_function=UnitFunction.ADD),
     ]
 
-    isa = SuperScale(rg)
+    isa = SuperScale(multi_issue_number=2, rg=rg)
     isa.load_instructions(instructions)
     isa.run()
 
