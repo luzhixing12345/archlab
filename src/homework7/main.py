@@ -24,7 +24,7 @@ class FloatRegister:
     def __init__(self, name: str) -> None:
         self.name = name
         self.value = 0
-        self.in_used_unit: Optional["Unit"] = None  # 正在使用当前寄存器作为目的寄存器的 unit
+        self.to_be_write: bool = False
 
     def __str__(self) -> str:
         return self.name
@@ -51,73 +51,37 @@ class RegisterGroup:
             "F6": self.F6,
             "F8": self.F8,
             "F10": self.F10,
+            "R1": self.R1,
+            "R2": self.R2,
         }
+
+    def __repr__(self) -> str:
+        info = "    "
+        for name in self.register_map:
+            info += f"{name:<4}"
+        info += "\n    "
+        for _, reg in self.register_map.items():
+            info += f'{"Yes" if reg.to_be_write else "No":<4}'
+        return info
 
 
 class UnitState:
     def __init__(self) -> None:
-        self.Busy: bool = False  # 单元是否繁忙
         self.Op: Operation = None  # 部件执行的指令类型
-        self.F_i: FloatRegister = None  # 目的寄存器
-        self.F_j: FloatRegister = None  # 源寄存器
-        self.F_k: FloatRegister = None  # 源寄存器
-        self.Q_j: "Unit" = None  # 如果源寄存器 F_j 不可用, 部件该向哪个功能单元要数据
-        self.Q_k: "Unit" = None  # 如果源寄存器 F_k 不可用, 部件该向哪个功能单元要数据
-        self.R_j: bool = False  # 源寄存器 F_j 是否可读/需要读
-        self.R_k: bool = False  # 源寄存器 F_k 是否可读/需要读
+        self.Q_j: bool = False
+        self.Q_k: bool = False
+        
+        self.write_mem: bool = True
 
 
 class Unit:
-    def __init__(self, name: str, function: UnitFunction) -> None:
+    def __init__(self, name: str, function: UnitFunction, CDB: "CDB") -> None:
         self.name = name
         self.function = function
-        self.status = UnitState()
+        self.CDB = CDB
         self.instruction: Instruction = None
-        
-        self.instructions_buffer: Dict[Instruction, Optional[UnitState]] = {}
-
-    def buffer_instruction(self, instruction: "Instruction"):
-        # 如果当前功能单元没有被占用, 直接使用指令
-        if self.instruction is None:
-            self.instruction = instruction
-        else:
-            # 否则进入缓冲区
-            self.instructions_buffer[instruction] = None
-        instruction.unit = self
-
-    def update_status(self, Op: Operation, dest: FloatRegister, reg_j: Union[int, FloatRegister], reg_k: FloatRegister) -> UnitState:
-        status = UnitState()
-        status.Busy = True
-        status.Op = Op
-        status.F_i = dest
-        
-        if type(reg_j) == int:
-            status.F_j = None
-        else:
-            status.F_j = reg_j
-            
-        status
-                    
-
-    def get_info_str(self) -> str:
-        info = "    "
-        if self.instruction is None or self.status.Busy == False:
-            info += " " * 7
-        else:
-            info += f"{self.instruction.left_latency:>2}/{self.instruction.latency:<2}  "
-        info += f"{self.name:<7} | "
-        info += f'{"Yes":>4}' if self.status.Busy else f'{"No":>4}'
-        if self.status.Busy == False:
-            info += " " * 36
-        else:
-            info += f"  {self.status.Op.value:<6}" if self.status.Op is not None else f" " * 8
-            info += f"{self.status.V_j:<6}" if self.status.V_j is not None else f'{" ":<6}'
-            info += f"{self.status.V_k:<6}" if self.status.V_k is not None else f'{" ":<6}'
-            info += f"{self.status.Q_j:<4}" if self.status.Q_j else f'{" ":<4}'
-            info += f"{self.status.Q_k:<4}" if self.status.Q_k else f'{" ":<4}'
-            info += f"{self.status.A:<4}" if self.status.A is not None else f'{"":<4}'
-            info += f"{self.instruction.rob_item}"
-        return info
+        self.status: UnitState = None
+        self.in_use = False
 
 
 class InstructionStage(Enum):
@@ -155,64 +119,125 @@ class Instruction:
             InstructionStage.MEM: None,
             InstructionStage.WRITE: None,
         }  # 四个阶段进入的时间节点
+        self.status: UnitState = UnitState()
 
     def run(self):
-        if self.stage == InstructionStage.WRITE:
+        if self.stage == InstructionStage.COMPLETE:
             return
 
         # 其实并未真的进入发射阶段, 只是指令流出
         if self.stage == InstructionStage.TOBE_ISSUE:
             self.stage = InstructionStage.ISSUE
-            if self.unit.instruction == self:
-                self.unit.update_status(self.Op, self.dest, self.j, self.k)
-            else:
-                self
+            self.update_status(self.Op, self.dest, self.j, self.k)
+            if self.unit.in_use == False:
+                self.unit.in_use = True
+                self.unit.instruction = self
+                self.unit.status = self.status
             self.stage_clocks[InstructionStage.ISSUE] = CLOCK
 
         elif self.stage == InstructionStage.ISSUE:
             # 如果当前功能单元并不在被当前指令占用, 返回
             if self.unit.instruction != self:
-                return
-            
+                if self.unit.in_use == False:
+                    self.unit.in_use = True
+                    self.unit.instruction = self
+                    self.unit.status = self.status
+                else:
+                    return
             # 如果有需要等待的数据, 直接返回
             if self.unit.status.Q_j or self.unit.status.Q_k:
                 return
 
             self.stage = InstructionStage.EXEC
+            self.stage_clocks[InstructionStage.EXEC] = CLOCK
             self.left_latency -= 1
-            if self.left_latency == 0:
-                self.stage_clocks[InstructionStage.EXEC] = CLOCK
 
         elif self.stage == InstructionStage.EXEC:
-            ...
+            if self.left_latency == 0:
+                if self.Op in (Operation.LOAD, Operation.STORE):
+                    if self.Op == Operation.STORE and not self.unit.status.write_mem:
+                        return
+                    self.stage = InstructionStage.MEM
+                    self.stage_clocks[InstructionStage.MEM] = CLOCK
+                elif self.Op == Operation.BNE:
+                    self.stage = InstructionStage.COMPLETE
+                else:
+                    if self.unit.CDB.available:
+                        self.unit.CDB.send_data()
+                        self.stage = InstructionStage.WRITE
+                        self.stage_clocks[InstructionStage.WRITE] = CLOCK
+            else:
+                self.left_latency -= 1
 
         elif self.stage == InstructionStage.MEM:
-            ...
+            if self.Op == Operation.STORE:
+                self.stage = InstructionStage.WRITE
+            else:
+                if self.unit.CDB.available:
+                    self.unit.CDB.send_data()
+                    self.stage = InstructionStage.WRITE
+                    self.stage_clocks[InstructionStage.WRITE] = CLOCK
+
+        else:
+            # WRITE
+            self.stage = InstructionStage.COMPLETE
+
+    def update_status(self, Op: Operation, dest: FloatRegister, reg_j: Union[int, FloatRegister], reg_k: FloatRegister):
+        self.status.Op = Op
+        self.status.Q_k = reg_k.to_be_write
+        if type(reg_j) == int:
+            if Op != Operation.STORE:
+                dest.to_be_write = True
+            else:
+                self.status.write_mem = not dest.to_be_write
+        else:
+            self.status.Q_j = reg_j.to_be_write
+            if Op != Operation.BNE:
+                dest.to_be_write = True
 
     def get_info_str(self) -> str:
         info = ""
         for stage, clock in self.stage_clocks.items():
             info += f"{clock:>6}" if clock is not None else " " * 6
-            
+        info += (
+            f' | {"Yes" if self.status.Q_j else "No":<3} {"Yes" if self.status.Q_k else "No":<3} {self.stage.value:<9}'
+        )
         return info
 
     def __format__(self, __format_spec: str) -> str:
-        
         dest_name = self.dest if type(self.dest) == str else self.dest.name
         info = f"{self.Op.name:<5} {dest_name:<4} {self.j if type(self.j) == int else self.j.name:>2} {self.k.name:>2}"
         return format(info, __format_spec)
 
 
+class CDB:
+    def __init__(self, number=2) -> None:
+        self.number = number
+        self.available: bool = True
+        self.left_available_cdb = self.number
+
+    def send_data(self):
+        assert self.available
+        self.left_available_cdb -= 1
+        if self.left_available_cdb == 0:
+            self.available = False
+
+    def finish_write_back(self):
+        self.left_available_cdb = self.number
+        self.available = True
+
+
 class SuperScale:
-    def __init__(self, multi_issue_number: int, rg: RegisterGroup) -> None:
-        self.multi_issue_number = multi_issue_number  # 超标量个数
+    def __init__(self, rg: RegisterGroup, multi_issue_number: int = 2, cdb_number: int = 2) -> None:
         self.register_group = rg
+        self.multi_issue_number = multi_issue_number  # 超标量个数
+        self.CDB = CDB(cdb_number)
         self.instructions: List[Instruction] = []
         self.pc: int = 0
         self.functional_units: List[Unit] = [
-            Unit(name="Address Adder", function=UnitFunction.INTEGER),
-            Unit(name="Integer ALU", function=UnitFunction.ADD),
-            Unit(name="FP ALU", function=UnitFunction.FADD),
+            # Unit(name="Address Adder", function=UnitFunction.INTEGER, CDB=self.CDB),
+            Unit(name="Integer ALU", function=UnitFunction.ADD, CDB=self.CDB),
+            Unit(name="FP ALU", function=UnitFunction.FADD, CDB=self.CDB),
         ]
         self.issued_instructions: List[Instruction] = []  # 所有已发射的指令
 
@@ -227,22 +252,23 @@ class SuperScale:
 
         instruction_length = len(self.instructions)
         while True:
-            # 当全部指令都已发射并且所有 Unit 都空闲时退出
+            # 当全部指令都完成后退出
             if self.pc >= instruction_length:
-                busy_unit_number = 0
-                for unit in self.functional_units:
-                    if unit.status.Busy:
-                        busy_unit_number += 1
-                if busy_unit_number == 0:
+                complete_instruction_number = 0
+                for instruction in self.instructions:
+                    if instruction.stage == InstructionStage.COMPLETE:
+                        complete_instruction_number += 1
+                if complete_instruction_number == instruction_length:
                     break
 
-            # 发射两条新指令
+            # 多发射新指令
             if self.pc != instruction_length:
                 branch_operators = [Operation.BNE]
                 for _ in range(self.multi_issue_number):
                     instruction = self.instructions[self.pc]
                     unit = self.get_unit(instruction.unit_function)
-                    unit.buffer_instruction(instruction)
+                    # 给指令绑定 unit, 暂时不将 unit 绑定指令, 在 issue 阶段绑定
+                    instruction.unit = unit
                     self.issued_instructions.append(instruction)
                     self.pc += 1
                     # 如果是分支指令则发射一条指令
@@ -253,15 +279,26 @@ class SuperScale:
                     # 如果下一条是分支则也停止
                     if self.instructions[self.pc].Op in branch_operators:
                         break
-        
+
             # 所有指令发射后交由指令本身去执行
             # 指令内部维护 issue -> exec -> mem -> write 的执行顺序
             for instruction in self.issued_instructions:
                 instruction.run()
 
             # 所有指令都执行结束之后一起更新 unit 的 Qj Qk 的状态, 避免指令串行更新的干扰
-            for unit in self.functional_units:
-                ...
+            for instruction in self.issued_instructions:
+                if instruction.stage == InstructionStage.EXEC and instruction.left_latency == 0:
+                    instruction.unit.in_use = False
+                if instruction.stage == InstructionStage.WRITE:
+                    # 对于
+                    for unit in self.functional_units:
+                        if unit.in_use:
+                            if unit.status.Q_j and unit.instruction.j == instruction.dest:
+                                unit.status.Q_j = False
+                            if unit.status.Q_k and unit.instruction.k == instruction.dest:
+                                unit.status.Q_k = False
+
+            self.CDB.finish_write_back()
 
             self.show_status()
             CLOCK += 1
@@ -284,10 +321,13 @@ class SuperScale:
     def show_status(self):
         print("-" * 70)
         print("[instruction status]\n")
-        print(f"    Instructions     | Issue  Exec   Mem Write | Comment")
+        print(f"    Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage      | Comment")
         for instruction in self.instructions:
             print(f"    {instruction:<17}", end="|")
             print(instruction.get_info_str())
+        print("\n")
+        print("[register result status]\n")
+        print(self.register_group)
         print("\n")
 
 
@@ -297,26 +337,25 @@ def main():
     rg.R2.value = 300
 
     instructions = [
-        Instruction(Op=Operation.LOAD, dest=rg.F0, j=0, k=rg.R1, unit_function=UnitFunction.INTEGER),
+        # loop1
+        Instruction(Op=Operation.LOAD, dest=rg.F0, j=0, k=rg.R1, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.FADD, dest=rg.F4, j=rg.F0, k=rg.F2, unit_function=UnitFunction.FADD, latency=3),
-        Instruction(Op=Operation.STORE, dest=rg.F4, j=0, k=rg.R1, unit_function=UnitFunction.INTEGER),
+        Instruction(Op=Operation.STORE, dest=rg.F4, j=0, k=rg.R1, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.ADD, dest=rg.R1, j=-8, k=rg.R1, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.BNE, dest="Loop", j=rg.R1, k=rg.R2, unit_function=UnitFunction.ADD),
-        
-        Instruction(Op=Operation.LOAD, dest=rg.F0, j=0, k=rg.R1, unit_function=UnitFunction.INTEGER),
+        Instruction(Op=Operation.LOAD, dest=rg.F0, j=0, k=rg.R1, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.FADD, dest=rg.F4, j=rg.F0, k=rg.F2, unit_function=UnitFunction.FADD, latency=3),
-        Instruction(Op=Operation.STORE, dest=rg.F4, j=0, k=rg.R1, unit_function=UnitFunction.INTEGER),
+        Instruction(Op=Operation.STORE, dest=rg.F4, j=0, k=rg.R1, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.ADD, dest=rg.R1, j=-8, k=rg.R1, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.BNE, dest="Loop", j=rg.R1, k=rg.R2, unit_function=UnitFunction.ADD),
-        
-        Instruction(Op=Operation.LOAD, dest=rg.F0, j=0, k=rg.R1, unit_function=UnitFunction.INTEGER),
+        Instruction(Op=Operation.LOAD, dest=rg.F0, j=0, k=rg.R1, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.FADD, dest=rg.F4, j=rg.F0, k=rg.F2, unit_function=UnitFunction.FADD, latency=3),
-        Instruction(Op=Operation.STORE, dest=rg.F4, j=0, k=rg.R1, unit_function=UnitFunction.INTEGER),
+        Instruction(Op=Operation.STORE, dest=rg.F4, j=0, k=rg.R1, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.ADD, dest=rg.R1, j=-8, k=rg.R1, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.BNE, dest="Loop", j=rg.R1, k=rg.R2, unit_function=UnitFunction.ADD),
     ]
 
-    isa = SuperScale(multi_issue_number=2, rg=rg)
+    isa = SuperScale(rg, multi_issue_number=2, cdb_number=2)
     isa.load_instructions(instructions)
     isa.run()
 
