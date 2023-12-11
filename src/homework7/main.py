@@ -24,7 +24,7 @@ class FloatRegister:
     def __init__(self, name: str) -> None:
         self.name = name
         self.value = 0
-        self.to_be_write: bool = False
+        self.to_be_write: Instruction = None
 
     def __str__(self) -> str:
         return self.name
@@ -55,30 +55,20 @@ class RegisterGroup:
             "R2": self.R2,
         }
 
-    def __repr__(self) -> str:
-        info = "    "
-        for name in self.register_map:
-            info += f"{name:<4}"
-        info += "\n    "
-        for _, reg in self.register_map.items():
-            info += f'{"Yes" if reg.to_be_write else "No":<4}'
-        return info
-
 
 class UnitState:
     def __init__(self) -> None:
         self.Op: Operation = None  # 部件执行的指令类型
-        self.Q_j: bool = False
-        self.Q_k: bool = False
-        
-        self.write_mem: bool = True
+        self.Q_j: Instruction = None
+        self.Q_k: Instruction = None
+
+        self.write_mem: Instruction = None
 
 
 class Unit:
-    def __init__(self, name: str, function: UnitFunction, CDB: "CDB") -> None:
+    def __init__(self, name: str, function: UnitFunction) -> None:
         self.name = name
         self.function = function
-        self.CDB = CDB
         self.instruction: Instruction = None
         self.status: UnitState = None
         self.in_use = False
@@ -110,7 +100,9 @@ class Instruction:
         self.unit_function = unit_function  # 执行指令需要的功能单元
         self.latency = latency
 
+        self.id: int = 0
         self.unit: Unit = None  # 执行当前指令的功能单元
+        self.isa: SuperScale = None
         self.stage: InstructionStage = InstructionStage.TOBE_ISSUE  # 指令执行的阶段
         self.left_latency = self.latency  # 剩余执行时间
         self.stage_clocks: Dict[Enum, Optional[int]] = {
@@ -136,7 +128,6 @@ class Instruction:
             self.stage_clocks[InstructionStage.ISSUE] = CLOCK
 
         elif self.stage == InstructionStage.ISSUE:
-            # 如果当前功能单元并不在被当前指令占用, 返回
             if self.unit.instruction != self:
                 if self.unit.in_use == False:
                     self.unit.in_use = True
@@ -155,53 +146,51 @@ class Instruction:
         elif self.stage == InstructionStage.EXEC:
             if self.left_latency == 0:
                 if self.Op in (Operation.LOAD, Operation.STORE):
-                    if self.Op == Operation.STORE and not self.unit.status.write_mem:
+                    if self.Op == Operation.STORE and self.status.write_mem != None:
                         return
                     self.stage = InstructionStage.MEM
                     self.stage_clocks[InstructionStage.MEM] = CLOCK
                 elif self.Op == Operation.BNE:
                     self.stage = InstructionStage.COMPLETE
                 else:
-                    if self.unit.CDB.available:
-                        self.unit.CDB.send_data()
+                    if self.isa.CDB.available:
+                        self.isa.CDB.send_data()
                         self.stage = InstructionStage.WRITE
                         self.stage_clocks[InstructionStage.WRITE] = CLOCK
+                        self.stage = InstructionStage.COMPLETE
             else:
                 self.left_latency -= 1
 
         elif self.stage == InstructionStage.MEM:
             if self.Op == Operation.STORE:
-                self.stage = InstructionStage.WRITE
+                self.stage = InstructionStage.COMPLETE
             else:
-                if self.unit.CDB.available:
-                    self.unit.CDB.send_data()
+                if self.isa.CDB.available:
+                    self.isa.CDB.send_data()
                     self.stage = InstructionStage.WRITE
                     self.stage_clocks[InstructionStage.WRITE] = CLOCK
-
+                    self.stage = InstructionStage.COMPLETE
         else:
-            # WRITE
-            self.stage = InstructionStage.COMPLETE
+            raise ValueError(self.stage.value)
 
     def update_status(self, Op: Operation, dest: FloatRegister, reg_j: Union[int, FloatRegister], reg_k: FloatRegister):
         self.status.Op = Op
         self.status.Q_k = reg_k.to_be_write
         if type(reg_j) == int:
             if Op != Operation.STORE:
-                dest.to_be_write = True
+                dest.to_be_write = self
             else:
-                self.status.write_mem = not dest.to_be_write
+                self.status.write_mem = dest.to_be_write
         else:
             self.status.Q_j = reg_j.to_be_write
             if Op != Operation.BNE:
-                dest.to_be_write = True
+                dest.to_be_write = self
 
     def get_info_str(self) -> str:
         info = ""
         for stage, clock in self.stage_clocks.items():
             info += f"{clock:>6}" if clock is not None else " " * 6
-        info += (
-            f' | {"Yes" if self.status.Q_j else "No":<3} {"Yes" if self.status.Q_k else "No":<3} {self.stage.value:<9}'
-        )
+        info += f' | {str(self.status.Q_j.id) if self.status.Q_j else " ":<3} {str(self.status.Q_k.id) if self.status.Q_k else " ":<3} {self.stage.value:<9}'
         return info
 
     def __format__(self, __format_spec: str) -> str:
@@ -235,15 +224,16 @@ class SuperScale:
         self.instructions: List[Instruction] = []
         self.pc: int = 0
         self.functional_units: List[Unit] = [
-            # Unit(name="Address Adder", function=UnitFunction.INTEGER, CDB=self.CDB),
-            Unit(name="Integer ALU", function=UnitFunction.ADD, CDB=self.CDB),
-            Unit(name="FP ALU", function=UnitFunction.FADD, CDB=self.CDB),
+            Unit(name="Integer ALU", function=UnitFunction.ADD),
+            Unit(name="FP ALU", function=UnitFunction.FADD),
         ]
         self.issued_instructions: List[Instruction] = []  # 所有已发射的指令
 
     def load_instructions(self, instructions: List[Instruction]):
         self.instructions = instructions
         self.pc = 0
+        for i, instruction in enumerate(self.instructions):
+            instruction.id = i
 
     def run(self):
         self.show_status()
@@ -269,6 +259,7 @@ class SuperScale:
                     unit = self.get_unit(instruction.unit_function)
                     # 给指令绑定 unit, 暂时不将 unit 绑定指令, 在 issue 阶段绑定
                     instruction.unit = unit
+                    instruction.isa = self
                     self.issued_instructions.append(instruction)
                     self.pc += 1
                     # 如果是分支指令则发射一条指令
@@ -288,15 +279,17 @@ class SuperScale:
             # 所有指令都执行结束之后一起更新 unit 的 Qj Qk 的状态, 避免指令串行更新的干扰
             for instruction in self.issued_instructions:
                 if instruction.stage == InstructionStage.EXEC and instruction.left_latency == 0:
-                    instruction.unit.in_use = False
-                if instruction.stage == InstructionStage.WRITE:
-                    # 对于
-                    for unit in self.functional_units:
-                        if unit.in_use:
-                            if unit.status.Q_j and unit.instruction.j == instruction.dest:
-                                unit.status.Q_j = False
-                            if unit.status.Q_k and unit.instruction.k == instruction.dest:
-                                unit.status.Q_k = False
+                    if instruction.unit:
+                        instruction.unit.in_use = False
+                        instruction.unit = None
+                if instruction.status.Q_j and instruction.status.Q_j.stage == InstructionStage.COMPLETE:
+                    instruction.status.Q_j = None
+                    instruction.unit.status.Q_j = None
+                if instruction.status.Q_k and instruction.status.Q_k.stage == InstructionStage.COMPLETE:
+                    instruction.status.Q_k = None
+                    instruction.unit.status.Q_k = None
+                if instruction.status.write_mem and instruction.status.write_mem.stage == InstructionStage.COMPLETE:
+                    instruction.status.write_mem = None
 
             self.CDB.finish_write_back()
 
@@ -320,21 +313,26 @@ class SuperScale:
 
     def show_status(self):
         print("-" * 70)
+        global CLOCK
+        print(f"CLOCK {CLOCK}")
         print("[instruction status]\n")
-        print(f"    Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage      | Comment")
+        print(f"  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage")
         for instruction in self.instructions:
-            print(f"    {instruction:<17}", end="|")
+            print(f"  {str(instruction.id):<2}  {instruction:<17}", end="|")
             print(instruction.get_info_str())
         print("\n")
-        print("[register result status]\n")
-        print(self.register_group)
+
+        print("[unit]\n")
+        print(f'{"Name":>16} Func    | status id')
+        for unit in self.functional_units:
+            print(
+                f"    {unit.name:>12} {unit.function.value:<7} | {'Busy' if unit.in_use else 'Free':<6} {unit.instruction.id if unit.instruction else '':>2}"
+            )
         print("\n")
 
 
 def main():
     rg = RegisterGroup()
-    rg.R1.value = 200
-    rg.R2.value = 300
 
     instructions = [
         # loop1
@@ -343,11 +341,13 @@ def main():
         Instruction(Op=Operation.STORE, dest=rg.F4, j=0, k=rg.R1, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.ADD, dest=rg.R1, j=-8, k=rg.R1, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.BNE, dest="Loop", j=rg.R1, k=rg.R2, unit_function=UnitFunction.ADD),
+        # loop2
         Instruction(Op=Operation.LOAD, dest=rg.F0, j=0, k=rg.R1, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.FADD, dest=rg.F4, j=rg.F0, k=rg.F2, unit_function=UnitFunction.FADD, latency=3),
         Instruction(Op=Operation.STORE, dest=rg.F4, j=0, k=rg.R1, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.ADD, dest=rg.R1, j=-8, k=rg.R1, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.BNE, dest="Loop", j=rg.R1, k=rg.R2, unit_function=UnitFunction.ADD),
+        # loop3
         Instruction(Op=Operation.LOAD, dest=rg.F0, j=0, k=rg.R1, unit_function=UnitFunction.ADD),
         Instruction(Op=Operation.FADD, dest=rg.F4, j=rg.F0, k=rg.F2, unit_function=UnitFunction.FADD, latency=3),
         Instruction(Op=Operation.STORE, dest=rg.F4, j=0, k=rg.R1, unit_function=UnitFunction.ADD),

@@ -1,0 +1,510 @@
+----------------------------------------------------------------------
+CLOCK 0
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |                         |         TOBE_ISSUE
+  1   FADD  F4   F0 F2 |                         |         TOBE_ISSUE
+  2   STORE F4    0 R1 |                         |         TOBE_ISSUE
+  3   ADD   R1   -8 R1 |                         |         TOBE_ISSUE
+  4   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  5   LOAD  F0    0 R1 |                         |         TOBE_ISSUE
+  6   FADD  F4   F0 F2 |                         |         TOBE_ISSUE
+  7   STORE F4    0 R1 |                         |         TOBE_ISSUE
+  8   ADD   R1   -8 R1 |                         |         TOBE_ISSUE
+  9   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  10  LOAD  F0    0 R1 |                         |         TOBE_ISSUE
+  11  FADD  F4   F0 F2 |                         |         TOBE_ISSUE
+  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free     
+          FP ALU Fadd    | Free     
+     Address ALU Integer | Free     
+
+
+----------------------------------------------------------------------
+CLOCK 1
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1                   |         ISSUE    
+  1   FADD  F4   F0 F2 |     1                   | 0       ISSUE    
+  2   STORE F4    0 R1 |                         |         TOBE_ISSUE
+  3   ADD   R1   -8 R1 |                         |         TOBE_ISSUE
+  4   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  5   LOAD  F0    0 R1 |                         |         TOBE_ISSUE
+  6   FADD  F4   F0 F2 |                         |         TOBE_ISSUE
+  7   STORE F4    0 R1 |                         |         TOBE_ISSUE
+  8   ADD   R1   -8 R1 |                         |         TOBE_ISSUE
+  9   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  10  LOAD  F0    0 R1 |                         |         TOBE_ISSUE
+  11  FADD  F4   F0 F2 |                         |         TOBE_ISSUE
+  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free     
+          FP ALU Fadd    | Busy    1
+     Address ALU Integer | Busy    0
+
+
+----------------------------------------------------------------------
+CLOCK 2
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2             |         EXEC     
+  1   FADD  F4   F0 F2 |     1                   | 0       ISSUE    
+  2   STORE F4    0 R1 |     2                   |         ISSUE    
+  3   ADD   R1   -8 R1 |     2                   |         ISSUE    
+  4   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  5   LOAD  F0    0 R1 |                         |         TOBE_ISSUE
+  6   FADD  F4   F0 F2 |                         |         TOBE_ISSUE
+  7   STORE F4    0 R1 |                         |         TOBE_ISSUE
+  8   ADD   R1   -8 R1 |                         |         TOBE_ISSUE
+  9   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  10  LOAD  F0    0 R1 |                         |         TOBE_ISSUE
+  11  FADD  F4   F0 F2 |                         |         TOBE_ISSUE
+  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Busy    3
+          FP ALU Fadd    | Busy    1
+     Address ALU Integer | Free    0
+
+
+----------------------------------------------------------------------
+CLOCK 3
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3       |         MEM      
+  1   FADD  F4   F0 F2 |     1                   | 0       ISSUE    
+  2   STORE F4    0 R1 |     2     3             |         EXEC     
+  3   ADD   R1   -8 R1 |     2     3             |         EXEC     
+  4   BNE   Loop R1 R2 |     3                   | 3       ISSUE    
+  5   LOAD  F0    0 R1 |                         |         TOBE_ISSUE
+  6   FADD  F4   F0 F2 |                         |         TOBE_ISSUE
+  7   STORE F4    0 R1 |                         |         TOBE_ISSUE
+  8   ADD   R1   -8 R1 |                         |         TOBE_ISSUE
+  9   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  10  LOAD  F0    0 R1 |                         |         TOBE_ISSUE
+  11  FADD  F4   F0 F2 |                         |         TOBE_ISSUE
+  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free    3
+          FP ALU Fadd    | Busy    1
+     Address ALU Integer | Free    2
+
+
+----------------------------------------------------------------------
+CLOCK 4
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1                   |         ISSUE    
+  2   STORE F4    0 R1 |     2     3             |         EXEC     
+  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3                   |         ISSUE    
+  5   LOAD  F0    0 R1 |     4                   |         ISSUE    
+  6   FADD  F4   F0 F2 |     4                   | 5       ISSUE    
+  7   STORE F4    0 R1 |                         |         TOBE_ISSUE
+  8   ADD   R1   -8 R1 |                         |         TOBE_ISSUE
+  9   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  10  LOAD  F0    0 R1 |                         |         TOBE_ISSUE
+  11  FADD  F4   F0 F2 |                         |         TOBE_ISSUE
+  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Busy    4
+          FP ALU Fadd    | Busy    1
+     Address ALU Integer | Busy    5
+
+
+----------------------------------------------------------------------
+CLOCK 5
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5             |         EXEC     
+  2   STORE F4    0 R1 |     2     3             |         EXEC     
+  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5             |         EXEC     
+  5   LOAD  F0    0 R1 |     4     5             |         EXEC     
+  6   FADD  F4   F0 F2 |     4                   | 5       ISSUE    
+  7   STORE F4    0 R1 |     5                   |         ISSUE    
+  8   ADD   R1   -8 R1 |     5                   |         ISSUE    
+  9   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  10  LOAD  F0    0 R1 |                         |         TOBE_ISSUE
+  11  FADD  F4   F0 F2 |                         |         TOBE_ISSUE
+  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free    4
+          FP ALU Fadd    | Busy    1
+     Address ALU Integer | Free    5
+
+
+----------------------------------------------------------------------
+CLOCK 6
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5             |         EXEC     
+  2   STORE F4    0 R1 |     2     3             |         EXEC     
+  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6       |         MEM      
+  6   FADD  F4   F0 F2 |     4                   | 5       ISSUE    
+  7   STORE F4    0 R1 |     5     6             |         EXEC     
+  8   ADD   R1   -8 R1 |     5     6             |         EXEC     
+  9   BNE   Loop R1 R2 |     6                   | 8       ISSUE    
+  10  LOAD  F0    0 R1 |                         |         TOBE_ISSUE
+  11  FADD  F4   F0 F2 |                         |         TOBE_ISSUE
+  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free    8
+          FP ALU Fadd    | Busy    1
+     Address ALU Integer | Free    7
+
+
+----------------------------------------------------------------------
+CLOCK 7
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5             |         EXEC     
+  2   STORE F4    0 R1 |     2     3             |         EXEC     
+  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4                   |         ISSUE    
+  7   STORE F4    0 R1 |     5     6             |         EXEC     
+  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6                   |         ISSUE    
+  10  LOAD  F0    0 R1 |     7                   |         ISSUE    
+  11  FADD  F4   F0 F2 |     7                   | 10      ISSUE    
+  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Busy    9
+          FP ALU Fadd    | Free    1
+     Address ALU Integer | Busy   10
+
+
+----------------------------------------------------------------------
+CLOCK 8
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3             |         EXEC     
+  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8             |         EXEC     
+  7   STORE F4    0 R1 |     5     6             |         EXEC     
+  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8             |         EXEC     
+  10  LOAD  F0    0 R1 |     7     8             |         EXEC     
+  11  FADD  F4   F0 F2 |     7                   | 10      ISSUE    
+  12  STORE F4    0 R1 |     8                   |         ISSUE    
+  13  ADD   R1   -8 R1 |     8                   |         ISSUE    
+  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free    9
+          FP ALU Fadd    | Busy    6
+     Address ALU Integer | Free   10
+
+
+----------------------------------------------------------------------
+CLOCK 9
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9       |         MEM      
+  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8             |         EXEC     
+  7   STORE F4    0 R1 |     5     6             |         EXEC     
+  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9       |         MEM      
+  11  FADD  F4   F0 F2 |     7                   | 10      ISSUE    
+  12  STORE F4    0 R1 |     8     9             |         EXEC     
+  13  ADD   R1   -8 R1 |     8     9             |         EXEC     
+  14  BNE   Loop R1 R2 |     9                   | 13      ISSUE    
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   13
+          FP ALU Fadd    | Busy    6
+     Address ALU Integer | Free   12
+
+
+----------------------------------------------------------------------
+CLOCK 10
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8             |         EXEC     
+  7   STORE F4    0 R1 |     5     6             |         EXEC     
+  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7                   |         ISSUE    
+  12  STORE F4    0 R1 |     8     9             |         EXEC     
+  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
+  14  BNE   Loop R1 R2 |     9                   |         ISSUE    
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Busy   14
+          FP ALU Fadd    | Free    6
+     Address ALU Integer | Free   12
+
+
+----------------------------------------------------------------------
+CLOCK 11
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6             |         EXEC     
+  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7    11             |         EXEC     
+  12  STORE F4    0 R1 |     8     9             |         EXEC     
+  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
+  14  BNE   Loop R1 R2 |     9    11             |         EXEC     
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   14
+          FP ALU Fadd    | Busy   11
+     Address ALU Integer | Free   12
+
+
+----------------------------------------------------------------------
+CLOCK 12
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12       |         MEM      
+  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7    11             |         EXEC     
+  12  STORE F4    0 R1 |     8     9             |         EXEC     
+  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
+  14  BNE   Loop R1 R2 |     9    11             |         COMPLETE 
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   14
+          FP ALU Fadd    | Busy   11
+     Address ALU Integer | Free   12
+
+
+----------------------------------------------------------------------
+CLOCK 13
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12       |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7    11             |         EXEC     
+  12  STORE F4    0 R1 |     8     9             |         EXEC     
+  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
+  14  BNE   Loop R1 R2 |     9    11             |         COMPLETE 
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   14
+          FP ALU Fadd    | Free   11
+     Address ALU Integer | Free   12
+
+
+----------------------------------------------------------------------
+CLOCK 14
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12       |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7    11          14 |         COMPLETE 
+  12  STORE F4    0 R1 |     8     9             |         EXEC     
+  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
+  14  BNE   Loop R1 R2 |     9    11             |         COMPLETE 
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   14
+          FP ALU Fadd    | Free   11
+     Address ALU Integer | Free   12
+
+
+----------------------------------------------------------------------
+CLOCK 15
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12       |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7    11          14 |         COMPLETE 
+  12  STORE F4    0 R1 |     8     9    15       |         MEM      
+  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
+  14  BNE   Loop R1 R2 |     9    11             |         COMPLETE 
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   14
+          FP ALU Fadd    | Free   11
+     Address ALU Integer | Free   12
+
+
+----------------------------------------------------------------------
+CLOCK 16
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12       |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7    11          14 |         COMPLETE 
+  12  STORE F4    0 R1 |     8     9    15       |         COMPLETE 
+  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
+  14  BNE   Loop R1 R2 |     9    11             |         COMPLETE 
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   14
+          FP ALU Fadd    | Free   11
+     Address ALU Integer | Free   12
+
+

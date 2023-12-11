@@ -12,7 +12,36 @@
 python src/homework7/main.py
 ```
 
-> DADDIU 是 MIPS 指令集中的无符号双字加立即数, 这里修改为 ADD, 完整输出见 [base.txt](https://raw.githubusercontent.com/luzhixing12345/archlab/main/src/homework7/base.txt)
+> DADDIU 是 MIPS 指令集中的无符号双字加立即数, 这里修改为 ADD, 完整输出见 [example.txt](https://raw.githubusercontent.com/luzhixing12345/archlab/main/src/homework7/example.txt)
+
+```bash
+CLOCK 20
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     4           5 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     6             |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     7     8     9 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4    10          13 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     8    14       |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     9          10 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6    11             |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7    12    13    14 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7    15          18 |         COMPLETE 
+  12  STORE F4    0 R1 |     8    13    19       |         COMPLETE 
+  13  ADD   R1   -8 R1 |     8    14          15 |         COMPLETE 
+  14  BNE   Loop R1 R2 |     9    16             |         COMPLETE 
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   14
+          FP ALU Fadd    | Free   11
+```
 
 然后是本次作业要求的程序
 
@@ -21,6 +50,37 @@ python src/homework7/hw.py
 ```
 
 > 完整输出见 [output.txt](https://raw.githubusercontent.com/luzhixing12345/archlab/main/src/homework7/output.txt)
+
+```bash
+CLOCK 16
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12       |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7    11          14 |         COMPLETE 
+  12  STORE F4    0 R1 |     8     9    15       |         COMPLETE 
+  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
+  14  BNE   Loop R1 R2 |     9    11             |         COMPLETE 
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   14
+          FP ALU Fadd    | Free   11
+     Address ALU Integer | Free   12
+
+```
 
 ## 实验报告
 
@@ -46,7 +106,7 @@ python src/homework7/hw.py
 4. 不需要访存的指令可以直接跳过访存阶段
 5. 分支预测是**完美**的, **分支指令单发射**
 
-### 
+### 代码实现
 
 ## 参考
 
