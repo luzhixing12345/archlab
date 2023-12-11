@@ -364,17 +364,19 @@ class SuperScale:
         usage_table['CDB'] = {i: "" for i in range(1, CLOCK-1)}
         
         for usage_info in USAGE_INFO_LIST:
-            usage_table[usage_info["unit_name"]][usage_info["clock"]] = f'{usage_info["instruction_id"]}/{usage_info["instruction_op"].value}'
+            usage_table[usage_info["unit_name"]][usage_info["clock"]] += f'{usage_info["instruction_id"]}/{usage_info["instruction_op"].value} '
         
         print(f"CLOCK | ", end='')
         for unit in self.functional_units:
             print(f'{unit.name:>11} | ', end='')
-        print("Data Cache | CDB")
+        data_cache_max_length = max(len(str(usage_table["Data Cache"][element])) for element in usage_table["Data Cache"])
+        data_cache_max_length = max(data_cache_max_length, len("Data Cache"))
+        print(f'{"Data Cache":>{data_cache_max_length}} | CDB')
         for i in range(1, CLOCK-1):
             print(f'{i:>5} | ', end='')
             for unit in self.functional_units:
                 print(f'{usage_table[f"{unit.name}"][i]:>11} | ', end="")
-            print(f'{usage_table["Data Cache"][i]:>10} | {usage_table["CDB"][i]}')
+            print(f'{usage_table["Data Cache"][i]:>{data_cache_max_length}} | {usage_table["CDB"][i]}')
             
 
 

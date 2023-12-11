@@ -50,24 +50,24 @@ CLOCK 20
 ```txt
 CLOCK | Integer ALU |      FP ALU | Data Cache | CDB
     1 |             |             |            |
-    2 |      0/Load |             |            |
-    3 |     2/Store |             |     0/Load |
-    4 |       3/Add |             |            | 0/Load
-    5 |             |      1/Fadd |            | 3/Add
-    6 |       4/Bne |             |            |
-    7 |      5/Load |             |            |
-    8 |     7/Store |             |     5/Load | 1/Fadd
-    9 |       8/Add |             |    2/Store | 5/Load
-   10 |             |      6/Fadd |            | 8/Add
-   11 |       9/Bne |             |            |
-   12 |     10/Load |             |            |
-   13 |    12/Store |             |    10/Load | 6/Fadd
-   14 |      13/Add |             |    7/Store | 10/Load
-   15 |             |     11/Fadd |            | 13/Add
-   16 |      14/Bne |             |            |
+    2 |     0/Load  |             |            |
+    3 |    2/Store  |             |    0/Load  |
+    4 |      3/Add  |             |            | 0/Load
+    5 |             |     1/Fadd  |            | 3/Add
+    6 |      4/Bne  |             |            |
+    7 |     5/Load  |             |            |
+    8 |    7/Store  |             |    5/Load  | 1/Fadd
+    9 |      8/Add  |             |   2/Store  | 5/Load
+   10 |             |     6/Fadd  |            | 8/Add
+   11 |      9/Bne  |             |            |
+   12 |    10/Load  |             |            |
+   13 |   12/Store  |             |   10/Load  | 6/Fadd
+   14 |     13/Add  |             |   7/Store  | 10/Load
+   15 |             |    11/Fadd  |            | 13/Add
+   16 |     14/Bne  |             |            |
    17 |             |             |            |
    18 |             |             |            | 11/Fadd
-   19 |             |             |   12/Store |
+   19 |             |             |  12/Store  |
 ```
 
 然后是本次作业要求的程序
@@ -113,22 +113,22 @@ CLOCK 16
 统计信息
 
 ```txt
-CLOCK | Integer ALU |      FP ALU | Address ALU | Data Cache | CDB
-    1 |             |             |             |            |
-    2 |             |             |      0/Load |            |
-    3 |       3/Add |             |     2/Store |     0/Load |
-    4 |             |             |             |            | 3/Add
-    5 |       4/Bne |      1/Fadd |      5/Load |            |
-    6 |       8/Add |             |     7/Store |     5/Load |
-    7 |             |             |             |            | 8/Add
-    8 |       9/Bne |      6/Fadd |     10/Load |            | 1/Fadd
-    9 |      13/Add |             |    12/Store |    10/Load |
-   10 |             |             |             |            | 13/Add
-   11 |      14/Bne |     11/Fadd |             |            | 6/Fadd
-   12 |             |             |             |    7/Store |
-   13 |             |             |             |            |
-   14 |             |             |             |            | 11/Fadd
-   15 |             |             |             |   12/Store |
+CLOCK | Integer ALU |      FP ALU | Address ALU |       Data Cache | CDB
+    1 |             |             |             |                  |
+    2 |             |             |     0/Load  |                  |
+    3 |      3/Add  |             |    2/Store  |          0/Load  |
+    4 |             |             |             |                  | 0/Load 3/Add
+    5 |      4/Bne  |     1/Fadd  |     5/Load  |                  |
+    6 |      8/Add  |             |    7/Store  |          5/Load  |
+    7 |             |             |             |                  | 5/Load 8/Add
+    8 |      9/Bne  |     6/Fadd  |    10/Load  |                  | 1/Fadd
+    9 |     13/Add  |             |   12/Store  | 2/Store 10/Load  |
+   10 |             |             |             |                  | 10/Load 13/Add
+   11 |     14/Bne  |    11/Fadd  |             |                  | 6/Fadd
+   12 |             |             |             |         7/Store  |
+   13 |             |             |             |                  |
+   14 |             |             |             |                  | 11/Fadd
+   15 |             |             |             |        12/Store  |
 ```
 
 ## 实验报告

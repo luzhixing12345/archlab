@@ -42,24 +42,24 @@
      Integer ALU Add     | Free   14
           FP ALU Fadd    | Free   11</code></pre><p>统计信息</p><pre class="language-txt"><code>CLOCK | Integer ALU |      FP ALU | Data Cache | CDB
     1 |             |             |            |
-    2 |      0/Load |             |            |
-    3 |     2/Store |             |     0/Load |
-    4 |       3/Add |             |            | 0/Load
-    5 |             |      1/Fadd |            | 3/Add
-    6 |       4/Bne |             |            |
-    7 |      5/Load |             |            |
-    8 |     7/Store |             |     5/Load | 1/Fadd
-    9 |       8/Add |             |    2/Store | 5/Load
-   10 |             |      6/Fadd |            | 8/Add
-   11 |       9/Bne |             |            |
-   12 |     10/Load |             |            |
-   13 |    12/Store |             |    10/Load | 6/Fadd
-   14 |      13/Add |             |    7/Store | 10/Load
-   15 |             |     11/Fadd |            | 13/Add
-   16 |      14/Bne |             |            |
+    2 |     0/Load  |             |            |
+    3 |    2/Store  |             |    0/Load  |
+    4 |      3/Add  |             |            | 0/Load
+    5 |             |     1/Fadd  |            | 3/Add
+    6 |      4/Bne  |             |            |
+    7 |     5/Load  |             |            |
+    8 |    7/Store  |             |    5/Load  | 1/Fadd
+    9 |      8/Add  |             |   2/Store  | 5/Load
+   10 |             |     6/Fadd  |            | 8/Add
+   11 |      9/Bne  |             |            |
+   12 |    10/Load  |             |            |
+   13 |   12/Store  |             |   10/Load  | 6/Fadd
+   14 |     13/Add  |             |   7/Store  | 10/Load
+   15 |             |    11/Fadd  |            | 13/Add
+   16 |     14/Bne  |             |            |
    17 |             |             |            |
    18 |             |             |            | 11/Fadd
-   19 |             |             |   12/Store |</code></pre><p>然后是本次作业要求的程序</p><pre class="language-shell"><code><span class="Token Program ID">python</span><span class="Token SPACE"> </span><span class="Token PATH">src/homework7/hw.py</span></code></pre><blockquote><p>完整输出见 <a href="https://raw.githubusercontent.com/luzhixing12345/archlab/main/src/homework7/output.txt" target="_blank">output.txt</a></p></blockquote><p>指令执行流程</p><pre class="language-txt"><code>CLOCK 16
+   19 |             |             |  12/Store  |</code></pre><p>然后是本次作业要求的程序</p><pre class="language-shell"><code><span class="Token Program ID">python</span><span class="Token SPACE"> </span><span class="Token PATH">src/homework7/hw.py</span></code></pre><blockquote><p>完整输出见 <a href="https://raw.githubusercontent.com/luzhixing12345/archlab/main/src/homework7/output.txt" target="_blank">output.txt</a></p></blockquote><p>指令执行流程</p><pre class="language-txt"><code>CLOCK 16
 [instruction status]
 
   ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
@@ -85,22 +85,22 @@
             Name Func    | status id
      Integer ALU Add     | Free   14
           FP ALU Fadd    | Free   11
-     Address ALU Integer | Free   12</code></pre><p>统计信息</p><pre class="language-txt"><code>CLOCK | Integer ALU |      FP ALU | Address ALU | Data Cache | CDB
-    1 |             |             |             |            |
-    2 |             |             |      0/Load |            |
-    3 |       3/Add |             |     2/Store |     0/Load |
-    4 |             |             |             |            | 3/Add
-    5 |       4/Bne |      1/Fadd |      5/Load |            |
-    6 |       8/Add |             |     7/Store |     5/Load |
-    7 |             |             |             |            | 8/Add
-    8 |       9/Bne |      6/Fadd |     10/Load |            | 1/Fadd
-    9 |      13/Add |             |    12/Store |    10/Load |
-   10 |             |             |             |            | 13/Add
-   11 |      14/Bne |     11/Fadd |             |            | 6/Fadd
-   12 |             |             |             |    7/Store |
-   13 |             |             |             |            |
-   14 |             |             |             |            | 11/Fadd
-   15 |             |             |             |   12/Store |</code></pre><h2 id="h2-2">实验报告</h2><p>所谓&quot;<b>超标量</b>&quot;是指 CPU 在一个时钟周期内<b>获取/执行和提交多条指令</b>,这个概念和&quot;<b>标量</b>&quot;对应,&quot;标量&quot;指 CPU 在一个时钟周期内获取/执行和提交一条指令;</p><p>&quot;<b>乱序</b>&quot;和&quot;<b>顺序</b>&quot;对应,&quot;顺序&quot;的意思是&quot;顺序发射/顺序执行&quot;,是指 CPU 按照指令原始顺序逐条发射/逐条执行,而&quot;乱序&quot;就是指&quot;乱序发射/乱序执行&quot;.&quot;<b>超标量</b>&quot;一般和&quot;<b>乱序</b>&quot;搭配,&quot;<b>标量</b>&quot;一般和&quot;<b>顺序</b>&quot;搭配,前两者是现代高速微处理器所广泛使用的技术.</p><p>运用这两种技术的&quot;超标量乱序处理器&quot;可以在每个时钟周期获取多条指令,并在内部并行地一次性乱序执行多条指令.这种特性提高了 CPU 的指令吞吐率,加快了程序的执行速度,让包括程序员和用户在内的每个人都从中获益.</p><h3 id="h3-3">实验分析</h3><p>题目要求有点晦涩, 翻译一下就是</p><ol start="1"><li>双发射处理器, 三次循环执行, 统计资源利用率</li></ol><ol start="2"><li>原先的单 ALU 部件现在变为两个, 一个用于地址计算, 一个用于执行 ALU 操作</li></ol><ol start="3"><li>两条 CDB 总线, 支持同时两条指令的写回 和 数据旁路</li></ol><p>以及一些假设</p><ol start="1"><li>整数指令执行 ALU 需要 1 个周期</li></ol><ol start="2"><li>浮点数加法 FP.ADD 需要三个周期执行</li></ol><ol start="3"><li>load/store 指令执行和访存<b>各需要一个周期, 共需要两个周期</b></li></ol><ol start="4"><li>不需要访存的指令可以直接跳过访存阶段</li></ol><ol start="5"><li>分支预测是<b>完美</b>的, <b>分支指令单发射</b></li></ol><h3 id="h3-4">代码实现</h3><h2 id="h2-5">参考</h2><ul><li><a href="https://zhuanlan.zhihu.com/p/601688983" target="_blank">计算机体系结构-超标量乱序CPU微架构(上)</a></li></ul></div>
+     Address ALU Integer | Free   12</code></pre><p>统计信息</p><pre class="language-txt"><code>CLOCK | Integer ALU |      FP ALU | Address ALU |       Data Cache | CDB
+    1 |             |             |             |                  |
+    2 |             |             |     0/Load  |                  |
+    3 |      3/Add  |             |    2/Store  |          0/Load  |
+    4 |             |             |             |                  | 0/Load 3/Add
+    5 |      4/Bne  |     1/Fadd  |     5/Load  |                  |
+    6 |      8/Add  |             |    7/Store  |          5/Load  |
+    7 |             |             |             |                  | 5/Load 8/Add
+    8 |      9/Bne  |     6/Fadd  |    10/Load  |                  | 1/Fadd
+    9 |     13/Add  |             |   12/Store  | 2/Store 10/Load  |
+   10 |             |             |             |                  | 10/Load 13/Add
+   11 |     14/Bne  |    11/Fadd  |             |                  | 6/Fadd
+   12 |             |             |             |         7/Store  |
+   13 |             |             |             |                  |
+   14 |             |             |             |                  | 11/Fadd
+   15 |             |             |             |        12/Store  |</code></pre><h2 id="h2-2">实验报告</h2><p>所谓&quot;<b>超标量</b>&quot;是指 CPU 在一个时钟周期内<b>获取/执行和提交多条指令</b>,这个概念和&quot;<b>标量</b>&quot;对应,&quot;标量&quot;指 CPU 在一个时钟周期内获取/执行和提交一条指令;</p><p>&quot;<b>乱序</b>&quot;和&quot;<b>顺序</b>&quot;对应,&quot;顺序&quot;的意思是&quot;顺序发射/顺序执行&quot;,是指 CPU 按照指令原始顺序逐条发射/逐条执行,而&quot;乱序&quot;就是指&quot;乱序发射/乱序执行&quot;.&quot;<b>超标量</b>&quot;一般和&quot;<b>乱序</b>&quot;搭配,&quot;<b>标量</b>&quot;一般和&quot;<b>顺序</b>&quot;搭配,前两者是现代高速微处理器所广泛使用的技术.</p><p>运用这两种技术的&quot;超标量乱序处理器&quot;可以在每个时钟周期获取多条指令,并在内部并行地一次性乱序执行多条指令.这种特性提高了 CPU 的指令吞吐率,加快了程序的执行速度,让包括程序员和用户在内的每个人都从中获益.</p><h3 id="h3-3">实验分析</h3><p>题目要求有点晦涩, 翻译一下就是</p><ol start="1"><li>双发射处理器, 三次循环执行, 统计资源利用率</li></ol><ol start="2"><li>原先的单 ALU 部件现在变为两个, 一个用于地址计算, 一个用于执行 ALU 操作</li></ol><ol start="3"><li>两条 CDB 总线, 支持同时两条指令的写回 和 数据旁路</li></ol><p>以及一些假设</p><ol start="1"><li>整数指令执行 ALU 需要 1 个周期</li></ol><ol start="2"><li>浮点数加法 FP.ADD 需要三个周期执行</li></ol><ol start="3"><li>load/store 指令执行和访存<b>各需要一个周期, 共需要两个周期</b></li></ol><ol start="4"><li>不需要访存的指令可以直接跳过访存阶段</li></ol><ol start="5"><li>分支预测是<b>完美</b>的, <b>分支指令单发射</b></li></ol><h3 id="h3-4">代码实现</h3><h2 id="h2-5">参考</h2><ul><li><a href="https://zhuanlan.zhihu.com/p/601688983" target="_blank">计算机体系结构-超标量乱序CPU微架构(上)</a></li></ul></div>
     <div class="dir-tree"><ul><li><a href="../../md-docs/README" >README</a></li></ul><ul><li><a href="../../code/python-riscv" >code</a><ul><li><a href="../../code/python-riscv" >python-riscv</a></li></ul><ul><li><a href="../../code/processor-controllor" >processor-controllor</a></li></ul><ul><li><a href="../../code/pipeline-profiling" >pipeline-profiling</a></li></ul><ul><li><a href="../../code/scoreboard" >scoreboard</a></li></ul><ul><li><a href="../../code/Tomasulo" >Tomasulo</a></li></ul><ul><li><a href="../../code/rob-tom" >rob-tom</a></li></ul><ul><li><a href="../../code/superscale" >superscale</a></li></ul></li></ul><ul><li><a href="../../read/lecture1" >read</a><ul><li><a href="../../read/lecture1" >lecture1</a></li></ul><ul><li><a href="../../read/lecture2" >lecture2</a></li></ul></li></ul></div>
     <div class="zood"><a class="" href="https://github.com/luzhixing12345/zood" target="_blank">zood</a></div>
     <script type="text/javascript" src="../../../js/next_front.js"></script><script>addLink("../../code/rob-tom","../../read/lecture1","ab")</script><script type="text/javascript" src="../../../js/change_mode.js"></script><script>addChangeModeButton("../../../img/sun.png","../../../img/moon.png")</script><script type="text/javascript" src="../../../js/copy_code.js"></script><script>addCodeCopy("../../../img/before_copy.png","../../../img/after_copy.png")</script><script type="text/javascript" src="../../../js/navigator.js"></script><script type="text/javascript" src="../../../js/picture_preview.js"></script><script type="text/javascript" src="../../../js/global_js_configuration.js"></script>
