@@ -1,7 +1,8 @@
 from enum import Enum
-from typing import List, Dict, Union, Optional
+from typing import List, Dict, Union, Optional, TypedDict
 
 CLOCK = 0
+USAGE_INFO_LIST:List["RecordInfo"] = []
 
 
 class Operation(Enum):
@@ -17,7 +18,6 @@ class UnitFunction(Enum):
     INTEGER = "Integer"
     ADD = "Add"
     FADD = "Fadd"
-    BRANCH = "Branch"
 
 
 class FloatRegister:
@@ -83,6 +83,13 @@ class InstructionStage(Enum):
     COMPLETE = "COMPLETE"
 
 
+class RecordInfo(TypedDict):
+    clock: int
+    unit_name: str
+    instruction_id: int
+    instruction_op: Operation
+
+
 class Instruction:
     def __init__(
         self,
@@ -117,6 +124,7 @@ class Instruction:
         if self.stage == InstructionStage.COMPLETE:
             return
 
+        global USAGE_INFO_LIST
         # 其实并未真的进入发射阶段, 只是指令流出
         if self.stage == InstructionStage.TOBE_ISSUE:
             self.stage = InstructionStage.ISSUE
@@ -143,6 +151,10 @@ class Instruction:
             self.stage_clocks[InstructionStage.EXEC] = CLOCK
             self.left_latency -= 1
 
+            USAGE_INFO_LIST.append(
+                RecordInfo(clock=CLOCK, unit_name=self.unit.name, instruction_id=self.id, instruction_op=self.Op)
+            )
+
         elif self.stage == InstructionStage.EXEC:
             if self.left_latency == 0:
                 if self.Op in (Operation.LOAD, Operation.STORE):
@@ -150,6 +162,9 @@ class Instruction:
                         return
                     self.stage = InstructionStage.MEM
                     self.stage_clocks[InstructionStage.MEM] = CLOCK
+                    USAGE_INFO_LIST.append(
+                        RecordInfo(clock=CLOCK, unit_name="Data Cache", instruction_id=self.id, instruction_op=self.Op)
+                    )
                 elif self.Op == Operation.BNE:
                     self.stage = InstructionStage.COMPLETE
                 else:
@@ -158,6 +173,11 @@ class Instruction:
                         self.stage = InstructionStage.WRITE
                         self.stage_clocks[InstructionStage.WRITE] = CLOCK
                         self.stage = InstructionStage.COMPLETE
+                        USAGE_INFO_LIST.append(
+                            RecordInfo(
+                                clock=CLOCK, unit_name="CDB", instruction_id=self.id, instruction_op=self.Op
+                            )
+                        )
             else:
                 self.left_latency -= 1
 
@@ -170,6 +190,9 @@ class Instruction:
                     self.stage = InstructionStage.WRITE
                     self.stage_clocks[InstructionStage.WRITE] = CLOCK
                     self.stage = InstructionStage.COMPLETE
+                    USAGE_INFO_LIST.append(
+                        RecordInfo(clock=CLOCK, unit_name="CDB", instruction_id=self.id, instruction_op=self.Op)
+                    )
         else:
             raise ValueError(self.stage.value)
 
@@ -296,7 +319,8 @@ class SuperScale:
             self.show_status()
             CLOCK += 1
             pass
-            # exit()
+        
+        self.show_usage_table()
 
     def get_unit(self, unit_function: UnitFunction) -> Unit:
         """
@@ -329,6 +353,29 @@ class SuperScale:
                 f"    {unit.name:>12} {unit.function.value:<7} | {'Busy' if unit.in_use else 'Free':<6} {unit.instruction.id if unit.instruction else '':>2}"
             )
         print("\n")
+
+    def show_usage_table(self):
+        
+        global USAGE_INFO_LIST
+        usage_table:Dict[str, Dict[int, str]] = {}
+        for unit in self.functional_units:
+            usage_table[unit.name] = {i: "" for i in range(1, CLOCK-1)}
+        usage_table['Data Cache'] = {i: "" for i in range(1, CLOCK-1)}
+        usage_table['CDB'] = {i: "" for i in range(1, CLOCK-1)}
+        
+        for usage_info in USAGE_INFO_LIST:
+            usage_table[usage_info["unit_name"]][usage_info["clock"]] = f'{usage_info["instruction_id"]}/{usage_info["instruction_op"].value}'
+        
+        print(f"CLOCK | ", end='')
+        for unit in self.functional_units:
+            print(f'{unit.name:>11} | ', end='')
+        print("Data Cache | CDB")
+        for i in range(1, CLOCK-1):
+            print(f'{i:>5} | ', end='')
+            for unit in self.functional_units:
+                print(f'{usage_table[f"{unit.name}"][i]:>11} | ', end="")
+            print(f'{usage_table["Data Cache"][i]:>10} | {usage_table["CDB"][i]}')
+            
 
 
 def main():
