@@ -59,10 +59,10 @@ class RegisterGroup:
 class UnitState:
     def __init__(self) -> None:
         self.Op: Operation = None  # 部件执行的指令类型
-        self.Q_j: Instruction = None
-        self.Q_k: Instruction = None
+        self.Q_j: Instruction = None # J 冲突的指令
+        self.Q_k: Instruction = None # K 冲突的指令
 
-        self.write_mem: Instruction = None
+        self.write_mem: Instruction = None # 仅对于 STORE 有效
 
 
 class Unit:
@@ -129,6 +129,7 @@ class Instruction:
         if self.stage == InstructionStage.TOBE_ISSUE:
             self.stage = InstructionStage.ISSUE
             self.update_status(self.Op, self.dest, self.j, self.k)
+            # 如果当前指令对应的 Unit 被占用了, 则先等待
             if self.unit.in_use == False:
                 self.unit.in_use = True
                 self.unit.instruction = self
@@ -137,12 +138,15 @@ class Instruction:
 
         elif self.stage == InstructionStage.ISSUE:
             if self.unit.instruction != self:
+                # 如果对应的 Unit 执行的指令不是该指令, 且 Unit 可用则占据该 Unit 使用
                 if self.unit.in_use == False:
                     self.unit.in_use = True
                     self.unit.instruction = self
                     self.unit.status = self.status
                 else:
+                    # 否则说明没有空闲, 直接返回, 继续等待
                     return
+            
             # 如果有需要等待的数据, 直接返回
             if self.unit.status.Q_j or self.unit.status.Q_k:
                 return
