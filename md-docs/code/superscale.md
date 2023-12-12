@@ -389,6 +389,8 @@ class Instruction:
 
 > 代码中的 `USAGE_INFO_LIST` 是用于统计利用率的, 可以暂时忽略
 
+对于本次作业的情况, 仅需新添加一个 `Unit(name="Address ALU", function=UnitFunction.INTEGER)` 用于单独处理地址计算, 然后将 LOAD/STORE 指令的 unit_function 设置为 `UnitFunction.INTEGER` 即可, 如 hw.py 中的修改所示
+
 ## 参考
 
 - [计算机体系结构-超标量乱序CPU微架构(上)](https://zhuanlan.zhihu.com/p/601688983)
