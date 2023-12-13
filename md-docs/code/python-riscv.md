@@ -13,7 +13,7 @@ python src/homework1/main.py
 
 > jupyter 提交版见 [main.ipynb](https://github.com/luzhixing12345/archlab/blob/main/src/homework1/main.ipynb)
 
-```bash
+```txt
 before
 ####################
 mem[ 0] = 123 |mem[ 1] =  99 |mem[ 2] =   0 |mem[ 3] =   0 |
@@ -54,7 +54,7 @@ r24 =   0 |r25 =   0 |r26 =   0 |r27 =   0 |r28 =   0 |r29 =   0 |r30 =   0 |r31
 
 考虑到题目中的一些要求, 32 位, 内存单元 8 bit, 32 位寄存器, 因此选择使用 RISCV-32I 指令集, 展开为如下五条指令完成上述任务
 
-```bash
+```riscvasm
 xor r1, r1, r1
 lb 0(r1), r2
 lb 1(r1), r3

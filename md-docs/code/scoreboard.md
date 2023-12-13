@@ -13,7 +13,7 @@ python src/homework4/main.py
 
 > 输出结果很多, 仅展示部分内容(clock1 和 clock62 的输出), 完整内容见 [output.txt](https://github.com/luzhixing12345/archlab/blob/main/src/homework4/output.txt)
 
-```bash
+```txt
 [instruction status]
 
     Op   dest j   k  | Issue  Read  Exec  Write
@@ -74,7 +74,7 @@ python src/homework4/main.py
 
 各功能单元使用情况
 
-```bash
+```txt
 Unit     Instruction     start   end     theoretical/running
 Integer  LOAD F6 34 R2       1     4     4/4
          LOAD F2 45 R3       5     8     4/4

@@ -11,7 +11,7 @@ python src/homework6/main.py
 
 > 完整输出见 [output.txt](https://raw.githubusercontent.com/luzhixing12345/archlab/main/src/homework6/output.txt)
 
-```bash
+```txt
 ----------------------------------------------------------------------
 [instruction status]
 

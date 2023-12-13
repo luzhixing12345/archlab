@@ -1,0 +1,35 @@
+pre[class*="language-txt"] {
+    background: #1f1f1f;
+}
+
+pre[class*="language-txt"] .Token {
+    color: #C1CCCC;
+}
+
+pre[class*="language-txt"] .Token.ID {
+    color: #C1CCCC;
+}
+
+pre[class*="language-txt"] .Token.BraceDepth-0 {
+    color: #FFD700;
+}
+
+pre[class*="language-txt"] .Token.BraceDepth-1 {
+    color: #DA70D6;
+}
+
+pre[class*="language-txt"] .Token.BraceDepth-2 {
+    color: #1A9DFF;
+}
+
+pre[class*="language-txt"] .Token.NUMBER {
+    color: #A2CEA8;
+}
+
+pre[class*="language-txt"] .Token.YES, pre[class*="language-txt"] .Token.OK {
+    color: #16c60c;
+}
+
+pre[class*="language-txt"] .Token.NO, pre[class*="language-txt"] .Token.FAIL {
+    color: #e74856;
+}

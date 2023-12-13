@@ -41,9 +41,9 @@ pre[class*="language-shell"] .Token.Keyword {
     color: #C586C0;
 }
 
-/* pre[class*="language-shell"] .Token.OPTION {
-    color: #569cd6;
-} */
+pre[class*="language-shell"] .Token.OPTION {
+    color: #b3b2b2;
+}
 
 pre[class*="language-shell"] .Token.Variant,
 pre[class*="language-shell"] .Token.VARIANT {
@@ -81,15 +81,6 @@ pre[class*="language-shell"] .Token.TreeExe {
 pre[class*="language-shell"] .Token.TreeIgnore {
     color: #C1CCCC;
 } */
-pre[class*="language-shell"] .Token.OPTION {
-    color: #b3b2b2;
-}
 pre[class*="language-shell"] .Token.HOST_NAME {
     color: #00c867;
-}
-pre[class*="language-shell"] .Token.Success {
-    color: #00c867;
-}
-pre[class*="language-shell"] .Token.Fail {
-    color: #d00101;
 }

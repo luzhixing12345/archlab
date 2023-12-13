@@ -73,6 +73,10 @@ CLOCK | Integer ALU |      FP ALU | Data Cache | CDB
    19 |             |             |  12/Store  |
 ```
 
+> 这里值得一提的是老师 PPT 表格当中并没有给出 BNE 指令, 笔者认为该指令执行也需要使用 Integer ALU 来进行计算以判断跳转条件是否成立, PPT 表格有问题
+
+---
+
 然后是本次作业要求的程序
 
 ```bash

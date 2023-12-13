@@ -13,7 +13,7 @@ python src/homework5/main.py
 
 > 完整输出见 [classic_example.txt](https://raw.githubusercontent.com/luzhixing12345/archlab/main/src/homework5/classic_example.txt)
 
-```bash
+```txt
 ----------------------------------------------------------------------
 [instruction status]
 
@@ -36,7 +36,7 @@ python src/homework5/loop.py
 
 > 完整输出见 [loop.txt](https://raw.githubusercontent.com/luzhixing12345/archlab/main/src/homework5/loop.txt)
 
-```bash
+```txt
 ----------------------------------------------------------------------
 [instruction status]
 
