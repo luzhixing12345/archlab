@@ -1,8 +1,8 @@
 from enum import Enum
-from typing import List, Dict, Union, Optional, TypedDict
+from typing import List, Dict, Union, Optional
 
 CLOCK = 0
-USAGE_INFO_LIST:List["RecordInfo"] = []
+USAGE_INFO_LIST: List["RecordInfo"] = []
 
 
 class Operation(Enum):
@@ -59,10 +59,10 @@ class RegisterGroup:
 class UnitState:
     def __init__(self) -> None:
         self.Op: Operation = None  # 部件执行的指令类型
-        self.Q_j: Instruction = None # J 冲突的指令
-        self.Q_k: Instruction = None # K 冲突的指令
+        self.Q_j: Instruction = None  # J 冲突的指令
+        self.Q_k: Instruction = None  # K 冲突的指令
 
-        self.write_mem: Instruction = None # 仅对于 STORE 有效
+        self.write_mem: Instruction = None  # 仅对于 STORE 有效
 
 
 class Unit:
@@ -83,11 +83,12 @@ class InstructionStage(Enum):
     COMPLETE = "COMPLETE"
 
 
-class RecordInfo(TypedDict):
-    clock: int
-    unit_name: str
-    instruction_id: int
-    instruction_op: Operation
+class RecordInfo:
+    def __init__(self, clock: int, unit_name: str, instruction_id: int, instruction_op: Operation) -> None:
+        self.clock: int = clock
+        self.unit_name: str = unit_name
+        self.instruction_id: int = instruction_id
+        self.instruction_op: Operation = instruction_op
 
 
 class Instruction:
@@ -146,7 +147,7 @@ class Instruction:
                 else:
                     # 否则说明没有空闲, 直接返回, 继续等待
                     return
-            
+
             # 如果有需要等待的数据, 直接返回
             if self.unit.status.Q_j or self.unit.status.Q_k:
                 return
@@ -178,9 +179,7 @@ class Instruction:
                         self.stage_clocks[InstructionStage.WRITE] = CLOCK
                         self.stage = InstructionStage.COMPLETE
                         USAGE_INFO_LIST.append(
-                            RecordInfo(
-                                clock=CLOCK, unit_name="CDB", instruction_id=self.id, instruction_op=self.Op
-                            )
+                            RecordInfo(clock=CLOCK, unit_name="CDB", instruction_id=self.id, instruction_op=self.Op)
                         )
             else:
                 self.left_latency -= 1
@@ -323,7 +322,7 @@ class SuperScale:
             self.show_status()
             CLOCK += 1
             pass
-        
+
         self.show_usage_table()
 
     def get_unit(self, unit_function: UnitFunction) -> Unit:
@@ -359,29 +358,31 @@ class SuperScale:
         print("\n")
 
     def show_usage_table(self):
-        
         global USAGE_INFO_LIST
-        usage_table:Dict[str, Dict[int, str]] = {}
+        usage_table: Dict[str, Dict[int, str]] = {}
         for unit in self.functional_units:
-            usage_table[unit.name] = {i: "" for i in range(1, CLOCK-1)}
-        usage_table['Data Cache'] = {i: "" for i in range(1, CLOCK-1)}
-        usage_table['CDB'] = {i: "" for i in range(1, CLOCK-1)}
-        
+            usage_table[unit.name] = {i: "" for i in range(1, CLOCK - 1)}
+        usage_table["Data Cache"] = {i: "" for i in range(1, CLOCK - 1)}
+        usage_table["CDB"] = {i: "" for i in range(1, CLOCK - 1)}
+
         for usage_info in USAGE_INFO_LIST:
-            usage_table[usage_info["unit_name"]][usage_info["clock"]] += f'{usage_info["instruction_id"]}/{usage_info["instruction_op"].value} '
-        
-        print(f"CLOCK | ", end='')
+            usage_table[usage_info.unit_name][
+                usage_info.clock
+            ] += f"{usage_info.instruction_id}/{usage_info.instruction_op.value} "
+
+        print(f"CLOCK | ", end="")
         for unit in self.functional_units:
-            print(f'{unit.name:>11} | ', end='')
-        data_cache_max_length = max(len(str(usage_table["Data Cache"][element])) for element in usage_table["Data Cache"])
+            print(f"{unit.name:>11} | ", end="")
+        data_cache_max_length = max(
+            len(str(usage_table["Data Cache"][element])) for element in usage_table["Data Cache"]
+        )
         data_cache_max_length = max(data_cache_max_length, len("Data Cache"))
         print(f'{"Data Cache":>{data_cache_max_length}} | CDB')
-        for i in range(1, CLOCK-1):
-            print(f'{i:>5} | ', end='')
+        for i in range(1, CLOCK - 1):
+            print(f"{i:>5} | ", end="")
             for unit in self.functional_units:
                 print(f'{usage_table[f"{unit.name}"][i]:>11} | ', end="")
             print(f'{usage_table["Data Cache"][i]:>{data_cache_max_length}} | {usage_table["CDB"][i]}')
-            
 
 
 def main():
