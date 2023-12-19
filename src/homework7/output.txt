@@ -508,19 +508,19 @@ CLOCK 16
      Address ALU Integer | Free   12
 
 
-CLOCK | Integer ALU |      FP ALU | Address ALU |       Data Cache | CDB
-    1 |             |             |             |                  | 
-    2 |             |             |     0/Load  |                  | 
-    3 |      3/Add  |             |    2/Store  |          0/Load  | 
-    4 |             |             |             |                  | 0/Load 3/Add 
-    5 |      4/Bne  |     1/Fadd  |     5/Load  |                  | 
-    6 |      8/Add  |             |    7/Store  |          5/Load  | 
-    7 |             |             |             |                  | 5/Load 8/Add 
-    8 |      9/Bne  |     6/Fadd  |    10/Load  |                  | 1/Fadd 
-    9 |     13/Add  |             |   12/Store  | 2/Store 10/Load  | 
-   10 |             |             |             |                  | 10/Load 13/Add 
-   11 |     14/Bne  |    11/Fadd  |             |                  | 6/Fadd 
-   12 |             |             |             |         7/Store  | 
-   13 |             |             |             |                  | 
-   14 |             |             |             |                  | 11/Fadd 
-   15 |             |             |             |        12/Store  | 
+CLOCK | Integer ALU |      FP ALU | Address ALU |      Data Cache | CDB
+    1 |             |             |             |                 | 
+    2 |             |             |      0/Load |                 | 
+    3 |       3/Add |             |     2/Store |          0/Load | 
+    4 |             |             |             |                 | 0/Load 3/Add
+    5 |       4/Bne |      1/Fadd |      5/Load |                 | 
+    6 |       8/Add |             |     7/Store |          5/Load | 
+    7 |             |             |             |                 | 5/Load 8/Add
+    8 |       9/Bne |      6/Fadd |     10/Load |                 | 1/Fadd
+    9 |      13/Add |             |    12/Store | 2/Store 10/Load | 
+   10 |             |             |             |                 | 10/Load 13/Add
+   11 |      14/Bne |     11/Fadd |             |                 | 6/Fadd
+   12 |             |             |             |         7/Store | 
+   13 |             |             |             |                 | 
+   14 |             |             |             |                 | 11/Fadd
+   15 |             |             |             |        12/Store | 

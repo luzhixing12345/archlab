@@ -609,21 +609,21 @@ CLOCK 20
 
 CLOCK | Integer ALU |      FP ALU | Data Cache | CDB
     1 |             |             |            | 
-    2 |     0/Load  |             |            | 
-    3 |    2/Store  |             |    0/Load  | 
-    4 |      3/Add  |             |            | 0/Load 
-    5 |             |     1/Fadd  |            | 3/Add 
-    6 |      4/Bne  |             |            | 
-    7 |     5/Load  |             |            | 
-    8 |    7/Store  |             |    5/Load  | 1/Fadd 
-    9 |      8/Add  |             |   2/Store  | 5/Load 
-   10 |             |     6/Fadd  |            | 8/Add 
-   11 |      9/Bne  |             |            | 
-   12 |    10/Load  |             |            | 
-   13 |   12/Store  |             |   10/Load  | 6/Fadd 
-   14 |     13/Add  |             |   7/Store  | 10/Load 
-   15 |             |    11/Fadd  |            | 13/Add 
-   16 |     14/Bne  |             |            | 
+    2 |      0/Load |             |            | 
+    3 |     2/Store |             |     0/Load | 
+    4 |       3/Add |             |            | 0/Load
+    5 |             |      1/Fadd |            | 3/Add
+    6 |       4/Bne |             |            | 
+    7 |      5/Load |             |            | 
+    8 |     7/Store |             |     5/Load | 1/Fadd
+    9 |       8/Add |             |    2/Store | 5/Load
+   10 |             |      6/Fadd |            | 8/Add
+   11 |       9/Bne |             |            | 
+   12 |     10/Load |             |            | 
+   13 |    12/Store |             |    10/Load | 6/Fadd
+   14 |      13/Add |             |    7/Store | 10/Load
+   15 |             |     11/Fadd |            | 13/Add
+   16 |      14/Bne |             |            | 
    17 |             |             |            | 
-   18 |             |             |            | 11/Fadd 
-   19 |             |             |  12/Store  | 
+   18 |             |             |            | 11/Fadd
+   19 |             |             |   12/Store | 

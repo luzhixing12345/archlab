@@ -44,17 +44,6 @@ class RegisterGroup:
         self.R1 = FloatRegister("R1")
         self.R2 = FloatRegister("R2")
 
-        self.register_map = {
-            "F0": self.F0,
-            "F2": self.F2,
-            "F4": self.F4,
-            "F6": self.F6,
-            "F8": self.F8,
-            "F10": self.F10,
-            "R1": self.R1,
-            "R2": self.R2,
-        }
-
 
 class UnitState:
     def __init__(self) -> None:
@@ -366,9 +355,11 @@ class SuperScale:
         usage_table["CDB"] = {i: "" for i in range(1, CLOCK - 1)}
 
         for usage_info in USAGE_INFO_LIST:
+            if len(usage_table[usage_info.unit_name][usage_info.clock]) != 0:
+                usage_table[usage_info.unit_name][usage_info.clock] += " "
             usage_table[usage_info.unit_name][
                 usage_info.clock
-            ] += f"{usage_info.instruction_id}/{usage_info.instruction_op.value} "
+            ] += f"{usage_info.instruction_id}/{usage_info.instruction_op.value}"
 
         print(f"CLOCK | ", end="")
         for unit in self.functional_units:
