@@ -194,7 +194,10 @@ blockquote {
     word-wrap: normal;
     background-color: initial;
     border: 0;
+    cursor: text;
 }
+
+
 
 .markdown-body ul {
     padding-left: 0;
@@ -327,6 +330,7 @@ ul>li>ul>li {
 
 .markdown-body pre #code_copy {
     position: absolute;
+    display: inline-block;
     right: 10px;
     top: 10px;
     /* margin-top: -16px; */

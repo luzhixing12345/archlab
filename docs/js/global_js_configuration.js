@@ -43,3 +43,8 @@ links.forEach(function(link) {
   }
 });
 
+// 代码段可编辑, 可选中
+var code_blocks = document.getElementsByTagName('pre');
+for (var i = 0; i < code_blocks.length; i++) {
+    code_blocks[i].setAttribute('contenteditable', 'true');
+}
