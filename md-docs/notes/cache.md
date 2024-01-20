@@ -152,6 +152,8 @@
 
 ![20240118213547](https://raw.githubusercontent.com/learner-lu/picbed/master/20240118213547.png)
 
+![20240118213343](https://raw.githubusercontent.com/learner-lu/picbed/master/20240118213343.png)
+
 可以直接使用如下指令查看当前系统的缓存大小
 
 ```bash
