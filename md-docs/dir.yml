@@ -9,8 +9,9 @@ code:
 - rob-tom: 6
 - superscale: 7
 notes:
-- cache: 1
-- cache-coherance: 2
+- multicore: 1
+- cache: 2
+- cache-coherance: 3
 read:
 - lecture1: 1
 - lecture2: 2
