@@ -80,9 +80,9 @@
 
   > 修改(M)状态下的 write 不需要广播 invalid, 无效(I)状态下不需要监听, 后文 MSI 协议中会提到
 
-### MSI
-
 因此现代多处理器大多选择 **写入失效**(write invalid protocal) 作为监听协议的实现, 后文将会介绍基于写入失效的 MSI write-invalid protocol
+
+### MSI
 
 MSI 规定了缓存行(cache line)的 `M S I` 三种状态:
 
@@ -173,7 +173,7 @@ t4 时 CPU2 write A, 此时 CPU2 进入 M 状态, 在总线广播 invalid A; CPU
 
 下图为 MESI CPU request 的状态转移图, 相比 MSI 唯一的区别就是新增了一个 E 状态, S 状态维持不变; I 状态的 read miss 会先转换到 E 状态; **不会因为本机 CPU request 导致 E -> S 的转换, E -> S 的转换是总线的信号引发的**
 
-![20240122182451](https://raw.githubusercontent.com/learner-lu/picbed/master/20240122182451.png)
+![20240124150213](https://raw.githubusercontent.com/learner-lu/picbed/master/20240124150213.png)
 
 由于是独享的缓存, 所以 E 状态的 write hit 不会在总线广播 invalid 信号, 这样节约了总线带宽.
 
@@ -213,7 +213,7 @@ MESI 协议非常受欢迎因为他对于大多数的并行编程工作负载都
 
 ![20240123233126](https://raw.githubusercontent.com/learner-lu/picbed/master/20240123233126.png)
 
-对于 DSM 的情况, 分布式的目录协议要更加复杂一些, 这里不做展开
+对于 DSM 的情况, 分布式的目录协议要更加复杂一些, 业界一般采用 RDMA 或者 CXL 技术来负责 NUMA 节点之间的通信, 这里不做展开.
 
 ## 参考
 
