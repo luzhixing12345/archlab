@@ -5,6 +5,8 @@
 
 ![image](https://raw.githubusercontent.com/luzhixing12345/archlab/main/img/homework7-2.png)
 
+> speculation(前瞻) 指乱序执行, 顺序确认
+
 ## 运行结果
 
 > jupyter 提交版见 [main.ipynb](https://github.com/luzhixing12345/archlab/blob/main/src/homework7/main.ipynb)
@@ -20,25 +22,25 @@ python src/homework7/main.py
 指令执行流程
 
 ```txt
-CLOCK 20
+CLOCK 23
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
-  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
-  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
-  3   ADD   R1   -8 R1 |     2     4           5 |         COMPLETE 
-  4   BNE   Loop R1 R2 |     3     6             |         COMPLETE 
-  5   LOAD  F0    0 R1 |     4     7     8     9 |         COMPLETE 
-  6   FADD  F4   F0 F2 |     4    10          13 |         COMPLETE 
-  7   STORE F4    0 R1 |     5     8    14       |         COMPLETE 
-  8   ADD   R1   -8 R1 |     5     9          10 |         COMPLETE 
-  9   BNE   Loop R1 R2 |     6    11             |         COMPLETE 
-  10  LOAD  F0    0 R1 |     7    12    13    14 |         COMPLETE 
-  11  FADD  F4   F0 F2 |     7    15          18 |         COMPLETE 
-  12  STORE F4    0 R1 |     8    13    19       |         COMPLETE 
-  13  ADD   R1   -8 R1 |     8    14          15 |         COMPLETE 
-  14  BNE   Loop R1 R2 |     9    16             |         COMPLETE 
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9          11 |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     4           5    12 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     6                13 |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     7     8     9    14 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4    10          13    15 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     8    14          16 |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     9          10    17 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6    11                18 |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7    12    13    14    19 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7    15          18    20 |         COMPLETE 
+  12  STORE F4    0 R1 |     8    13    19          21 |         COMPLETE 
+  13  ADD   R1   -8 R1 |     8    14          15    22 |         COMPLETE 
+  14  BNE   Loop R1 R2 |     9    16                23 |         COMPLETE 
 
 
 [unit]
@@ -52,25 +54,28 @@ CLOCK 20
 
 ```txt
 CLOCK | Integer ALU |      FP ALU | Data Cache | CDB
-    1 |             |             |            |
-    2 |     0/Load  |             |            |
-    3 |    2/Store  |             |    0/Load  |
-    4 |      3/Add  |             |            | 0/Load
-    5 |             |     1/Fadd  |            | 3/Add
-    6 |      4/Bne  |             |            |
-    7 |     5/Load  |             |            |
-    8 |    7/Store  |             |    5/Load  | 1/Fadd
-    9 |      8/Add  |             |   2/Store  | 5/Load
-   10 |             |     6/Fadd  |            | 8/Add
-   11 |      9/Bne  |             |            |
-   12 |    10/Load  |             |            |
-   13 |   12/Store  |             |   10/Load  | 6/Fadd
-   14 |     13/Add  |             |   7/Store  | 10/Load
-   15 |             |    11/Fadd  |            | 13/Add
-   16 |     14/Bne  |             |            |
-   17 |             |             |            |
+    1 |             |             |            | 
+    2 |      0/Load |             |            | 
+    3 |     2/Store |             |     0/Load | 
+    4 |       3/Add |             |            | 0/Load
+    5 |             |      1/Fadd |            | 3/Add
+    6 |       4/Bne |             |            | 
+    7 |      5/Load |             |            | 
+    8 |     7/Store |             |     5/Load | 1/Fadd
+    9 |       8/Add |             |    2/Store | 5/Load
+   10 |             |      6/Fadd |            | 8/Add
+   11 |       9/Bne |             |            | 
+   12 |     10/Load |             |            | 
+   13 |    12/Store |             |    10/Load | 6/Fadd
+   14 |      13/Add |             |    7/Store | 10/Load
+   15 |             |     11/Fadd |            | 13/Add
+   16 |      14/Bne |             |            | 
+   17 |             |             |            | 
    18 |             |             |            | 11/Fadd
-   19 |             |             |  12/Store  |
+   19 |             |             |   12/Store | 
+   20 |             |             |            | 
+   21 |             |             |            | 
+   22 |             |             |            | 
 ```
 
 > 这里值得一提的是老师 PPT 表格当中并没有给出 BNE 指令, 笔者认为该指令执行也需要使用 Integer ALU 来进行计算以判断跳转条件是否成立, PPT 表格有问题
@@ -88,25 +93,25 @@ python src/homework7/hw.py
 指令执行流程
 
 ```txt
-CLOCK 16
+CLOCK 23
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
-  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
-  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
-  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
-  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
-  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
-  6   FADD  F4   F0 F2 |     4     8          11 |         COMPLETE 
-  7   STORE F4    0 R1 |     5     6    12       |         COMPLETE 
-  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
-  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
-  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
-  11  FADD  F4   F0 F2 |     7    11          14 |         COMPLETE 
-  12  STORE F4    0 R1 |     8     9    15       |         COMPLETE 
-  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
-  14  BNE   Loop R1 R2 |     9    11             |         COMPLETE 
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9          11 |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4    12 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5                13 |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7    14 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11    15 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12          16 |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     6           7    17 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8                18 |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9    10    19 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7    11          14    20 |         COMPLETE 
+  12  STORE F4    0 R1 |     8     9    15          21 |         COMPLETE 
+  13  ADD   R1   -8 R1 |     8     9          10    22 |         COMPLETE 
+  14  BNE   Loop R1 R2 |     9    11                23 |         COMPLETE 
 
 
 [unit]
@@ -120,22 +125,29 @@ CLOCK 16
 统计信息
 
 ```txt
-CLOCK | Integer ALU |      FP ALU | Address ALU |       Data Cache | CDB
-    1 |             |             |             |                  |
-    2 |             |             |     0/Load  |                  |
-    3 |      3/Add  |             |    2/Store  |          0/Load  |
-    4 |             |             |             |                  | 0/Load 3/Add
-    5 |      4/Bne  |     1/Fadd  |     5/Load  |                  |
-    6 |      8/Add  |             |    7/Store  |          5/Load  |
-    7 |             |             |             |                  | 5/Load 8/Add
-    8 |      9/Bne  |     6/Fadd  |    10/Load  |                  | 1/Fadd
-    9 |     13/Add  |             |   12/Store  | 2/Store 10/Load  |
-   10 |             |             |             |                  | 10/Load 13/Add
-   11 |     14/Bne  |    11/Fadd  |             |                  | 6/Fadd
-   12 |             |             |             |         7/Store  |
-   13 |             |             |             |                  |
-   14 |             |             |             |                  | 11/Fadd
-   15 |             |             |             |        12/Store  |
+CLOCK | Integer ALU |      FP ALU | Address ALU |      Data Cache | CDB
+    1 |             |             |             |                 | 
+    2 |             |             |      0/Load |                 | 
+    3 |       3/Add |             |     2/Store |          0/Load | 
+    4 |             |             |             |                 | 0/Load 3/Add
+    5 |       4/Bne |      1/Fadd |      5/Load |                 | 
+    6 |       8/Add |             |     7/Store |          5/Load | 
+    7 |             |             |             |                 | 5/Load 8/Add
+    8 |       9/Bne |      6/Fadd |     10/Load |                 | 1/Fadd
+    9 |      13/Add |             |    12/Store | 2/Store 10/Load | 
+   10 |             |             |             |                 | 10/Load 13/Add
+   11 |      14/Bne |     11/Fadd |             |                 | 6/Fadd
+   12 |             |             |             |         7/Store | 
+   13 |             |             |             |                 | 
+   14 |             |             |             |                 | 11/Fadd
+   15 |             |             |             |        12/Store | 
+   16 |             |             |             |                 | 
+   17 |             |             |             |                 | 
+   18 |             |             |             |                 | 
+   19 |             |             |             |                 | 
+   20 |             |             |             |                 | 
+   21 |             |             |             |                 | 
+   22 |             |             |             |                 | 
 ```
 
 ## 实验报告
@@ -153,6 +165,7 @@ CLOCK | Integer ALU |      FP ALU | Address ALU |       Data Cache | CDB
 1. 双发射处理器, 三次循环执行, 统计资源利用率
 2. 原先的单 ALU 部件现在变为两个, 一个用于地址计算, 一个用于执行 ALU 操作
 3. 两条 CDB 总线, 支持同时两条指令的写回 和 数据旁路
+4. 前瞻执行, 乱序执行, 顺序确认
 
 以及一些假设
 
@@ -257,25 +270,34 @@ class SuperScale:
                     # 如果下一条是分支则也停止
                     if self.instructions[self.pc].Op in branch_operators:
                         break
+            
+            # 前瞻执行, 顺序确认
+            if (
+                self.confirm_p < len(self.issued_instructions)
+                and self.issued_instructions[self.confirm_p].stage == InstructionStage.CONFIRM
+            ):
+                self.issued_instructions[self.confirm_p].stage_clocks[InstructionStage.CONFIRM] = CLOCK
+                self.issued_instructions[self.confirm_p].stage = InstructionStage.COMPLETE
+                self.confirm_p += 1
 
             # 所有指令发射后交由指令本身去执行
             # 指令内部维护 issue -> exec -> mem -> write 的执行顺序
             for instruction in self.issued_instructions:
                 instruction.run()
 
-            # 所有指令都执行结束之后一起更新 Qj Qk 的状态, 避免指令串行更新的干扰
+            # 所有指令都执行结束之后一起更新 unit 的 Qj Qk 的状态, 避免指令串行更新的干扰
             for instruction in self.issued_instructions:
                 if instruction.stage == InstructionStage.EXEC and instruction.left_latency == 0:
                     if instruction.unit:
                         instruction.unit.in_use = False
                         instruction.unit = None
-                if instruction.status.Q_j and instruction.status.Q_j.stage == InstructionStage.COMPLETE:
+                if instruction.status.Q_j and instruction.status.Q_j.stage == InstructionStage.CONFIRM:
                     instruction.status.Q_j = None
                     instruction.unit.status.Q_j = None
-                if instruction.status.Q_k and instruction.status.Q_k.stage == InstructionStage.COMPLETE:
+                if instruction.status.Q_k and instruction.status.Q_k.stage == InstructionStage.CONFIRM:
                     instruction.status.Q_k = None
                     instruction.unit.status.Q_k = None
-                if instruction.status.write_mem and instruction.status.write_mem.stage == InstructionStage.COMPLETE:
+                if instruction.status.write_mem and instruction.status.write_mem.stage == InstructionStage.CONFIRM:
                     instruction.status.write_mem = None
 
             self.CDB.finish_write_back()
@@ -293,6 +315,7 @@ class SuperScale:
 - 指令内部也新增了一个 UnitState 类型的 `self.status`, 因为指令发射的时候并未真的进入发射阶段, 只是指令流出. 如果当前指令对应的 Unit 被占用了, 则先等待, 此时不会更新对应的 Unit 的 `status`
 - 对于发射后的指令, 如果对应的 Unit 执行的指令不是该指令, 且 Unit 可用则占据该 Unit 使用. 否则说明没有空闲, 直接返回, 继续等待
 - 对于 STORE 指令还需要判断能否写回内存(即 STORE 指令的执行条件仅为 Q_k 为空, 但访存条件是 dest 无数据冒险冲突), 因此还需要额外处理判断 `self.status.write_mem != None`
+- 只有当指令所有前面的指令都处于完成状态后该指令才可以确认
 - 写回的时刻判断 `self.isa.CDB.available` 已确认 CDB 还有空闲信道可以写回
 
 ```python
@@ -307,11 +330,12 @@ class Instruction:
             InstructionStage.EXEC: None,
             InstructionStage.MEM: None,
             InstructionStage.WRITE: None,
-        }  # 四个阶段进入的时间节点
+            InstructionStage.CONFIRM: None,
+        }  # 五个阶段进入的时间节点
         self.status: UnitState = UnitState()
 
     def run(self):
-        if self.stage == InstructionStage.COMPLETE:
+        if self.stage in (InstructionStage.CONFIRM, InstructionStage.COMPLETE):
             return
 
         global USAGE_INFO_LIST
@@ -360,30 +384,28 @@ class Instruction:
                         RecordInfo(clock=CLOCK, unit_name="Data Cache", instruction_id=self.id, instruction_op=self.Op)
                     )
                 elif self.Op == Operation.BNE:
-                    self.stage = InstructionStage.COMPLETE
+                    self.stage = InstructionStage.CONFIRM
                 else:
                     if self.isa.CDB.available:
                         self.isa.CDB.send_data()
                         self.stage = InstructionStage.WRITE
                         self.stage_clocks[InstructionStage.WRITE] = CLOCK
-                        self.stage = InstructionStage.COMPLETE
+                        self.stage = InstructionStage.CONFIRM
                         USAGE_INFO_LIST.append(
-                            RecordInfo(
-                                clock=CLOCK, unit_name="CDB", instruction_id=self.id, instruction_op=self.Op
-                            )
+                            RecordInfo(clock=CLOCK, unit_name="CDB", instruction_id=self.id, instruction_op=self.Op)
                         )
             else:
                 self.left_latency -= 1
 
         elif self.stage == InstructionStage.MEM:
             if self.Op == Operation.STORE:
-                self.stage = InstructionStage.COMPLETE
+                self.stage = InstructionStage.CONFIRM
             else:
                 if self.isa.CDB.available:
                     self.isa.CDB.send_data()
                     self.stage = InstructionStage.WRITE
                     self.stage_clocks[InstructionStage.WRITE] = CLOCK
-                    self.stage = InstructionStage.COMPLETE
+                    self.stage = InstructionStage.CONFIRM
                     USAGE_INFO_LIST.append(
                         RecordInfo(clock=CLOCK, unit_name="CDB", instruction_id=self.id, instruction_op=self.Op)
                     )

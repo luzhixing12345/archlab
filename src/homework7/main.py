@@ -69,6 +69,7 @@ class InstructionStage(Enum):
     EXEC = "EXEC"
     MEM = "MEM"
     WRITE = "WRITE"
+    CONFIRM = "CONFIRM"
     COMPLETE = "COMPLETE"
 
 
@@ -107,11 +108,12 @@ class Instruction:
             InstructionStage.EXEC: None,
             InstructionStage.MEM: None,
             InstructionStage.WRITE: None,
-        }  # 四个阶段进入的时间节点
+            InstructionStage.CONFIRM: None,
+        }  # 五个阶段进入的时间节点
         self.status: UnitState = UnitState()
 
     def run(self):
-        if self.stage == InstructionStage.COMPLETE:
+        if self.stage in (InstructionStage.CONFIRM, InstructionStage.COMPLETE):
             return
 
         global USAGE_INFO_LIST
@@ -160,13 +162,13 @@ class Instruction:
                         RecordInfo(clock=CLOCK, unit_name="Data Cache", instruction_id=self.id, instruction_op=self.Op)
                     )
                 elif self.Op == Operation.BNE:
-                    self.stage = InstructionStage.COMPLETE
+                    self.stage = InstructionStage.CONFIRM
                 else:
                     if self.isa.CDB.available:
                         self.isa.CDB.send_data()
                         self.stage = InstructionStage.WRITE
                         self.stage_clocks[InstructionStage.WRITE] = CLOCK
-                        self.stage = InstructionStage.COMPLETE
+                        self.stage = InstructionStage.CONFIRM
                         USAGE_INFO_LIST.append(
                             RecordInfo(clock=CLOCK, unit_name="CDB", instruction_id=self.id, instruction_op=self.Op)
                         )
@@ -175,13 +177,13 @@ class Instruction:
 
         elif self.stage == InstructionStage.MEM:
             if self.Op == Operation.STORE:
-                self.stage = InstructionStage.COMPLETE
+                self.stage = InstructionStage.CONFIRM
             else:
                 if self.isa.CDB.available:
                     self.isa.CDB.send_data()
                     self.stage = InstructionStage.WRITE
                     self.stage_clocks[InstructionStage.WRITE] = CLOCK
-                    self.stage = InstructionStage.COMPLETE
+                    self.stage = InstructionStage.CONFIRM
                     USAGE_INFO_LIST.append(
                         RecordInfo(clock=CLOCK, unit_name="CDB", instruction_id=self.id, instruction_op=self.Op)
                     )
@@ -243,6 +245,7 @@ class SuperScale:
             Unit(name="FP ALU", function=UnitFunction.FADD),
         ]
         self.issued_instructions: List[Instruction] = []  # 所有已发射的指令
+        self.confirm_p = 0
 
     def load_instructions(self, instructions: List[Instruction]):
         self.instructions = instructions
@@ -285,6 +288,15 @@ class SuperScale:
                     # 如果下一条是分支则也停止
                     if self.instructions[self.pc].Op in branch_operators:
                         break
+            
+            # 前瞻执行, 顺序确认
+            if (
+                self.confirm_p < len(self.issued_instructions)
+                and self.issued_instructions[self.confirm_p].stage == InstructionStage.CONFIRM
+            ):
+                self.issued_instructions[self.confirm_p].stage_clocks[InstructionStage.CONFIRM] = CLOCK
+                self.issued_instructions[self.confirm_p].stage = InstructionStage.COMPLETE
+                self.confirm_p += 1
 
             # 所有指令发射后交由指令本身去执行
             # 指令内部维护 issue -> exec -> mem -> write 的执行顺序
@@ -297,13 +309,13 @@ class SuperScale:
                     if instruction.unit:
                         instruction.unit.in_use = False
                         instruction.unit = None
-                if instruction.status.Q_j and instruction.status.Q_j.stage == InstructionStage.COMPLETE:
+                if instruction.status.Q_j and instruction.status.Q_j.stage == InstructionStage.CONFIRM:
                     instruction.status.Q_j = None
                     instruction.unit.status.Q_j = None
-                if instruction.status.Q_k and instruction.status.Q_k.stage == InstructionStage.COMPLETE:
+                if instruction.status.Q_k and instruction.status.Q_k.stage == InstructionStage.CONFIRM:
                     instruction.status.Q_k = None
                     instruction.unit.status.Q_k = None
-                if instruction.status.write_mem and instruction.status.write_mem.stage == InstructionStage.COMPLETE:
+                if instruction.status.write_mem and instruction.status.write_mem.stage == InstructionStage.CONFIRM:
                     instruction.status.write_mem = None
 
             self.CDB.finish_write_back()
@@ -332,7 +344,7 @@ class SuperScale:
         global CLOCK
         print(f"CLOCK {CLOCK}")
         print("[instruction status]\n")
-        print(f"  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage")
+        print(f"  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage")
         for instruction in self.instructions:
             print(f"  {str(instruction.id):<2}  {instruction:<17}", end="|")
             print(instruction.get_info_str())

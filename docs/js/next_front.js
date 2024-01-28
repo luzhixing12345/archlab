@@ -6,6 +6,10 @@ function addButton(x,text,url) {
     button.setAttribute('url',url)
     button.className = 'change-article';
     button.onclick = function () {
+        // 如果在原地, 不跳转
+        if (this.getAttribute('url') === '.') {
+            return;
+        }
         window.location= this.getAttribute('url')
     }
     x.appendChild(button)

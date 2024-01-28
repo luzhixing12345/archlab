@@ -20,3 +20,4 @@ NUDT 高级体系结构实验
 - [RISCV32I CPU](https://nju-projectn.github.io/dlco-lecture-note/exp/11.html)
 - [基于RISC-V架构-五级流水线CPU](https://zhuanlan.zhihu.com/p/453232311)
 - [Course 4 Multicore Architectures](https://www.youtube.com/playlist?list=PLeWkeA7esB-OgNoVkE2lW2cVBxpDbu92h)
+- [计算机体系结构-笔记 专栏](https://www.zhihu.com/column/c_1717139229849812992)

@@ -2,22 +2,22 @@
 CLOCK 0
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |                         |         TOBE_ISSUE
-  1   FADD  F4   F0 F2 |                         |         TOBE_ISSUE
-  2   STORE F4    0 R1 |                         |         TOBE_ISSUE
-  3   ADD   R1   -8 R1 |                         |         TOBE_ISSUE
-  4   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
-  5   LOAD  F0    0 R1 |                         |         TOBE_ISSUE
-  6   FADD  F4   F0 F2 |                         |         TOBE_ISSUE
-  7   STORE F4    0 R1 |                         |         TOBE_ISSUE
-  8   ADD   R1   -8 R1 |                         |         TOBE_ISSUE
-  9   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
-  10  LOAD  F0    0 R1 |                         |         TOBE_ISSUE
-  11  FADD  F4   F0 F2 |                         |         TOBE_ISSUE
-  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
-  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
-  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |                               |         TOBE_ISSUE
+  1   FADD  F4   F0 F2 |                               |         TOBE_ISSUE
+  2   STORE F4    0 R1 |                               |         TOBE_ISSUE
+  3   ADD   R1   -8 R1 |                               |         TOBE_ISSUE
+  4   BNE   Loop R1 R2 |                               |         TOBE_ISSUE
+  5   LOAD  F0    0 R1 |                               |         TOBE_ISSUE
+  6   FADD  F4   F0 F2 |                               |         TOBE_ISSUE
+  7   STORE F4    0 R1 |                               |         TOBE_ISSUE
+  8   ADD   R1   -8 R1 |                               |         TOBE_ISSUE
+  9   BNE   Loop R1 R2 |                               |         TOBE_ISSUE
+  10  LOAD  F0    0 R1 |                               |         TOBE_ISSUE
+  11  FADD  F4   F0 F2 |                               |         TOBE_ISSUE
+  12  STORE F4    0 R1 |                               |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                               |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                               |         TOBE_ISSUE
 
 
 [unit]
@@ -32,22 +32,22 @@ CLOCK 0
 CLOCK 1
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1                   |         ISSUE    
-  1   FADD  F4   F0 F2 |     1                   | 0       ISSUE    
-  2   STORE F4    0 R1 |                         |         TOBE_ISSUE
-  3   ADD   R1   -8 R1 |                         |         TOBE_ISSUE
-  4   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
-  5   LOAD  F0    0 R1 |                         |         TOBE_ISSUE
-  6   FADD  F4   F0 F2 |                         |         TOBE_ISSUE
-  7   STORE F4    0 R1 |                         |         TOBE_ISSUE
-  8   ADD   R1   -8 R1 |                         |         TOBE_ISSUE
-  9   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
-  10  LOAD  F0    0 R1 |                         |         TOBE_ISSUE
-  11  FADD  F4   F0 F2 |                         |         TOBE_ISSUE
-  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
-  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
-  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1                         |         ISSUE    
+  1   FADD  F4   F0 F2 |     1                         | 0       ISSUE    
+  2   STORE F4    0 R1 |                               |         TOBE_ISSUE
+  3   ADD   R1   -8 R1 |                               |         TOBE_ISSUE
+  4   BNE   Loop R1 R2 |                               |         TOBE_ISSUE
+  5   LOAD  F0    0 R1 |                               |         TOBE_ISSUE
+  6   FADD  F4   F0 F2 |                               |         TOBE_ISSUE
+  7   STORE F4    0 R1 |                               |         TOBE_ISSUE
+  8   ADD   R1   -8 R1 |                               |         TOBE_ISSUE
+  9   BNE   Loop R1 R2 |                               |         TOBE_ISSUE
+  10  LOAD  F0    0 R1 |                               |         TOBE_ISSUE
+  11  FADD  F4   F0 F2 |                               |         TOBE_ISSUE
+  12  STORE F4    0 R1 |                               |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                               |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                               |         TOBE_ISSUE
 
 
 [unit]
@@ -62,22 +62,22 @@ CLOCK 1
 CLOCK 2
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2             |         EXEC     
-  1   FADD  F4   F0 F2 |     1                   | 0       ISSUE    
-  2   STORE F4    0 R1 |     2                   |         ISSUE    
-  3   ADD   R1   -8 R1 |     2                   |         ISSUE    
-  4   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
-  5   LOAD  F0    0 R1 |                         |         TOBE_ISSUE
-  6   FADD  F4   F0 F2 |                         |         TOBE_ISSUE
-  7   STORE F4    0 R1 |                         |         TOBE_ISSUE
-  8   ADD   R1   -8 R1 |                         |         TOBE_ISSUE
-  9   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
-  10  LOAD  F0    0 R1 |                         |         TOBE_ISSUE
-  11  FADD  F4   F0 F2 |                         |         TOBE_ISSUE
-  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
-  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
-  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2                   |         EXEC     
+  1   FADD  F4   F0 F2 |     1                         | 0       ISSUE    
+  2   STORE F4    0 R1 |     2                         |         ISSUE    
+  3   ADD   R1   -8 R1 |     2                         |         ISSUE    
+  4   BNE   Loop R1 R2 |                               |         TOBE_ISSUE
+  5   LOAD  F0    0 R1 |                               |         TOBE_ISSUE
+  6   FADD  F4   F0 F2 |                               |         TOBE_ISSUE
+  7   STORE F4    0 R1 |                               |         TOBE_ISSUE
+  8   ADD   R1   -8 R1 |                               |         TOBE_ISSUE
+  9   BNE   Loop R1 R2 |                               |         TOBE_ISSUE
+  10  LOAD  F0    0 R1 |                               |         TOBE_ISSUE
+  11  FADD  F4   F0 F2 |                               |         TOBE_ISSUE
+  12  STORE F4    0 R1 |                               |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                               |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                               |         TOBE_ISSUE
 
 
 [unit]
@@ -92,22 +92,22 @@ CLOCK 2
 CLOCK 3
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3       |         MEM      
-  1   FADD  F4   F0 F2 |     1                   | 0       ISSUE    
-  2   STORE F4    0 R1 |     2     3             |         EXEC     
-  3   ADD   R1   -8 R1 |     2     3             |         EXEC     
-  4   BNE   Loop R1 R2 |     3                   | 3       ISSUE    
-  5   LOAD  F0    0 R1 |                         |         TOBE_ISSUE
-  6   FADD  F4   F0 F2 |                         |         TOBE_ISSUE
-  7   STORE F4    0 R1 |                         |         TOBE_ISSUE
-  8   ADD   R1   -8 R1 |                         |         TOBE_ISSUE
-  9   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
-  10  LOAD  F0    0 R1 |                         |         TOBE_ISSUE
-  11  FADD  F4   F0 F2 |                         |         TOBE_ISSUE
-  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
-  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
-  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3             |         MEM      
+  1   FADD  F4   F0 F2 |     1                         | 0       ISSUE    
+  2   STORE F4    0 R1 |     2     3                   |         EXEC     
+  3   ADD   R1   -8 R1 |     2     3                   |         EXEC     
+  4   BNE   Loop R1 R2 |     3                         | 3       ISSUE    
+  5   LOAD  F0    0 R1 |                               |         TOBE_ISSUE
+  6   FADD  F4   F0 F2 |                               |         TOBE_ISSUE
+  7   STORE F4    0 R1 |                               |         TOBE_ISSUE
+  8   ADD   R1   -8 R1 |                               |         TOBE_ISSUE
+  9   BNE   Loop R1 R2 |                               |         TOBE_ISSUE
+  10  LOAD  F0    0 R1 |                               |         TOBE_ISSUE
+  11  FADD  F4   F0 F2 |                               |         TOBE_ISSUE
+  12  STORE F4    0 R1 |                               |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                               |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                               |         TOBE_ISSUE
 
 
 [unit]
@@ -122,22 +122,22 @@ CLOCK 3
 CLOCK 4
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
-  1   FADD  F4   F0 F2 |     1                   |         ISSUE    
-  2   STORE F4    0 R1 |     2     3             |         EXEC     
-  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
-  4   BNE   Loop R1 R2 |     3                   |         ISSUE    
-  5   LOAD  F0    0 R1 |     4                   |         ISSUE    
-  6   FADD  F4   F0 F2 |     4                   | 5       ISSUE    
-  7   STORE F4    0 R1 |                         |         TOBE_ISSUE
-  8   ADD   R1   -8 R1 |                         |         TOBE_ISSUE
-  9   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
-  10  LOAD  F0    0 R1 |                         |         TOBE_ISSUE
-  11  FADD  F4   F0 F2 |                         |         TOBE_ISSUE
-  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
-  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
-  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4       |         CONFIRM  
+  1   FADD  F4   F0 F2 |     1                         |         ISSUE    
+  2   STORE F4    0 R1 |     2     3                   |         EXEC     
+  3   ADD   R1   -8 R1 |     2     3           4       |         CONFIRM  
+  4   BNE   Loop R1 R2 |     3                         |         ISSUE    
+  5   LOAD  F0    0 R1 |     4                         |         ISSUE    
+  6   FADD  F4   F0 F2 |     4                         | 5       ISSUE    
+  7   STORE F4    0 R1 |                               |         TOBE_ISSUE
+  8   ADD   R1   -8 R1 |                               |         TOBE_ISSUE
+  9   BNE   Loop R1 R2 |                               |         TOBE_ISSUE
+  10  LOAD  F0    0 R1 |                               |         TOBE_ISSUE
+  11  FADD  F4   F0 F2 |                               |         TOBE_ISSUE
+  12  STORE F4    0 R1 |                               |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                               |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                               |         TOBE_ISSUE
 
 
 [unit]
@@ -152,22 +152,22 @@ CLOCK 4
 CLOCK 5
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
-  1   FADD  F4   F0 F2 |     1     5             |         EXEC     
-  2   STORE F4    0 R1 |     2     3             |         EXEC     
-  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
-  4   BNE   Loop R1 R2 |     3     5             |         EXEC     
-  5   LOAD  F0    0 R1 |     4     5             |         EXEC     
-  6   FADD  F4   F0 F2 |     4                   | 5       ISSUE    
-  7   STORE F4    0 R1 |     5                   |         ISSUE    
-  8   ADD   R1   -8 R1 |     5                   |         ISSUE    
-  9   BNE   Loop R1 R2 |                         |         TOBE_ISSUE
-  10  LOAD  F0    0 R1 |                         |         TOBE_ISSUE
-  11  FADD  F4   F0 F2 |                         |         TOBE_ISSUE
-  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
-  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
-  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5                   |         EXEC     
+  2   STORE F4    0 R1 |     2     3                   |         EXEC     
+  3   ADD   R1   -8 R1 |     2     3           4       |         CONFIRM  
+  4   BNE   Loop R1 R2 |     3     5                   |         EXEC     
+  5   LOAD  F0    0 R1 |     4     5                   |         EXEC     
+  6   FADD  F4   F0 F2 |     4                         | 5       ISSUE    
+  7   STORE F4    0 R1 |     5                         |         ISSUE    
+  8   ADD   R1   -8 R1 |     5                         |         ISSUE    
+  9   BNE   Loop R1 R2 |                               |         TOBE_ISSUE
+  10  LOAD  F0    0 R1 |                               |         TOBE_ISSUE
+  11  FADD  F4   F0 F2 |                               |         TOBE_ISSUE
+  12  STORE F4    0 R1 |                               |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                               |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                               |         TOBE_ISSUE
 
 
 [unit]
@@ -182,22 +182,22 @@ CLOCK 5
 CLOCK 6
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
-  1   FADD  F4   F0 F2 |     1     5             |         EXEC     
-  2   STORE F4    0 R1 |     2     3             |         EXEC     
-  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
-  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
-  5   LOAD  F0    0 R1 |     4     5     6       |         MEM      
-  6   FADD  F4   F0 F2 |     4                   | 5       ISSUE    
-  7   STORE F4    0 R1 |     5     6             |         EXEC     
-  8   ADD   R1   -8 R1 |     5     6             |         EXEC     
-  9   BNE   Loop R1 R2 |     6                   | 8       ISSUE    
-  10  LOAD  F0    0 R1 |                         |         TOBE_ISSUE
-  11  FADD  F4   F0 F2 |                         |         TOBE_ISSUE
-  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
-  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
-  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5                   |         EXEC     
+  2   STORE F4    0 R1 |     2     3                   |         EXEC     
+  3   ADD   R1   -8 R1 |     2     3           4       |         CONFIRM  
+  4   BNE   Loop R1 R2 |     3     5                   |         CONFIRM  
+  5   LOAD  F0    0 R1 |     4     5     6             |         MEM      
+  6   FADD  F4   F0 F2 |     4                         | 5       ISSUE    
+  7   STORE F4    0 R1 |     5     6                   |         EXEC     
+  8   ADD   R1   -8 R1 |     5     6                   |         EXEC     
+  9   BNE   Loop R1 R2 |     6                         | 8       ISSUE    
+  10  LOAD  F0    0 R1 |                               |         TOBE_ISSUE
+  11  FADD  F4   F0 F2 |                               |         TOBE_ISSUE
+  12  STORE F4    0 R1 |                               |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                               |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                               |         TOBE_ISSUE
 
 
 [unit]
@@ -212,22 +212,22 @@ CLOCK 6
 CLOCK 7
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
-  1   FADD  F4   F0 F2 |     1     5             |         EXEC     
-  2   STORE F4    0 R1 |     2     3             |         EXEC     
-  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
-  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
-  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
-  6   FADD  F4   F0 F2 |     4                   |         ISSUE    
-  7   STORE F4    0 R1 |     5     6             |         EXEC     
-  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
-  9   BNE   Loop R1 R2 |     6                   |         ISSUE    
-  10  LOAD  F0    0 R1 |     7                   |         ISSUE    
-  11  FADD  F4   F0 F2 |     7                   | 10      ISSUE    
-  12  STORE F4    0 R1 |                         |         TOBE_ISSUE
-  13  ADD   R1   -8 R1 |                         |         TOBE_ISSUE
-  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5                   |         EXEC     
+  2   STORE F4    0 R1 |     2     3                   |         EXEC     
+  3   ADD   R1   -8 R1 |     2     3           4       |         CONFIRM  
+  4   BNE   Loop R1 R2 |     3     5                   |         CONFIRM  
+  5   LOAD  F0    0 R1 |     4     5     6     7       |         CONFIRM  
+  6   FADD  F4   F0 F2 |     4                         |         ISSUE    
+  7   STORE F4    0 R1 |     5     6                   |         EXEC     
+  8   ADD   R1   -8 R1 |     5     6           7       |         CONFIRM  
+  9   BNE   Loop R1 R2 |     6                         |         ISSUE    
+  10  LOAD  F0    0 R1 |     7                         |         ISSUE    
+  11  FADD  F4   F0 F2 |     7                         | 10      ISSUE    
+  12  STORE F4    0 R1 |                               |         TOBE_ISSUE
+  13  ADD   R1   -8 R1 |                               |         TOBE_ISSUE
+  14  BNE   Loop R1 R2 |                               |         TOBE_ISSUE
 
 
 [unit]
@@ -242,22 +242,22 @@ CLOCK 7
 CLOCK 8
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
-  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
-  2   STORE F4    0 R1 |     2     3             |         EXEC     
-  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
-  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
-  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
-  6   FADD  F4   F0 F2 |     4     8             |         EXEC     
-  7   STORE F4    0 R1 |     5     6             |         EXEC     
-  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
-  9   BNE   Loop R1 R2 |     6     8             |         EXEC     
-  10  LOAD  F0    0 R1 |     7     8             |         EXEC     
-  11  FADD  F4   F0 F2 |     7                   | 10      ISSUE    
-  12  STORE F4    0 R1 |     8                   |         ISSUE    
-  13  ADD   R1   -8 R1 |     8                   |         ISSUE    
-  14  BNE   Loop R1 R2 |                         |         TOBE_ISSUE
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8       |         CONFIRM  
+  2   STORE F4    0 R1 |     2     3                   |         EXEC     
+  3   ADD   R1   -8 R1 |     2     3           4       |         CONFIRM  
+  4   BNE   Loop R1 R2 |     3     5                   |         CONFIRM  
+  5   LOAD  F0    0 R1 |     4     5     6     7       |         CONFIRM  
+  6   FADD  F4   F0 F2 |     4     8                   |         EXEC     
+  7   STORE F4    0 R1 |     5     6                   |         EXEC     
+  8   ADD   R1   -8 R1 |     5     6           7       |         CONFIRM  
+  9   BNE   Loop R1 R2 |     6     8                   |         EXEC     
+  10  LOAD  F0    0 R1 |     7     8                   |         EXEC     
+  11  FADD  F4   F0 F2 |     7                         | 10      ISSUE    
+  12  STORE F4    0 R1 |     8                         |         ISSUE    
+  13  ADD   R1   -8 R1 |     8                         |         ISSUE    
+  14  BNE   Loop R1 R2 |                               |         TOBE_ISSUE
 
 
 [unit]
@@ -272,22 +272,22 @@ CLOCK 8
 CLOCK 9
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
-  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
-  2   STORE F4    0 R1 |     2     3     9       |         MEM      
-  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
-  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
-  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
-  6   FADD  F4   F0 F2 |     4     8             |         EXEC     
-  7   STORE F4    0 R1 |     5     6             |         EXEC     
-  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
-  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
-  10  LOAD  F0    0 R1 |     7     8     9       |         MEM      
-  11  FADD  F4   F0 F2 |     7                   | 10      ISSUE    
-  12  STORE F4    0 R1 |     8     9             |         EXEC     
-  13  ADD   R1   -8 R1 |     8     9             |         EXEC     
-  14  BNE   Loop R1 R2 |     9                   | 13      ISSUE    
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9             |         MEM      
+  3   ADD   R1   -8 R1 |     2     3           4       |         CONFIRM  
+  4   BNE   Loop R1 R2 |     3     5                   |         CONFIRM  
+  5   LOAD  F0    0 R1 |     4     5     6     7       |         CONFIRM  
+  6   FADD  F4   F0 F2 |     4     8                   |         EXEC     
+  7   STORE F4    0 R1 |     5     6                   |         EXEC     
+  8   ADD   R1   -8 R1 |     5     6           7       |         CONFIRM  
+  9   BNE   Loop R1 R2 |     6     8                   |         CONFIRM  
+  10  LOAD  F0    0 R1 |     7     8     9             |         MEM      
+  11  FADD  F4   F0 F2 |     7                         | 10      ISSUE    
+  12  STORE F4    0 R1 |     8     9                   |         EXEC     
+  13  ADD   R1   -8 R1 |     8     9                   |         EXEC     
+  14  BNE   Loop R1 R2 |     9                         | 13      ISSUE    
 
 
 [unit]
@@ -302,22 +302,22 @@ CLOCK 9
 CLOCK 10
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
-  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
-  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
-  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
-  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
-  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
-  6   FADD  F4   F0 F2 |     4     8             |         EXEC     
-  7   STORE F4    0 R1 |     5     6             |         EXEC     
-  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
-  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
-  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
-  11  FADD  F4   F0 F2 |     7                   |         ISSUE    
-  12  STORE F4    0 R1 |     8     9             |         EXEC     
-  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
-  14  BNE   Loop R1 R2 |     9                   |         ISSUE    
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9             |         CONFIRM  
+  3   ADD   R1   -8 R1 |     2     3           4       |         CONFIRM  
+  4   BNE   Loop R1 R2 |     3     5                   |         CONFIRM  
+  5   LOAD  F0    0 R1 |     4     5     6     7       |         CONFIRM  
+  6   FADD  F4   F0 F2 |     4     8                   |         EXEC     
+  7   STORE F4    0 R1 |     5     6                   |         EXEC     
+  8   ADD   R1   -8 R1 |     5     6           7       |         CONFIRM  
+  9   BNE   Loop R1 R2 |     6     8                   |         CONFIRM  
+  10  LOAD  F0    0 R1 |     7     8     9    10       |         CONFIRM  
+  11  FADD  F4   F0 F2 |     7                         |         ISSUE    
+  12  STORE F4    0 R1 |     8     9                   |         EXEC     
+  13  ADD   R1   -8 R1 |     8     9          10       |         CONFIRM  
+  14  BNE   Loop R1 R2 |     9                         |         ISSUE    
 
 
 [unit]
@@ -332,22 +332,22 @@ CLOCK 10
 CLOCK 11
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
-  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
-  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
-  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
-  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
-  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
-  6   FADD  F4   F0 F2 |     4     8          11 |         COMPLETE 
-  7   STORE F4    0 R1 |     5     6             |         EXEC     
-  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
-  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
-  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
-  11  FADD  F4   F0 F2 |     7    11             |         EXEC     
-  12  STORE F4    0 R1 |     8     9             |         EXEC     
-  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
-  14  BNE   Loop R1 R2 |     9    11             |         EXEC     
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9          11 |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4       |         CONFIRM  
+  4   BNE   Loop R1 R2 |     3     5                   |         CONFIRM  
+  5   LOAD  F0    0 R1 |     4     5     6     7       |         CONFIRM  
+  6   FADD  F4   F0 F2 |     4     8          11       |         CONFIRM  
+  7   STORE F4    0 R1 |     5     6                   |         EXEC     
+  8   ADD   R1   -8 R1 |     5     6           7       |         CONFIRM  
+  9   BNE   Loop R1 R2 |     6     8                   |         CONFIRM  
+  10  LOAD  F0    0 R1 |     7     8     9    10       |         CONFIRM  
+  11  FADD  F4   F0 F2 |     7    11                   |         EXEC     
+  12  STORE F4    0 R1 |     8     9                   |         EXEC     
+  13  ADD   R1   -8 R1 |     8     9          10       |         CONFIRM  
+  14  BNE   Loop R1 R2 |     9    11                   |         EXEC     
 
 
 [unit]
@@ -362,22 +362,22 @@ CLOCK 11
 CLOCK 12
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
-  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
-  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
-  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
-  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
-  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
-  6   FADD  F4   F0 F2 |     4     8          11 |         COMPLETE 
-  7   STORE F4    0 R1 |     5     6    12       |         MEM      
-  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
-  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
-  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
-  11  FADD  F4   F0 F2 |     7    11             |         EXEC     
-  12  STORE F4    0 R1 |     8     9             |         EXEC     
-  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
-  14  BNE   Loop R1 R2 |     9    11             |         COMPLETE 
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9          11 |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4    12 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5                   |         CONFIRM  
+  5   LOAD  F0    0 R1 |     4     5     6     7       |         CONFIRM  
+  6   FADD  F4   F0 F2 |     4     8          11       |         CONFIRM  
+  7   STORE F4    0 R1 |     5     6    12             |         MEM      
+  8   ADD   R1   -8 R1 |     5     6           7       |         CONFIRM  
+  9   BNE   Loop R1 R2 |     6     8                   |         CONFIRM  
+  10  LOAD  F0    0 R1 |     7     8     9    10       |         CONFIRM  
+  11  FADD  F4   F0 F2 |     7    11                   |         EXEC     
+  12  STORE F4    0 R1 |     8     9                   |         EXEC     
+  13  ADD   R1   -8 R1 |     8     9          10       |         CONFIRM  
+  14  BNE   Loop R1 R2 |     9    11                   |         CONFIRM  
 
 
 [unit]
@@ -392,22 +392,22 @@ CLOCK 12
 CLOCK 13
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
-  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
-  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
-  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
-  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
-  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
-  6   FADD  F4   F0 F2 |     4     8          11 |         COMPLETE 
-  7   STORE F4    0 R1 |     5     6    12       |         COMPLETE 
-  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
-  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
-  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
-  11  FADD  F4   F0 F2 |     7    11             |         EXEC     
-  12  STORE F4    0 R1 |     8     9             |         EXEC     
-  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
-  14  BNE   Loop R1 R2 |     9    11             |         COMPLETE 
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9          11 |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4    12 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5                13 |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7       |         CONFIRM  
+  6   FADD  F4   F0 F2 |     4     8          11       |         CONFIRM  
+  7   STORE F4    0 R1 |     5     6    12             |         CONFIRM  
+  8   ADD   R1   -8 R1 |     5     6           7       |         CONFIRM  
+  9   BNE   Loop R1 R2 |     6     8                   |         CONFIRM  
+  10  LOAD  F0    0 R1 |     7     8     9    10       |         CONFIRM  
+  11  FADD  F4   F0 F2 |     7    11                   |         EXEC     
+  12  STORE F4    0 R1 |     8     9                   |         EXEC     
+  13  ADD   R1   -8 R1 |     8     9          10       |         CONFIRM  
+  14  BNE   Loop R1 R2 |     9    11                   |         CONFIRM  
 
 
 [unit]
@@ -422,22 +422,22 @@ CLOCK 13
 CLOCK 14
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
-  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
-  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
-  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
-  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
-  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
-  6   FADD  F4   F0 F2 |     4     8          11 |         COMPLETE 
-  7   STORE F4    0 R1 |     5     6    12       |         COMPLETE 
-  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
-  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
-  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
-  11  FADD  F4   F0 F2 |     7    11          14 |         COMPLETE 
-  12  STORE F4    0 R1 |     8     9             |         EXEC     
-  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
-  14  BNE   Loop R1 R2 |     9    11             |         COMPLETE 
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9          11 |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4    12 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5                13 |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7    14 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11       |         CONFIRM  
+  7   STORE F4    0 R1 |     5     6    12             |         CONFIRM  
+  8   ADD   R1   -8 R1 |     5     6           7       |         CONFIRM  
+  9   BNE   Loop R1 R2 |     6     8                   |         CONFIRM  
+  10  LOAD  F0    0 R1 |     7     8     9    10       |         CONFIRM  
+  11  FADD  F4   F0 F2 |     7    11          14       |         CONFIRM  
+  12  STORE F4    0 R1 |     8     9                   |         EXEC     
+  13  ADD   R1   -8 R1 |     8     9          10       |         CONFIRM  
+  14  BNE   Loop R1 R2 |     9    11                   |         CONFIRM  
 
 
 [unit]
@@ -452,22 +452,22 @@ CLOCK 14
 CLOCK 15
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
-  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
-  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
-  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
-  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
-  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
-  6   FADD  F4   F0 F2 |     4     8          11 |         COMPLETE 
-  7   STORE F4    0 R1 |     5     6    12       |         COMPLETE 
-  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
-  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
-  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
-  11  FADD  F4   F0 F2 |     7    11          14 |         COMPLETE 
-  12  STORE F4    0 R1 |     8     9    15       |         MEM      
-  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
-  14  BNE   Loop R1 R2 |     9    11             |         COMPLETE 
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9          11 |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4    12 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5                13 |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7    14 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11    15 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12             |         CONFIRM  
+  8   ADD   R1   -8 R1 |     5     6           7       |         CONFIRM  
+  9   BNE   Loop R1 R2 |     6     8                   |         CONFIRM  
+  10  LOAD  F0    0 R1 |     7     8     9    10       |         CONFIRM  
+  11  FADD  F4   F0 F2 |     7    11          14       |         CONFIRM  
+  12  STORE F4    0 R1 |     8     9    15             |         MEM      
+  13  ADD   R1   -8 R1 |     8     9          10       |         CONFIRM  
+  14  BNE   Loop R1 R2 |     9    11                   |         CONFIRM  
 
 
 [unit]
@@ -482,22 +482,232 @@ CLOCK 15
 CLOCK 16
 [instruction status]
 
-  ID  Instructions     | Issue  Exec   Mem Write | Qj  Qk  stage
-  0   LOAD  F0    0 R1 |     1     2     3     4 |         COMPLETE 
-  1   FADD  F4   F0 F2 |     1     5           8 |         COMPLETE 
-  2   STORE F4    0 R1 |     2     3     9       |         COMPLETE 
-  3   ADD   R1   -8 R1 |     2     3           4 |         COMPLETE 
-  4   BNE   Loop R1 R2 |     3     5             |         COMPLETE 
-  5   LOAD  F0    0 R1 |     4     5     6     7 |         COMPLETE 
-  6   FADD  F4   F0 F2 |     4     8          11 |         COMPLETE 
-  7   STORE F4    0 R1 |     5     6    12       |         COMPLETE 
-  8   ADD   R1   -8 R1 |     5     6           7 |         COMPLETE 
-  9   BNE   Loop R1 R2 |     6     8             |         COMPLETE 
-  10  LOAD  F0    0 R1 |     7     8     9    10 |         COMPLETE 
-  11  FADD  F4   F0 F2 |     7    11          14 |         COMPLETE 
-  12  STORE F4    0 R1 |     8     9    15       |         COMPLETE 
-  13  ADD   R1   -8 R1 |     8     9          10 |         COMPLETE 
-  14  BNE   Loop R1 R2 |     9    11             |         COMPLETE 
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9          11 |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4    12 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5                13 |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7    14 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11    15 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12          16 |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     6           7       |         CONFIRM  
+  9   BNE   Loop R1 R2 |     6     8                   |         CONFIRM  
+  10  LOAD  F0    0 R1 |     7     8     9    10       |         CONFIRM  
+  11  FADD  F4   F0 F2 |     7    11          14       |         CONFIRM  
+  12  STORE F4    0 R1 |     8     9    15             |         CONFIRM  
+  13  ADD   R1   -8 R1 |     8     9          10       |         CONFIRM  
+  14  BNE   Loop R1 R2 |     9    11                   |         CONFIRM  
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   14
+          FP ALU Fadd    | Free   11
+     Address ALU Integer | Free   12
+
+
+----------------------------------------------------------------------
+CLOCK 17
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9          11 |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4    12 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5                13 |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7    14 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11    15 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12          16 |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     6           7    17 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8                   |         CONFIRM  
+  10  LOAD  F0    0 R1 |     7     8     9    10       |         CONFIRM  
+  11  FADD  F4   F0 F2 |     7    11          14       |         CONFIRM  
+  12  STORE F4    0 R1 |     8     9    15             |         CONFIRM  
+  13  ADD   R1   -8 R1 |     8     9          10       |         CONFIRM  
+  14  BNE   Loop R1 R2 |     9    11                   |         CONFIRM  
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   14
+          FP ALU Fadd    | Free   11
+     Address ALU Integer | Free   12
+
+
+----------------------------------------------------------------------
+CLOCK 18
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9          11 |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4    12 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5                13 |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7    14 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11    15 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12          16 |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     6           7    17 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8                18 |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9    10       |         CONFIRM  
+  11  FADD  F4   F0 F2 |     7    11          14       |         CONFIRM  
+  12  STORE F4    0 R1 |     8     9    15             |         CONFIRM  
+  13  ADD   R1   -8 R1 |     8     9          10       |         CONFIRM  
+  14  BNE   Loop R1 R2 |     9    11                   |         CONFIRM  
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   14
+          FP ALU Fadd    | Free   11
+     Address ALU Integer | Free   12
+
+
+----------------------------------------------------------------------
+CLOCK 19
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9          11 |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4    12 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5                13 |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7    14 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11    15 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12          16 |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     6           7    17 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8                18 |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9    10    19 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7    11          14       |         CONFIRM  
+  12  STORE F4    0 R1 |     8     9    15             |         CONFIRM  
+  13  ADD   R1   -8 R1 |     8     9          10       |         CONFIRM  
+  14  BNE   Loop R1 R2 |     9    11                   |         CONFIRM  
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   14
+          FP ALU Fadd    | Free   11
+     Address ALU Integer | Free   12
+
+
+----------------------------------------------------------------------
+CLOCK 20
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9          11 |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4    12 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5                13 |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7    14 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11    15 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12          16 |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     6           7    17 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8                18 |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9    10    19 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7    11          14    20 |         COMPLETE 
+  12  STORE F4    0 R1 |     8     9    15             |         CONFIRM  
+  13  ADD   R1   -8 R1 |     8     9          10       |         CONFIRM  
+  14  BNE   Loop R1 R2 |     9    11                   |         CONFIRM  
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   14
+          FP ALU Fadd    | Free   11
+     Address ALU Integer | Free   12
+
+
+----------------------------------------------------------------------
+CLOCK 21
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9          11 |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4    12 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5                13 |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7    14 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11    15 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12          16 |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     6           7    17 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8                18 |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9    10    19 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7    11          14    20 |         COMPLETE 
+  12  STORE F4    0 R1 |     8     9    15          21 |         COMPLETE 
+  13  ADD   R1   -8 R1 |     8     9          10       |         CONFIRM  
+  14  BNE   Loop R1 R2 |     9    11                   |         CONFIRM  
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   14
+          FP ALU Fadd    | Free   11
+     Address ALU Integer | Free   12
+
+
+----------------------------------------------------------------------
+CLOCK 22
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9          11 |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4    12 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5                13 |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7    14 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11    15 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12          16 |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     6           7    17 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8                18 |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9    10    19 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7    11          14    20 |         COMPLETE 
+  12  STORE F4    0 R1 |     8     9    15          21 |         COMPLETE 
+  13  ADD   R1   -8 R1 |     8     9          10    22 |         COMPLETE 
+  14  BNE   Loop R1 R2 |     9    11                   |         CONFIRM  
+
+
+[unit]
+
+            Name Func    | status id
+     Integer ALU Add     | Free   14
+          FP ALU Fadd    | Free   11
+     Address ALU Integer | Free   12
+
+
+----------------------------------------------------------------------
+CLOCK 23
+[instruction status]
+
+  ID  Instructions     | Issue  Exec   Mem Write Confi | Qj  Qk  stage
+  0   LOAD  F0    0 R1 |     1     2     3     4     5 |         COMPLETE 
+  1   FADD  F4   F0 F2 |     1     5           8     9 |         COMPLETE 
+  2   STORE F4    0 R1 |     2     3     9          11 |         COMPLETE 
+  3   ADD   R1   -8 R1 |     2     3           4    12 |         COMPLETE 
+  4   BNE   Loop R1 R2 |     3     5                13 |         COMPLETE 
+  5   LOAD  F0    0 R1 |     4     5     6     7    14 |         COMPLETE 
+  6   FADD  F4   F0 F2 |     4     8          11    15 |         COMPLETE 
+  7   STORE F4    0 R1 |     5     6    12          16 |         COMPLETE 
+  8   ADD   R1   -8 R1 |     5     6           7    17 |         COMPLETE 
+  9   BNE   Loop R1 R2 |     6     8                18 |         COMPLETE 
+  10  LOAD  F0    0 R1 |     7     8     9    10    19 |         COMPLETE 
+  11  FADD  F4   F0 F2 |     7    11          14    20 |         COMPLETE 
+  12  STORE F4    0 R1 |     8     9    15          21 |         COMPLETE 
+  13  ADD   R1   -8 R1 |     8     9          10    22 |         COMPLETE 
+  14  BNE   Loop R1 R2 |     9    11                23 |         COMPLETE 
 
 
 [unit]
@@ -524,3 +734,10 @@ CLOCK | Integer ALU |      FP ALU | Address ALU |      Data Cache | CDB
    13 |             |             |             |                 | 
    14 |             |             |             |                 | 11/Fadd
    15 |             |             |             |        12/Store | 
+   16 |             |             |             |                 | 
+   17 |             |             |             |                 | 
+   18 |             |             |             |                 | 
+   19 |             |             |             |                 | 
+   20 |             |             |             |                 | 
+   21 |             |             |             |                 | 
+   22 |             |             |             |                 | 
