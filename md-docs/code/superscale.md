@@ -420,3 +420,4 @@ class Instruction:
 ## 参考
 
 - [计算机体系结构-超标量乱序CPU微架构(上)](https://zhuanlan.zhihu.com/p/601688983)
+- [超标量处理器_发射](https://zhuanlan.zhihu.com/p/504938127)

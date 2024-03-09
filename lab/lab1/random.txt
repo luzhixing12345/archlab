@@ -1,0 +1,12 @@
+<P0, write, 256, 100>
+<P1, write, 128, 200>
+<P2, write,  32, 300>
+<P3, write, 128, 400>
+<P0, read,   32, - >
+<P1, read,   32, - >
+<P2, read,  128, - >
+<P3, read,  256, - >
+<P1, write, 144, 500>
+<P2, write, 128, 77>
+<P0, read,  144, - >
+<P3, write, 128, 96>

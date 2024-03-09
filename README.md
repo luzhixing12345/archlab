@@ -1,8 +1,8 @@
 # archlab
 
-NUDT 高级体系结构课程的代码和阅读作业
+NUDT 高级体系结构课程代码和阅读作业 以及 体系结构实验和优化实验 代码
 
-代码保存在 `src` 目录下的对应 homework{x} 位置
+课程代码保存在 `src` 目录下的对应 homework{x} 位置, 实验课代码保存在 `lab` 目录下
 
 文档记录了相关的使用方法: [archlab document](https://luzhixing12345.github.io/archlab/)
 

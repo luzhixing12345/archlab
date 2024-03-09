@@ -1,6 +1,6 @@
 # archlab
 
-NUDT 高级体系结构实验
+NUDT 高级体系结构课程代码作业
 
 本系列实验笔者使用 RISCV-32I 作为指令集, 代码保存在 `src` 目录下的对应 homework{x} 位置
 
@@ -12,6 +12,7 @@ NUDT 高级体系结构实验
 6. Tomasulo ROB 算法
 7. 超标量(SuperScale)
 
+体系结构实验和优化实验代码见 `lab` 目录下对应的 lab{x}
 
 ## 参考
 
