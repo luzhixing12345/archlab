@@ -11,5 +11,7 @@ code:
 read:
 - lecture1: 1
 - lecture2: 2
+- cache: 3
+- cache-coherence: 4
 lab:
 - lab1: 1
