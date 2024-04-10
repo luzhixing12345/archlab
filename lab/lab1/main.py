@@ -22,6 +22,7 @@ class BusReqOp(Enum):
     READ_MISS = "read-miss"
     WRITE_MISS = "write-miss"
     INVALID = "invalid"
+    WRITE_BACK = "write-back"
 
 
 class BusReq:
@@ -48,21 +49,16 @@ class CacheLine:
     def __init__(self, block_size: int = 32) -> None:
         self.block_size = block_size
         self.block_values = [None] * self.block_size
-        
-        # invalid | dirty | shared
-        # invalid == 1 && dirty == 0 && shared == 0 => exclusive
-        self.f_invalid = False
-        self.f_dirty = False
-        self.f_shared = False
-        
+        # 正常来说应该使用三个标志位 valid, dirty, share, 但是这里为了简便直接使用一个标志位用于表示状态
+        self.status = Status.INVALID
         self.tag = -1
 
     def read(self, address: int) -> Optional[int]:
         return
-        
+
     def write(self, address: int, value: int) -> None:
-        '''
-        '''
+        """ """
+
 
 class Cache:
     """
@@ -82,10 +78,10 @@ class Cache:
         """
         self.cache_size = cache_size
         self.block_size = block_size
-        
+
         self.block_index = int(math.log2(block_size))
         self.set_size = cache_size // block_size
-        self.cache_lines = [CacheLine(block_size) for _ in range(self.set_size)]
+        self.cachelines = [CacheLine(block_size) for _ in range(self.set_size)]
         self.set_index = int(math.log2(self.set_size))
 
         self.addr_len = 48
@@ -100,41 +96,47 @@ class Cache:
 
     def read(self, address: int) -> Optional[int]:
         tag, set_index, block_offset = self.split_addr(address)
-        cacheline = self.cache_lines[set_index]
+        cacheline = self.cachelines[set_index]
         if cacheline.f_invalid is True:
             if tag == cacheline.tag:
                 return cacheline.read(block_offset)
 
     def write(self, address: int, value: int) -> None:
         tag, set_index, block_offset = self.split_addr(address)
-        
 
 
 class Processor:
 
-    def __init__(self, p_id: int) -> None:
+    def __init__(self, p_id: int, cc_bus: "CacheCoherenceBus") -> None:
         self.p_id = p_id
-        self.status = Status.INVALID
         self.cache = Cache()
+        self.cc_bus = cc_bus
 
     def error(self, msg: str, instruction: Instruction):
-        raise ValueError(f"{msg} in processor {self.p_id}[{self.status}] at address {instruction.addr}")
+        raise ValueError(f"{msg} in processor {self.p_id}[{cacheline.status}] at address {instruction.addr}")
 
     def run(self, instruction: Instruction) -> Optional[BusReq]:
         """
         CPU request
         """
         assert instruction.p_id == self.p_id
-        if self.status == Status.INVALID:
+        tag, set_index, block_offset = self.cache.split_addr(instruction.addr)
+        cacheline = self.cache.cachelines[set_index]
+
+        if tag != cacheline.tag:
+            # tag miss, write back
+            self.cc_bus.memory[instruction.addr] = cacheline.block_values[block_offset]
+
+        if cacheline.status == Status.INVALID:
             if instruction.op == Operator.READ:
-                self.status = Status.EXCLUSIVE
+                cacheline.status = Status.EXCLUSIVE
                 return BusReq(self.p_id, BusReqOp.READ_MISS, instruction.addr)
             elif instruction.op == Operator.WRITE:
-                self.status = Status.MODIFIED
+                cacheline.status = Status.MODIFIED
                 return BusReq(self.p_id, BusReqOp.WRITE_MISS, instruction.addr)
             else:
                 raise TypeError(f"invalid operation: {instruction.op}")
-        elif self.status == Status.EXCLUSIVE:
+        elif cacheline.status == Status.EXCLUSIVE:
             if instruction.op == Operator.READ:
                 if self.cache.read(instruction.addr) is not None:
                     # read hit, no bus request
@@ -144,13 +146,13 @@ class Processor:
             elif instruction.op == Operator.WRITE:
                 if self.cache.write(instruction.addr, instruction.value) is not None:
                     # write hit
-                    self.status = Status.MODIFIED
+                    cacheline.status = Status.MODIFIED
                     # no bus request in MESI
                 else:
                     self.error("write miss", instruction)
             else:
                 raise TypeError(f"invalid operation: {instruction.op}")
-        elif self.status == Status.MODIFIED:
+        elif cacheline.status == Status.MODIFIED:
             if instruction.op == Operator.READ:
                 if self.cache.read(instruction.addr) is not None:
                     # read hit, no bus request
@@ -165,7 +167,7 @@ class Processor:
                     self.error("write miss", instruction)
             else:
                 raise TypeError(f"invalid operation: {instruction.op}")
-        elif self.status == Status.SHARE:
+        elif cacheline.status == Status.SHARE:
             if instruction.op == Operator.READ:
                 if self.cache.read(instruction.addr) is not None:
                     # read hit, no bus request
@@ -175,7 +177,7 @@ class Processor:
             elif instruction.op == Operator.WRITE:
                 if self.cache.write(instruction.addr, instruction.value) is not None:
                     # write hit
-                    self.status = Status.MODIFIED
+                    cacheline.status = Status.MODIFIED
                     return BusReq(self.p_id, BusReqOp.INVALID, instruction.addr)
                 else:
                     self.error("write miss", instruction)
@@ -183,7 +185,7 @@ class Processor:
                 raise TypeError(f"invalid operation: {instruction.op}")
 
         else:
-            raise ValueError(f"invalid status: {self.status}")
+            raise ValueError(f"invalid status: {cacheline.status}")
         return None
 
     def snope(self, bus_req: BusReq) -> None:
@@ -192,17 +194,31 @@ class Processor:
         """
 
     def __repr__(self) -> str:
-        pass
 
+        return f"[P{self.p_id}]"
 
-class ISA:
+class Memory:
+    
+    def __init__(self) -> None:
+        self.memory = {}
+    
+    def __getitem__(self, address: int):
+        if address not in self.memory:
+            self.memory[address] = 0
+        return self.memory[address]
+    
+    def __setitem__(self, address: int, value: int):
+        self.memory[address] = value
+
+class CacheCoherenceBus:
     """
     MESI snope
     """
 
     def __init__(self) -> None:
         cpu_number = 4
-        self.cpus = [Processor(i) for i in range(cpu_number)]
+        self.cpus = [Processor(i, self) for i in range(cpu_number)]
+        self.memory = Memory()
 
     def run_test_case(self, filename: str) -> None:
 
@@ -249,9 +265,9 @@ class ISA:
 def main():
 
     test_case_filenames = ["Normal.txt", "random.txt", "false sharing.txt"]
-    cache_coherence = ISA()
+    cc_bus = CacheCoherenceBus()
     for filename in test_case_filenames:
-        cache_coherence.run_test_case(filename)
+        cc_bus.run_test_case(filename)
 
 
 if __name__ == "__main__":

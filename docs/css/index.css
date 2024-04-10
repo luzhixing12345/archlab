@@ -207,7 +207,7 @@ blockquote {
     margin-bottom: 0;
 }
 
-.markdown-body ol ol,
+/* .markdown-body ol ol,
 .markdown-body ul ol {
     list-style-type: lower-roman;
 }
@@ -217,7 +217,7 @@ blockquote {
 .markdown-body ul ol ol,
 .markdown-body ul ul ol {
     list-style-type: lower-alpha;
-}
+} */
 
 .markdown-body ul {
     margin-top: 0;
@@ -362,6 +362,12 @@ ul>li>ul>li {
     border-radius: 5px;
 }
 
+.markdown-body ol ul,
+.markdown-body ul ol {
+    padding-left: 1em;
+    margin-top: 10px;
+}
+
 .markdown-body ol li blockquote {
     margin-top: 10px;
 }
@@ -421,6 +427,8 @@ ul>li>ul>li {
     height: 90px;
 }
 
+/* 对目录树的调整 */
+
 .dir-tree::-webkit-scrollbar {
     display: none;
     /* Chrome Safari */
@@ -432,7 +440,7 @@ ul>li>ul>li {
     left: 6%;
     top: 10%;
     width: 10%;
-    min-width: 100px;
+    max-width: 200px;
     box-shadow: rgba(149, 157, 165, 0.2) 0px 8px 24px;
     background-color: #f6f8fa;
     border-radius: 10px;
@@ -490,16 +498,16 @@ ul>li>ul>li {
     text-decoration: none;
     color: #000;
     /* https://www.bilibili.com/video/BV1Dc41147sW */
-    background: linear-gradient(to right, #000, #000) no-repeat right bottom;
+    /* background: linear-gradient(to right, #000, #000) no-repeat right bottom;
     background-size: 0 2px;
-    transition: background-size 1000ms;
+    transition: background-size 1000ms; */
 }
 
 .dir-tree a:hover {
     font-weight: bold;
     color: #000;
-    background-position-x: left;
-    background-size: 100% 2px;
+    /* background-position-x: left;
+    background-size: 100% 2px; */
 }
 
 .dir-tree ul ul li a {
@@ -580,6 +588,8 @@ ul>li>ul>li {
     margin-right: 0.5em;
     /* 复选框和文本之间的间距 */
 }
+
+/* 对小标题索引树的调整 */
 
 .header-navigator {
     display: none;
