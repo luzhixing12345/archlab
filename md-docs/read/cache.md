@@ -129,22 +129,95 @@
 
 因为高速缓存电路必须**并行的遍历所有行,匹配所有标记位**,所以构造一个又大又快的相联高速缓存困难且昂贵,因此**全相联高速缓存指适合做小的高速缓存, 例如虚拟内存中的快表TLB**
 
-### 地址访问
+## 地址访问
 
-处理器在进行存储器访问时,处理器访问的地址是虚拟地址,经过MMU的转换,得到物理地址.那么查询cache组是用虚拟地址还是物理地址的Index域呢?当找到cache组时,使用虚拟地址,还是物理地址的Tag域来匹配cache line呢?
+我们一直避开了一个关键问题.我们都知道cache控制器根据地址查找判断是否命中,这里的地址究竟是虚拟地址(VA)还是物理地址(PA)呢?
 
-有如下三种策略:
+关键就在于 CPU 是使用 VA 直接访问 cache 还是先经过 MMU 得到 PA 再访问 cache 
 
-- **VIVT**(Virtual Index Virtual Tag):使用虚拟地址Index域和虚拟地址Tag域
-- **VIPT**(Virtual Index Physical Tag):使用虚拟地址Index域和物理地址Tag域
-- **PIPT**(Physical Index Physical Tag):使用物理地址Index域和物理地址Tag域
+### VIVT
 
-VIVT/VIPT/PIPT的优缺点分析:
+我们先来介绍一下最符合直觉也是处理起来最简单的**VIVT**(Virtual Index Virtual Tag), 即使用虚拟地址Index域和虚拟地址Tag域. 这种 cache 硬件设计简单.在cache诞生之初,大部分的处理器都使用这种方式.虚拟高速缓存以虚拟地址作为查找对象
 
-- VIVT:多个VA可能映射到同一PA,导致多个cache line组(VA不同,index域不同,查找到的cache 组则不同)映射到同一物理地址,这种现象叫做cache alias(高速缓存别名).一旦一个VA到PA的映射关系改变,cache内容将会写回物理内存.此时,由于物理内存内容的变化需要同步到cache,就需要clean和invalidate(这两个操作结合起来就叫做flush)其余同名cache line,导致系统性能下降.
-- VIPT:如果index域位于地址的bit0~bit11(因为linux kernel以4KB(12bit位宽)大小为页面进行物理内存管理),就不会引起cache alias,否则还是会引起该问题.因为对于一个页面来说,虚拟地址和物理地址的低12bit是完全一样的,如果index域位于bit0~bit11,此时VIPT等价于PIPT.
-- PIPT:就不会存在cache alias问题,但是结构更复杂.ARM Cortex-A系列处理器使用的是PIPT方式.
+![20240720231322](https://raw.githubusercontent.com/learner-lu/picbed/master/20240720231322.png)
 
+虚拟地址直接送到cache控制器,如果cache hit.直接从cache中返回数据给CPU.如果cache miss,则把虚拟地址发往MMU,经过MMU转换成物理地址,根据物理地址从主存(main memory)读取数据.由于我们根据虚拟地址查找高速缓存,所以我们是用虚拟地址中部分位域作为索引(index),找到对应的的cacheline.然后根据虚拟地址中部分位域作为标记(tag)来判断cache是否命中.
+
+这种情况的好处在于 **CPU直接生成的地址可用于获取数据,从而大大缩短了命中时间**. 毕竟MMU转换虚拟地址需要时间.同时 cache 硬件设计也更加简单. 但是,正是使用了虚拟地址作为tag和index,所以引入很多软件使用上的问题. 操作系统在管理高速缓存正确工作的过程中,主要会面临两个问题.**歧义**(ambiguity)和**别名**(alias).为了保证系统的正确工作,操作系统负责避免出现歧义和别名
+
+**歧义(ambiguity)**指**不同的数据在cache中具有相同的tag和index**, 我们知道每个进程都有自己的逻辑(虚拟)地址空间, 由进程的页表负责完成虚拟地址到物理地址的转换. 因此当发生进程上下文切换时, cache 中的数据对于新进程来说没有意义, 如果此时访问虚拟地址可能由于 cache hit 导致错误的结果. 因此需要刷新 cache, 所以**每个上下文切换都会出现大量缓存未命中**, 这非常耗时且低效
+
+**别名(alias)**指**同一个物理地址的数据被加载到不同的cacheline中**. 什么情况下会产生这种情况呢? 例如共享内存, 此时多个虚拟地址同时映射到同一个物理地址, 对应的是同一份数据. 但是由于采用虚拟地址的 index 映射到不同的 cache 组中.
+
+如下图所示, 假如此时修改 mem[VA1], 那么就修改了 cache[VA1] 的数据, 但是再去读 mem[VA2] 的时候虽然得到的还是之前错误的数据.
+
+![20240721001213](https://raw.githubusercontent.com/learner-lu/picbed/master/20240721001213.png)
+
+那么如何解决别名的问题呢, 有两种解决办法, 一种是在页表中使用 `nocache` 不通过 cache. 但是这样就损失了cache带来的性能好处. 另一种方式是**在建立共享数据映射时保证每次分配的虚拟地址都索引到相同的cacheline**, 这样虽然虚拟地址不同但是还是映射到同一个 cacheline, 保证了数据一致性
+
+> 这里的 nocache 对应在 [虚拟地址转换](../mm/虚拟地址转换.md) 的页表格式中低 12 位 flags 的 PCD(page cache disable)
+
+### PIPT
+
+基于对VIVT高速缓存的认识,我们知道VIVT高速缓存存在**歧义**和**别名**两大问题.主要问题原因是tag取自虚拟地址导致歧义,index取自虚拟地址导致别名.
+
+> 使用虚拟地址导致频繁的 cache 冲突造成歧义, 需要刷新 cache 影响性能; 共享内存的多个虚拟地址 index 不同映射到不同的 cacheline 导致同一个物理地址在 cache 中保存多份不一致的数据, 产生别名.
+
+所以最简单的方法是tag和index都取自物理地址.物理的地址tag部分是独一无二的,因此肯定不会导致歧义.而针对同一个物理地址,index也是唯一的,因此加载到cache中也是唯一的cacheline,所以也不会存在别名.我们称这种cache为物理高速缓存,简称**PIPT**(Physically Indexed Physically Tagged)
+
+在这种情况下 CPU 需要先通过 MMU 将虚拟地址转换为物理地址.
+
+在 [虚拟地址转换](../mm/虚拟地址转换.md) 中我们介绍了虚拟地址转换为物理地址的顺序
+
+- 检查 Transition Look Aside Buffer (TLB) 中的逻辑地址,如果 TLB 中存在该地址,请从 TLB 中获取页面的物理地址
+- 如果不存在,请从物理内存访问页表,然后使用页表获取物理地址
+
+![20240720232535](https://raw.githubusercontent.com/learner-lu/picbed/master/20240720232535.png)
+
+对于 PIPT 的方式, 每一次查询时都需要完成 MMU 转换, 一旦 TLB miss 那么还需要经历页表遍历的过程去进行地址翻译, 耗时较长.
+
+PIPT 采用唯一的物理地址来做 tag 和 index, 软件层面基本不需要任何的维护就可以避免歧义和别名问题.这是PIPT最大的优点.现在的CPU很多都是采用PIPT高速缓存设计.在Linux内核中,可以看到针对PIPT高速缓存的管理函数都是空函数,无需任何的管理.
+
+### VIPT
+
+观察 PIPT 的模式, 整个 cache 的查询流程为
+
+- VA 通过 MMU 转换得到 PA
+- 在 cache 中查 PA 对应的数据
+
+为了提升cache查找性能,我们**不想等到虚拟地址转换物理地址完成后才能查找cache**.因此,我们可以使用虚拟地址对应的index位查找cache,与此同时(硬件上同时进行)将虚拟地址发到MMU转换成物理地址.当MMU转换完成,同时cache控制器也查找完成,此时比较cacheline对应的tag和物理地址tag域,以此判断是否命中cache.我们称这种高速缓存为**VIPT**(Virtually Indexed Physically Tagged)
+
+VIPT 缓存使用来自物理地址的标记位和索引作为来自逻辑/虚拟地址的索引.使用虚拟地址搜索缓存,并获取物理地址的标记部分.使用虚拟地址搜索 TLB,并获取物理地址.最后,将从VIPT缓存获取的物理地址的标签部分与从TLB获取的物理地址标签进行比较.如果它们都相同,则为缓存命中,否则为缓存未命中
+
+![20240721004820](https://raw.githubusercontent.com/learner-lu/picbed/master/20240721004820.png)
+
+VIPT 会存在歧义和别名的问题么? 答案是**一定不存在歧义, 可能存在别名**
+
+VIPT 的 cache 设计和一半的 cache 有所不同. 普通的 cacheline 的 tag 位的长度是按照 cache 的 tag/index/offset 地址划分后的长度. 但是 VIPT 中我们注意到此时匹配的 tag 是由 VPN 经 MMU 转换后得到的 PPN, 因此 **VIPT的 tag 取决于物理页大小的剩余位数,而不是去掉index和offset的剩余位数**.物理tag是唯一的,所以不存在歧义
+
+> 下图中的 (VPN+VPO) 和 (tag/index/offset) 的两个地址是一样的, 只不过是不同的地址划分方式
+
+![20240721012729](https://raw.githubusercontent.com/learner-lu/picbed/master/20240721012729.png)
+
+由于采用虚拟地址作为index,所以可能依然存在别名问题.是否存在别名问题,需要考虑cache的结构,我们需要分情况考虑.
+
+![20240721015946](https://raw.githubusercontent.com/learner-lu/picbed/master/20240721015946.png)
+
+**是否存在别名问题主要取决于 index 域是否全部在 0-11 位**(4KB(12bit位宽)大小为页面进行物理内存管理)
+
+如果 index 域位于地址的bit0~bit11, 因为虚拟地址和物理地址的低 12 位(VPO/PPO)是完全相同的, 而 tag 还是由 MMU 转换来的唯一的物理地址 tag, 因此这种情况 VIPT 和 PIPT 是完全相同的, 多个虚拟地址映射到同一个 cacheline 从而没有别名问题
+
+但是如果 index 部分超越了 bit11 或者全部超越了 bit11(即情况2/3), 那么此时低于 12 位的相同, 但是高于 12 位的部分的虚拟地址仍然可能不同, 因此 index 不一定相同, 可能会映射到不同的 cache 组中. 产生别名问题
+
+> 因此只要 cache 容量小于 4KB, 即 index + offset 低于12位就不会产生别名问题
+
+因此,在建立共享映射的时候,**返回的虚拟地址都是按照cache大小对齐的地址**,这样就没问题了.如果是多路组相连高速缓存的话,返回的虚拟地址必须是满足一路cache大小对齐.**在Linux的实现中,就是通过这种方法解决别名问题**.
+
+---
+
+按照排列组合来说,应该还存在一种PIVT方式的高速缓存.因为PIVT没有任何优点,却包含以上的所有缺点.你想想,PIVT方式首先要通过MMU转换成物理地址,然后才能根据物理地址index域查找cache.这在速度上没有任何优势,而且还存在歧义和别名问题.因此它从来就没出现过.
+
+总的来说, **VIVT Cache问题太多**,软件维护成本过高,是最难管理的高速缓存.所以现在基本只存在历史的文章中.现在我们基本看不到硬件还在使用这种方式的cache.**现在使用的方式是PIPT或者VIPT**.如果多路组相连高速缓存的一路的大小小于等于4KB,一般硬件采用VIPT方式,因为这样相当于PIPT,岂不美哉.当然,如果一路大小大于4KB,一般采用PIPT方式,也不排除VIPT方式,这就需要操作系统多操点心了
 
 ## 高速缓存的写
 
@@ -176,13 +249,13 @@ VIVT/VIPT/PIPT的优缺点分析:
 
 ![20240118215340](https://raw.githubusercontent.com/learner-lu/picbed/master/20240118215340.png)
 
+cahe的速度在一定程度上同样影响着系统的性能, 等级越高,速度越慢,容量越大.但是速度相比较主存而言,依然很快.不同等级cache速度之间关系如下
+
+![20240720220406](https://raw.githubusercontent.com/learner-lu/picbed/master/20240720220406.png)
+
 不同大小核的缓存大小也可能不相同
 
 ![20240118213517](https://raw.githubusercontent.com/learner-lu/picbed/master/20240118213517.png)
-
-![20240118213547](https://raw.githubusercontent.com/learner-lu/picbed/master/20240118213547.png)
-
-![20240118213343](https://raw.githubusercontent.com/learner-lu/picbed/master/20240118213343.png)
 
 可以直接使用如下指令查看当前系统的缓存大小
 
@@ -195,6 +268,16 @@ Caches (sum of all):
   L3:                    24 MiB (1 instance)
 ```
 
+也可以直接查看 `/sys/devices/system/cpu/cpu0/cache/index0` 下的文件
+
+![20240528154658](https://raw.githubusercontent.com/learner-lu/picbed/master/20240528154658.png)
+
+这里显示 CPU 的 L1 缓存, 总大小 48K, 12 路组相联, 64 组, 每个缓存行大小 64B, 1 级缓存
+
+> physical_line_partition 表示物理行分区,这个参数表示缓存行可以被分割成多少个物理分区.在这个例子中,物理分区数是1,意味着缓存行没有被进一步分割
+>
+> 12\*64\*64=48KB
+
 ## 参考
 
 - [Cache知识记录](https://www.cnblogs.com/DF11G/p/17214206.html)
@@ -202,3 +285,5 @@ Caches (sum of all):
 - [Cache Line操作和Cache相关概念介绍](https://www.cnblogs.com/gujiangtaoFuture/articles/11163844.html)
 - [天玑 9300 架构测试既 vivo X100 系列体验报告](https://zhuanlan.zhihu.com/p/668289721)
 - [天玑9300性能前瞻:发哥太强了!](https://www.bilibili.com/video/BV1dQ4y1J7LC)
+- [每个程序员都应该了解的硬件知识](https://zhuanlan.zhihu.com/p/690189852)
+- [Cache的基本原理](https://zhuanlan.zhihu.com/p/102293437)
